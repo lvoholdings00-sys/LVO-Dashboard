@@ -1,0 +1,2456 @@
+cat > /mnt/user-data/outputs/dashboard.html << 'HTMLEOF'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LVO Command Center</title>
+
+<!-- CLERK -->
+<script
+  async
+  crossorigin="anonymous"
+  data-clerk-publishable-key="pk_live_Y2xlcmsubHZvLWNsb3VkLmNsb3VkJA"
+  src="https://clerk.lvo-cloud.cloud/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"
+  type="text/javascript"
+></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+/* ═══════════════════════════════════════════
+   ROOT VARIABLES
+═══════════════════════════════════════════ */
+:root {
+  --black:       #0a0a0a;
+  --surface:     #111111;
+  --card:        #161616;
+  --card-hover:  #1c1c1c;
+  --border:      #2a2a2a;
+  --border-gold: #b8953f44;
+  --gold:        #b8953f;
+  --gold-light:  #d4a853;
+  --gold-dim:    #7a5f1a;
+  --gold-glow:   #b8953f18;
+  --text:        #e8e6e0;
+  --text-dim:    #9a9690;
+  --text-muted:  #5a5650;
+  --red:         #8b2020;
+  --red-light:   #c0392b;
+  --green-dim:   #1a3a2a;
+  --green:       #2d6a4a;
+  --sidebar-w:   224px;
+}
+
+/* ═══════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+html { font-size: 13px; }
+
+body {
+  background: var(--black);
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Grain overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.3;
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gold-dim); }
+
+/* ═══════════════════════════════════════════
+   AUTH SCREEN
+═══════════════════════════════════════════ */
+#auth-screen {
+  position: fixed;
+  inset: 0;
+  background: var(--black);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  gap: 0;
+}
+
+.auth-glow {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, #b8953f14 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.auth-moth {
+  width: 110px;
+  height: 110px;
+  margin-bottom: 28px;
+  filter: drop-shadow(0 0 16px #b8953f22);
+  animation: mothFloat 5s ease-in-out infinite;
+}
+
+@keyframes mothFloat {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-7px); }
+}
+
+.moth-wing-left, .moth-wing-right {
+  transform-origin: 50% 55%;
+  animation: wingBeat 4s ease-in-out infinite alternate;
+}
+.moth-wing-right { animation-direction: alternate-reverse; }
+
+@keyframes wingBeat {
+  0%   { transform: scaleX(1) rotate(-1deg); }
+  100% { transform: scaleX(0.83) rotate(2deg); }
+}
+
+.auth-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 60px;
+  font-weight: 300;
+  letter-spacing: 0.45em;
+  color: var(--gold);
+  margin-bottom: 4px;
+  text-indent: 0.45em;
+}
+
+.auth-subtitle {
+  font-size: 9px;
+  letter-spacing: 0.4em;
+  color: var(--text-muted);
+  margin-bottom: 40px;
+  text-transform: uppercase;
+}
+
+#clerk-sign-in-container { width: 360px; max-width: 90vw; }
+
+.auth-hint {
+  font-size: 9px;
+  letter-spacing: 0.3em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-top: 20px;
+}
+
+/* ═══════════════════════════════════════════
+   CLERK OVERRIDES
+═══════════════════════════════════════════ */
+.cl-rootBox                      { font-family: 'DM Mono', monospace !important; }
+.cl-card                         { background: transparent !important; border: 1px solid var(--border-gold) !important; border-radius: 0 !important; box-shadow: none !important; }
+.cl-headerTitle                  { font-family: 'Cormorant Garamond', serif !important; font-weight: 300 !important; letter-spacing: 0.1em !important; color: var(--text) !important; }
+.cl-headerSubtitle               { color: var(--text-muted) !important; font-size: 11px !important; }
+.cl-formFieldLabel               { font-family: 'DM Mono', monospace !important; font-size: 9px !important; letter-spacing: 0.25em !important; color: var(--text-muted) !important; text-transform: uppercase !important; }
+.cl-formFieldInput               { background: var(--card) !important; border: none !important; border-bottom: 1px solid var(--border) !important; border-radius: 0 !important; color: var(--text) !important; font-family: 'DM Mono', monospace !important; }
+.cl-formFieldInput:focus         { border-bottom-color: var(--gold) !important; }
+.cl-formButtonPrimary            { background: var(--gold) !important; color: var(--black) !important; border-radius: 0 !important; font-family: 'DM Mono', monospace !important; font-size: 10px !important; letter-spacing: 0.2em !important; text-transform: uppercase !important; box-shadow: none !important; }
+.cl-formButtonPrimary:hover      { background: var(--gold-light) !important; }
+.cl-footerActionLink             { color: var(--gold) !important; }
+.cl-dividerLine                  { background: var(--border) !important; }
+.cl-dividerText                  { color: var(--text-muted) !important; }
+.cl-socialButtonsIconButton      { background: transparent !important; border: 1px solid var(--border) !important; border-radius: 0 !important; }
+.cl-socialButtonsIconButton:hover{ border-color: var(--gold) !important; }
+.cl-avatarBox                    { border-radius: 0 !important; border: 1px solid var(--border-gold) !important; }
+.cl-userButtonPopoverCard        { background: var(--surface) !important; border: 1px solid var(--border-gold) !important; border-radius: 0 !important; }
+.cl-userButtonPopoverActionButton{ border-radius: 0 !important; color: var(--text-dim) !important; }
+.cl-userButtonPopoverActionButton:hover { background: var(--gold-glow) !important; color: var(--gold) !important; }
+.cl-userButtonPopoverActionButtonText { font-family: 'DM Mono', monospace !important; font-size: 11px !important; }
+.cl-userButtonBox                { border-radius: 0 !important; }
+
+/* ═══════════════════════════════════════════
+   APP SHELL
+═══════════════════════════════════════════ */
+#app { display: none; height: 100vh; overflow: hidden; }
+#app.visible { display: flex; animation: fadeIn 0.6s ease; }
+
+@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+
+/* ═══════════════════════════════════════════
+   SIDEBAR
+═══════════════════════════════════════════ */
+#sidebar {
+  width: var(--sidebar-w);
+  min-width: var(--sidebar-w);
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex-shrink: 0;
+}
+
+.sidebar-logo {
+  padding: 26px 22px 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebar-logo-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 30px;
+  font-weight: 300;
+  letter-spacing: 0.35em;
+  color: var(--gold);
+  line-height: 1;
+  margin-bottom: 5px;
+}
+
+.sidebar-logo-sub {
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  line-height: 1.5;
+}
+
+.sidebar-nav { flex: 1; padding: 10px 0; }
+
+.nav-section-label {
+  font-size: 8px;
+  letter-spacing: 0.25em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  padding: 14px 22px 6px;
+  opacity: 0.6;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 22px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  border-left: 2px solid transparent;
+  border-right: 2px solid transparent;
+}
+
+.nav-item:hover { background: var(--gold-glow); }
+.nav-item.active { background: var(--gold-glow); border-left-color: var(--gold); }
+
+.nav-icon {
+  width: 15px;
+  height: 15px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+.nav-item.active .nav-icon, .nav-item:hover .nav-icon { color: var(--gold); }
+
+.nav-label { font-size: 11.5px; color: var(--text-dim); letter-spacing: 0.04em; }
+.nav-sub   { font-size: 8px; color: var(--text-muted); letter-spacing: 0.12em; text-transform: uppercase; margin-top: 1px; }
+.nav-item.active .nav-label, .nav-item:hover .nav-label { color: var(--text); }
+
+.sidebar-bottom {
+  padding: 18px 22px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.auth-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.auth-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+
+/* ═══════════════════════════════════════════
+   MAIN CONTENT
+═══════════════════════════════════════════ */
+#main {
+  flex: 1;
+  height: 100vh;
+  overflow-y: auto;
+  background: var(--black);
+  min-width: 0;
+}
+
+.page { display: none; padding: 36px 44px 60px; animation: pageIn 0.25s ease; }
+.page.active { display: block; }
+
+@keyframes pageIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+/* ═══════════════════════════════════════════
+   TOP BAR
+═══════════════════════════════════════════ */
+.top-bar {
+  position: sticky;
+  top: 0;
+  background: var(--black);
+  border-bottom: 1px solid var(--border);
+  padding: 13px 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 100;
+}
+
+.top-bar-left { font-size: 9px; letter-spacing: 0.22em; color: var(--text-muted); text-transform: uppercase; }
+.top-bar-right { display: flex; align-items: center; gap: 14px; }
+.top-bar-user { font-size: 9px; letter-spacing: 0.15em; color: var(--gold); text-transform: uppercase; }
+
+.notif-btn {
+  position: relative;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  transition: color 0.2s;
+  line-height: 0;
+}
+.notif-btn:hover { color: var(--gold); }
+
+.notif-count {
+  position: absolute;
+  top: -4px; right: -4px;
+  background: var(--gold);
+  color: var(--black);
+  font-size: 8px;
+  font-weight: 700;
+  width: 15px; height: 15px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'DM Mono', monospace;
+}
+
+/* ═══════════════════════════════════════════
+   PAGE HEADER
+═══════════════════════════════════════════ */
+.page-header { margin-bottom: 28px; border-bottom: 1px solid var(--border); padding-bottom: 20px; }
+
+.page-title {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-bottom: 4px;
+}
+
+.page-title-main {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 44px;
+  font-weight: 300;
+  color: var(--text);
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+.page-title-tag {
+  font-size: 9px;
+  letter-spacing: 0.35em;
+  color: var(--gold);
+  text-transform: uppercase;
+}
+
+.page-dba {
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.page-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.65;
+  max-width: 640px;
+}
+
+/* ═══════════════════════════════════════════
+   KPI GRID
+═══════════════════════════════════════════ */
+.kpi-grid   { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 24px; }
+.kpi-grid-4 { grid-template-columns: repeat(4,1fr); }
+.kpi-grid-2 { grid-template-columns: repeat(2,1fr); }
+
+.kpi-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 22px;
+  transition: border-color 0.2s, background 0.2s;
+}
+.kpi-card:hover { border-color: var(--border-gold); background: var(--card-hover); }
+
+.kpi-label { font-size: 8px; letter-spacing: 0.3em; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px; }
+.kpi-value { font-family: 'Cormorant Garamond', serif; font-size: 38px; font-weight: 300; color: var(--text); line-height: 1; margin-bottom: 4px; }
+.kpi-sub   { font-size: 9px; color: var(--text-muted); letter-spacing: 0.1em; }
+.kpi-sub.gold { color: var(--gold); }
+.kpi-sub.red  { color: var(--red-light); }
+
+/* ═══════════════════════════════════════════
+   SECTION
+═══════════════════════════════════════════ */
+.section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 22px;
+  margin-bottom: 18px;
+}
+
+.section-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px;
+  font-weight: 400;
+  color: var(--text);
+  margin-bottom: 18px;
+  letter-spacing: 0.04em;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+/* ═══════════════════════════════════════════
+   TABLE
+═══════════════════════════════════════════ */
+.data-table { width: 100%; border-collapse: collapse; }
+
+.data-table th {
+  font-size: 8px;
+  letter-spacing: 0.25em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  padding: 0 14px 10px 0;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.data-table td {
+  padding: 12px 14px 12px 0;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 11.5px;
+}
+
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { color: var(--text); }
+.data-table .gold-link { color: var(--gold); cursor: pointer; }
+
+/* ═══════════════════════════════════════════
+   BADGES
+═══════════════════════════════════════════ */
+.badge {
+  display: inline-block;
+  padding: 3px 9px;
+  font-size: 8px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  border: 1px solid;
+  white-space: nowrap;
+}
+
+.badge-active      { color: var(--gold);    border-color: var(--gold-dim);  background: #b8953f08; }
+.badge-pending     { color: #c8a050;        border-color: #8b6020;          background: #8b60200a; }
+.badge-development { color: var(--text-dim); border-color: var(--border);   background: transparent; }
+.badge-complete, .badge-completed { color: #6aaa80; border-color: #2d6a4a; background: #2d6a4a0a; }
+.badge-blocked, .badge-alert, .badge-overdue { color: #e05555; border-color: var(--red); background: #8b20200a; }
+.badge-secured     { color: #6aaa80; border-color: #2d6a4a; background: #2d6a4a0a; }
+.badge-submitted   { color: #7090c0; border-color: #304060; background: #3040600a; }
+.badge-review      { color: #c0a020; border-color: #806800; background: #8068000a; }
+.badge-gold        { color: var(--gold-light); border-color: var(--gold-dim); background: #b8953f0a; }
+.badge-silver      { color: #a0a0b0; border-color: #606070; background: transparent; }
+.badge-bronze      { color: #c09060; border-color: #7a5030; background: transparent; }
+.badge-sold        { color: var(--text-muted); border-color: var(--border); background: transparent; }
+
+/* ═══════════════════════════════════════════
+   BUTTONS
+═══════════════════════════════════════════ */
+.btn {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  padding: 9px 18px;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.btn-gold    { background: var(--gold); color: var(--black); font-weight: 500; }
+.btn-gold:hover { background: var(--gold-light); }
+.btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
+.btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+.btn-sm { padding: 5px 11px; font-size: 8px; }
+.btn-danger { background: transparent; border: 1px solid var(--red); color: #e05555; }
+.btn-danger:hover { background: var(--red); color: var(--text); }
+.btn:disabled { opacity:0.45; cursor:not-allowed; pointer-events:none; }
+
+/* ═══════════════════════════════════════════
+   TABS
+═══════════════════════════════════════════ */
+.tabs { display: flex; margin-bottom: 18px; border-bottom: 1px solid var(--border); }
+
+.tab {
+  padding: 9px 18px;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+  margin-bottom: -1px;
+}
+.tab:hover { color: var(--text-dim); }
+.tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ═══════════════════════════════════════════
+   LAYOUT HELPERS
+═══════════════════════════════════════════ */
+.two-col { display: grid; grid-template-columns: 1fr 360px; gap: 18px; }
+.three-col { display: grid; grid-template-columns: repeat(3,1fr); gap: 18px; }
+
+/* ═══════════════════════════════════════════
+   ACTIVITY FEED
+═══════════════════════════════════════════ */
+.activity-feed { display: flex; flex-direction: column; }
+
+.activity-item {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.activity-item:last-child { border-bottom: none; }
+.activity-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold-dim); margin-top: 4px; flex-shrink: 0; }
+.activity-dot.red   { background: var(--red-light); }
+.activity-dot.green { background: var(--green); }
+.activity-dot.gold  { background: var(--gold); }
+.activity-time { font-size: 9px; color: var(--text-muted); letter-spacing: 0.1em; white-space: nowrap; }
+.activity-text { font-size: 11.5px; color: var(--text-dim); line-height: 1.5; }
+
+/* ═══════════════════════════════════════════
+   PROGRESS BAR
+═══════════════════════════════════════════ */
+.progress-wrap  { display: flex; align-items: center; gap: 10px; }
+.progress-bar   { flex: 1; height: 2px; background: var(--border); }
+.progress-fill  { height: 100%; background: var(--gold); transition: width 0.4s; }
+.progress-label { font-size: 10px; color: var(--gold); min-width: 34px; text-align: right; }
+
+/* ═══════════════════════════════════════════
+   FORMS
+═══════════════════════════════════════════ */
+.form-group  { margin-bottom: 16px; }
+.form-row    { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-label  { display: block; font-size: 8px; letter-spacing: 0.25em; color: var(--text-muted); text-transform: uppercase; margin-bottom: 7px; }
+
+.form-input, .form-select, .form-textarea {
+  width: 100%;
+  background: var(--card);
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  padding: 9px 10px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus { border-bottom-color: var(--gold); }
+.form-input::placeholder { color: var(--text-muted); }
+.form-select option { background: var(--surface); }
+.form-textarea { resize: vertical; min-height: 75px; }
+
+/* ═══════════════════════════════════════════
+   STATUS SELECT
+═══════════════════════════════════════════ */
+.status-select {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-family: 'DM Mono', monospace;
+  font-size: 8px;
+  padding: 3px 8px;
+  cursor: pointer;
+  outline: none;
+  letter-spacing: 0.1em;
+}
+.status-select:focus { border-color: var(--gold); }
+.status-select option { background: var(--surface); }
+
+/* ═══════════════════════════════════════════
+   REQUEST BAR
+═══════════════════════════════════════════ */
+.request-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 24px;
+  padding: 14px 18px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-top: 1px solid var(--border-gold);
+  align-items: flex-end;
+}
+
+.request-bar select, .request-bar input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  padding: 5px 6px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.request-bar input { flex: 1; }
+.request-bar input::placeholder { color: var(--text-muted); }
+.request-bar input:focus, .request-bar select:focus { border-bottom-color: var(--gold); }
+.request-bar select { color: var(--text-dim); min-width: 170px; background: var(--card); }
+.request-bar select option { background: var(--surface); }
+
+/* ═══════════════════════════════════════════
+   MODAL
+═══════════════════════════════════════════ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: #0a0a0acc;
+  z-index: 500;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+.modal-overlay.open { display: flex; }
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border-gold);
+  width: 520px;
+  max-width: 92vw;
+  max-height: 88vh;
+  overflow-y: auto;
+  padding: 30px;
+  animation: modalIn 0.22s ease;
+}
+
+@keyframes modalIn { from { opacity:0; transform:scale(0.97) translateY(8px); } to { opacity:1; transform:scale(1) translateY(0); } }
+
+.modal-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 22px; }
+
+.modal-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 24px;
+  font-weight: 400;
+  color: var(--text);
+  letter-spacing: 0.04em;
+}
+
+.modal-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 18px; padding: 0; line-height: 1; transition: color 0.2s; }
+.modal-close:hover { color: var(--text); }
+.modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 22px; }
+
+/* ═══════════════════════════════════════════
+   NOTIFICATION PANEL
+═══════════════════════════════════════════ */
+.notif-panel {
+  position: fixed;
+  top: 0; right: -380px;
+  width: 380px;
+  height: 100vh;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  z-index: 400;
+  transition: right 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+.notif-panel.open { right: 0; }
+
+.notif-panel-header {
+  padding: 22px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.notif-panel-title { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 400; letter-spacing: 0.04em; }
+.notif-panel-body  { flex: 1; overflow-y: auto; padding: 14px 22px; }
+
+.notif-entry { padding: 13px 0; border-bottom: 1px solid var(--border); }
+.notif-entry:last-child { border-bottom: none; }
+.notif-entry-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 3px; }
+.notif-division { font-size: 8px; letter-spacing: 0.2em; color: var(--gold); text-transform: uppercase; }
+.notif-time     { font-size: 8px; color: var(--text-muted); }
+.notif-type     { font-size: 10px; color: var(--text); letter-spacing: 0.08em; margin-bottom: 3px; }
+.notif-desc     { font-size: 10px; color: var(--text-dim); line-height: 1.45; }
+
+/* ═══════════════════════════════════════════
+   REQUEST LOG
+═══════════════════════════════════════════ */
+.request-log { margin-top: 22px; }
+.request-log-title { font-size: 9px; letter-spacing: 0.25em; color: var(--text-muted); text-transform: uppercase; margin-bottom: 12px; }
+
+.request-entry { padding: 11px 0; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 4px; }
+.request-entry:last-child { border-bottom: none; }
+.request-entry-header { display: flex; align-items: center; justify-content: space-between; }
+.request-entry-type   { font-size: 10px; color: var(--text); letter-spacing: 0.08em; }
+.request-entry-time   { font-size: 8px; color: var(--text-muted); }
+.request-entry-desc   { font-size: 10px; color: var(--text-dim); line-height: 1.4; }
+
+/* ═══════════════════════════════════════════
+   TAGS
+═══════════════════════════════════════════ */
+.tag-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+.tag { padding: 4px 13px; font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase; border: 1px solid var(--gold-dim); color: var(--gold); background: var(--gold-glow); }
+
+/* ═══════════════════════════════════════════
+   DIVISION HEALTH GRID
+═══════════════════════════════════════════ */
+.division-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 12px; margin-bottom: 24px; }
+
+.division-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 16px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+.division-card:hover { border-color: var(--border-gold); background: var(--card-hover); }
+
+.division-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; }
+.division-card-name   { font-family: 'Cormorant Garamond', serif; font-size: 16px; color: var(--text); }
+.division-card-dot    { width: 7px; height: 7px; border-radius: 50%; }
+.dot-active      { background: #4aaa70; }
+.dot-pending     { background: #c8a050; }
+.dot-development { background: var(--text-muted); }
+.division-card-nick   { font-size: 8px; letter-spacing: 0.14em; color: var(--gold); text-transform: uppercase; margin-bottom: 5px; }
+.division-card-note   { font-size: 9px; color: var(--text-muted); line-height: 1.4; }
+
+/* ═══════════════════════════════════════════
+   INTEGRATION CARDS
+═══════════════════════════════════════════ */
+.integration-row { display: flex; gap: 12px; margin-top: 18px; flex-wrap: wrap; }
+.integration-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 13px 16px;
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  min-width: 180px;
+}
+.integration-card strong { color: var(--gold); display: block; margin-bottom: 3px; font-size: 9px; letter-spacing: 0.15em; font-weight: 400; }
+
+/* ═══════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════ */
+.toast {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  background: var(--card);
+  border: 1px solid var(--border-gold);
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  padding: 13px 18px;
+  z-index: 9001;
+  animation: toastIn 0.3s ease;
+}
+
+@keyframes toastIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     AUTH SCREEN
+═══════════════════════════════════════════ -->
+<div id="auth-screen">
+  <div class="auth-glow"></div>
+
+  <svg class="auth-moth" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="60" cy="62" rx="5" ry="18" fill="#7a5f1a"/>
+    <ellipse cx="60" cy="62" rx="3.5" ry="16" fill="#b8953f"/>
+    <circle cx="60" cy="42" r="6" fill="#b8953f"/>
+    <line x1="60" y1="38" x2="44" y2="24" stroke="#b8953f" stroke-width="1.2"/>
+    <circle cx="43" cy="23" r="2" fill="#d4a853"/>
+    <line x1="60" y1="38" x2="76" y2="24" stroke="#b8953f" stroke-width="1.2"/>
+    <circle cx="77" cy="23" r="2" fill="#d4a853"/>
+    <g class="moth-wing-left">
+      <path d="M57 55 Q30 35 18 50 Q14 70 30 75 Q45 78 57 68 Z" fill="#b8953f" opacity="0.85"/>
+      <path d="M57 65 Q35 68 25 82 Q28 95 42 90 Q54 85 57 72 Z" fill="#9a7a30" opacity="0.8"/>
+      <path d="M57 57 Q40 45 22 52" stroke="#d4a853" stroke-width="0.7" fill="none" opacity="0.6"/>
+      <path d="M57 62 Q42 58 28 65" stroke="#d4a853" stroke-width="0.5" fill="none" opacity="0.5"/>
+      <path d="M57 66 Q45 72 32 80" stroke="#d4a853" stroke-width="0.5" fill="none" opacity="0.5"/>
+    </g>
+    <g class="moth-wing-right">
+      <path d="M63 55 Q90 35 102 50 Q106 70 90 75 Q75 78 63 68 Z" fill="#b8953f" opacity="0.85"/>
+      <path d="M63 65 Q85 68 95 82 Q92 95 78 90 Q66 85 63 72 Z" fill="#9a7a30" opacity="0.8"/>
+      <path d="M63 57 Q80 45 98 52" stroke="#d4a853" stroke-width="0.7" fill="none" opacity="0.6"/>
+      <path d="M63 62 Q78 58 92 65" stroke="#d4a853" stroke-width="0.5" fill="none" opacity="0.5"/>
+      <path d="M63 66 Q75 72 88 80" stroke="#d4a853" stroke-width="0.5" fill="none" opacity="0.5"/>
+    </g>
+    <circle cx="35" cy="60" r="5" fill="#0a0a0a" opacity="0.5"/>
+    <circle cx="35" cy="60" r="3" fill="#d4a853" opacity="0.4"/>
+    <circle cx="85" cy="60" r="5" fill="#0a0a0a" opacity="0.5"/>
+    <circle cx="85" cy="60" r="3" fill="#d4a853" opacity="0.4"/>
+  </svg>
+
+  <div class="auth-title">L V O</div>
+  <div class="auth-subtitle">Holdings LLC — Command Center</div>
+  <div id="clerk-sign-in-container"></div>
+  <div class="auth-hint" id="auth-loading-hint">Initializing secure access...</div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     APP SHELL
+═══════════════════════════════════════════ -->
+<div id="app">
+
+  <!-- SIDEBAR -->
+  <nav id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-text">LVO</div>
+      <div class="sidebar-logo-sub">Legion V. Omni-Operation<br>Holdings LLC</div>
+    </div>
+
+    <div class="sidebar-nav" id="sidebar-nav"></div>
+
+    <div class="sidebar-bottom">
+      <div class="auth-status">
+        <span class="auth-dot"></span>
+        <span id="sidebar-user-name">Authenticated</span>
+      </div>
+      <div id="clerk-user-btn"></div>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <div id="main">
+    <div class="top-bar">
+      <div class="top-bar-left" id="top-bar-label">LVO Command Center</div>
+      <div class="top-bar-right">
+        <button class="notif-btn" onclick="toggleNotifPanel()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+          <span class="notif-count" id="notif-count">0</span>
+        </button>
+        <div id="clerk-topbar-btn"></div>
+      </div>
+    </div>
+    <div id="pages-container"></div>
+  </div>
+</div>
+
+<!-- NOTIFICATION PANEL -->
+<div class="notif-panel" id="notif-panel">
+  <div class="notif-panel-header">
+    <div class="notif-panel-title">Submitted Requests</div>
+    <button class="modal-close" onclick="toggleNotifPanel()">✕</button>
+  </div>
+  <div class="notif-panel-body" id="notif-panel-body">
+    <div style="color:var(--text-muted);font-size:11px;padding-top:20px;text-align:center;">No requests yet.</div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalOnOverlay(event)">
+  <div class="modal" id="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">Request</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div id="modal-body"></div>
+    <div class="modal-footer" id="modal-footer"></div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════
+   CLERK CONFIG
+═══════════════════════════════════════════ */
+const CLERK_ALLOWED_DOMAINS = ['lvo-cloud.cloud','dash.lvo-cloud.cloud','online.lvo-cloud.cloud'];
+
+const clerkAppearance = {
+  variables: {
+    colorBackground:'#0a0a0a', colorText:'#e8e6e0', colorPrimary:'#b8953f',
+    colorInputBackground:'#161616', colorInputText:'#e8e6e0',
+    borderRadius:'0px', fontFamily:"'DM Mono', monospace", fontSize:'13px'
+  },
+  elements: {
+    card:{ background:'transparent', border:'1px solid #b8953f44', boxShadow:'none', borderRadius:'0' },
+    headerTitle:{ fontFamily:"'Cormorant Garamond', serif", fontWeight:'300', letterSpacing:'0.1em', color:'#e8e6e0' },
+    headerSubtitle:{ color:'#5a5650', fontSize:'11px' },
+    formFieldLabel:{ fontFamily:"'DM Mono', monospace", fontSize:'9px', letterSpacing:'0.25em', color:'#5a5650', textTransform:'uppercase' },
+    formFieldInput:{ background:'#161616', border:'none', borderBottom:'1px solid #2a2a2a', borderRadius:'0', color:'#e8e6e0', fontFamily:"'DM Mono', monospace" },
+    formButtonPrimary:{ background:'#b8953f', color:'#0a0a0a', borderRadius:'0', fontFamily:"'DM Mono', monospace", fontSize:'10px', letterSpacing:'0.2em', textTransform:'uppercase', boxShadow:'none' },
+    footerActionLink:{ color:'#b8953f' },
+    dividerLine:{ background:'#2a2a2a' },
+    dividerText:{ color:'#5a5650' },
+    socialButtonsIconButton:{ background:'transparent', border:'1px solid #2a2a2a', borderRadius:'0' },
+    avatarBox:{ borderRadius:'0', border:'1px solid #b8953f44' },
+    userButtonPopoverCard:{ background:'#111111', border:'1px solid #b8953f44', borderRadius:'0' },
+    userButtonPopoverActionButton:{ borderRadius:'0' }
+  }
+};
+
+/* ═══════════════════════════════════════════
+   CLERK INIT
+═══════════════════════════════════════════ */
+window.addEventListener('load', async () => {
+  try {
+    await Clerk.load({ allowedRedirectOrigins: CLERK_ALLOWED_DOMAINS.map(d=>`https://${d}`) });
+  } catch(e) {
+    document.getElementById('auth-loading-hint').textContent = 'Auth service unavailable. Check Clerk key.';
+    document.getElementById('auth-loading-hint').style.color = '#e05555';
+    console.error('Clerk load error:', e);
+    return;
+  }
+
+  const authScreen   = document.getElementById('auth-screen');
+  const appEl        = document.getElementById('app');
+  const signInTarget = document.getElementById('clerk-sign-in-container');
+  const loadingHint  = document.getElementById('auth-loading-hint');
+  const sidebarName  = document.getElementById('sidebar-user-name');
+
+  let signInMounted = false, userBtnMounted = false;
+
+  function showAuth() {
+    authScreen.style.display = 'flex';
+    authScreen.style.opacity = '1';
+    appEl.style.display = 'none';
+    appEl.classList.remove('visible');
+    loadingHint.textContent = 'Private Command Center';
+    if (!signInMounted) {
+      Clerk.mountSignIn(signInTarget, {
+        appearance: clerkAppearance, routing: 'virtual',
+        afterSignInUrl: window.location.href, afterSignUpUrl: window.location.href
+      });
+      signInMounted = true;
+    }
+  }
+
+  function showApp(user) {
+    authScreen.style.transition = 'opacity 0.5s';
+    authScreen.style.opacity = '0';
+    setTimeout(() => {
+      authScreen.style.display = 'none';
+      appEl.classList.add('visible');
+      if (!userBtnMounted) {
+        Clerk.mountUserButton(document.getElementById('clerk-topbar-btn'), { appearance: clerkAppearance });
+        Clerk.mountUserButton(document.getElementById('clerk-user-btn'), { appearance: clerkAppearance });
+        userBtnMounted = true;
+      }
+      const displayName = user.firstName
+        ? user.firstName + (user.lastName ? ' ' + user.lastName[0] + '.' : '')
+        : (user.primaryEmailAddress?.emailAddress || 'Authenticated');
+      sidebarName.textContent = displayName;
+      if (!window._appInited) { window._appInited = true; initApp(); }
+    }, 500);
+  }
+
+  if (Clerk.user) { showApp(Clerk.user); } else { showAuth(); }
+
+  Clerk.addListener(({ user }) => {
+    if (user) { showApp(user); }
+    else { window._appInited = false; userBtnMounted = false; signInMounted = false; showAuth(); }
+  });
+});
+
+/* ═══════════════════════════════════════════
+   GLOBAL STATE
+═══════════════════════════════════════════ */
+let allRequests = [];
+let notifOpen   = false;
+
+/* ═══════════════════════════════════════════
+   NAVIGATION STRUCTURE
+═══════════════════════════════════════════ */
+const divisions = [
+  { id:'overview',    label:'Overview',              sub:'',              icon:'grid',      section:'command' },
+  { id:'vindex',      label:'Vindex',                sub:'The Gasoline',  icon:'database',  section:'divisions' },
+  { id:'operations',  label:'Operations',            sub:'The Engine',    icon:'settings',  section:'divisions' },
+  { id:'alliance',    label:'Alliance',              sub:'The Brain',     icon:'users',     section:'divisions' },
+  { id:'obscura',     label:'Obscura',               sub:'The Base',      icon:'monitor',   section:'divisions' },
+  { id:'capital',     label:'Capital',               sub:'The Reservoir', icon:'briefcase', section:'divisions' },
+  { id:'custodia',    label:'Custodia',              sub:'The Guard',     icon:'shield',    section:'divisions' },
+  { id:'outreach',    label:'Outreach',              sub:'The Heart',     icon:'heart',     section:'divisions' },
+  { id:'alatus',      label:'Alatus',                sub:'The Wing',      icon:'wind',      section:'divisions' },
+  { id:'pedes',       label:'Pedes',                 sub:'The Legs',      icon:'truck',     section:'divisions' },
+  { id:'petra',       label:'Petra',                 sub:'The Bedrock',   icon:'triangle',  section:'divisions' },
+];
+
+const ICONS = {
+  grid:      `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>`,
+  database:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>`,
+  settings:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`,
+  users:     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+  monitor:   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8m-4-4v4"/></svg>`,
+  briefcase: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>`,
+  shield:    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
+  heart:     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`,
+  wind:      `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/></svg>`,
+  truck:     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>`,
+  triangle:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>`,
+};
+
+/* ═══════════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════════ */
+function badge(status) {
+  const map = {
+    'Active':'active','Pending':'pending','Development':'development',
+    'Complete':'complete','Completed':'completed','Blocked':'blocked',
+    'Alert':'alert','Secured':'secured','Overdue':'overdue','Sold':'sold',
+    'In Development':'development','Submitted':'submitted','In Review':'review'
+  };
+  return `<span class="badge badge-${map[status]||'pending'}">${status}</span>`;
+}
+
+function tierBadge(t) { return `<span class="badge badge-${t.toLowerCase()}">${t}</span>`; }
+
+function updateRowStatus(sel, idx) {
+  sel.closest('tr').querySelectorAll('td')[idx].innerHTML = badge(sel.value);
+}
+
+function switchTab(el, targetId, groupId) {
+  document.getElementById(groupId).querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  el.closest('.section,.page').querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById(targetId).classList.add('active');
+}
+
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(), 2600);
+}
+
+function openModal(title, bodyHTML, footerHTML) {
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-body').innerHTML = bodyHTML;
+  document.getElementById('modal-footer').innerHTML = footerHTML;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
+function closeModalOnOverlay(e) { if(e.target===document.getElementById('modal-overlay')) closeModal(); }
+
+function toggleNotifPanel() {
+  notifOpen = !notifOpen;
+  document.getElementById('notif-panel').classList.toggle('open', notifOpen);
+}
+
+function submitRequest(division, type, desc) {
+  if (!type||!desc) return;
+  const ts = new Date();
+  const req = { division, type, desc, time: ts.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) };
+  allRequests.unshift(req);
+  document.getElementById('notif-count').textContent = allRequests.length;
+  const body = document.getElementById('notif-panel-body');
+  if (allRequests.length===1) body.innerHTML='';
+  body.innerHTML = allRequests.map(r=>`
+    <div class="notif-entry">
+      <div class="notif-entry-header"><span class="notif-division">${r.division}</span><span class="notif-time">${r.time}</span></div>
+      <div class="notif-type">${r.type}</div>
+      <div class="notif-desc">${r.desc}</div>
+    </div>`).join('');
+  appendToLog(division, req);
+}
+
+function appendToLog(divLabel, req) {
+  const d = divisions.find(x=>x.label===divLabel||x.id===divLabel);
+  if (!d) return;
+  const log = document.getElementById('reqlog-'+d.id);
+  if (!log) return;
+  const empty = log.querySelector('.req-empty');
+  if (empty) empty.remove();
+  const e = document.createElement('div');
+  e.className = 'request-entry';
+  e.innerHTML = `<div class="request-entry-header"><span class="request-entry-type">${req.type}</span><div style="display:flex;gap:8px;align-items:center;">${badge('Submitted')}<span class="request-entry-time">${req.time}</span></div></div><div class="request-entry-desc">${req.desc}</div>`;
+  log.appendChild(e);
+}
+
+function doRequest(divId) {
+  const type = document.getElementById('rtype-'+divId)?.value;
+  const desc = document.getElementById('rdesc-'+divId)?.value?.trim();
+  if (!desc) { document.getElementById('rdesc-'+divId).style.borderBottomColor='var(--red-light)'; return; }
+  document.getElementById('rdesc-'+divId).style.borderBottomColor='';
+  const d = divisions.find(x=>x.id===divId);
+  submitRequest(d?d.label:divId, type, desc);
+  document.getElementById('rdesc-'+divId).value='';
+  showToast('Request submitted to '+(d?d.label:divId));
+}
+
+function reqBar(divId, types) {
+  return `<div class="request-bar">
+    <select id="rtype-${divId}">${types.map(t=>`<option>${t}</option>`).join('')}</select>
+    <input type="text" id="rdesc-${divId}" placeholder="Describe your request...">
+    <button class="btn btn-gold btn-sm" onclick="doRequest('${divId}')">Submit</button>
+  </div>`;
+}
+
+function reqLog(divId) {
+  return `<div class="request-log"><div class="request-log-title">Submitted Requests</div>
+    <div id="reqlog-${divId}"><div class="req-empty" style="font-size:10px;color:var(--text-muted);padding:10px 0;">No requests yet.</div></div>
+  </div>`;
+}
+
+/* ═══════════════════════════════════════════
+   APP INIT
+═══════════════════════════════════════════ */
+function initApp() {
+  buildSidebar();
+  document.getElementById('pages-container').innerHTML = [
+    buildOverview(), buildVindex(), buildOperations(), buildAlliance(),
+    buildObscura(), buildCapital(), buildCustodia(), buildOutreach(),
+    buildAlatus(), buildPedes(), buildPetra()
+  ].join('');
+  navigate('overview');
+}
+
+function buildSidebar() {
+  const nav = document.getElementById('sidebar-nav');
+  let html = '<div class="nav-section-label">Command</div>';
+  html += divisions.filter(d=>d.section==='command').map(d=>`
+    <div class="nav-item" id="nav-${d.id}" onclick="navigate('${d.id}')">
+      <div class="nav-icon">${ICONS[d.icon]}</div>
+      <div><div class="nav-label">${d.label}</div>${d.sub?`<div class="nav-sub">${d.sub}</div>`:''}</div>
+    </div>`).join('');
+  html += '<div class="nav-section-label">Divisions</div>';
+  html += divisions.filter(d=>d.section==='divisions').map(d=>`
+    <div class="nav-item" id="nav-${d.id}" onclick="navigate('${d.id}')">
+      <div class="nav-icon">${ICONS[d.icon]}</div>
+      <div><div class="nav-label">${d.label}</div>${d.sub?`<div class="nav-sub">${d.sub}</div>`:''}</div>
+    </div>`).join('');
+  nav.innerHTML = html;
+}
+
+function navigate(id) {
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const navEl  = document.getElementById('nav-'+id);
+  const pageEl = document.getElementById('page-'+id);
+  if (navEl)  navEl.classList.add('active');
+  if (pageEl) pageEl.classList.add('active');
+  const d = divisions.find(x=>x.id===id);
+  document.getElementById('top-bar-label').textContent = d ? d.label+(d.sub?' — '+d.sub:'') : 'LVO';
+  if (id==='capital') setTimeout(drawCapitalChart,180);
+}
+
+/* ══════════════════════════════════════════════════════════
+   ██████  OVERVIEW
+══════════════════════════════════════════════════════════ */
+function buildOverview() {
+  return `<div class="page" id="page-overview">
+  <div class="page-header">
+    <div class="page-title">
+      <span class="page-title-main">Command Center</span>
+      <span class="page-title-tag">LVO Holdings LLC</span>
+    </div>
+    <div class="page-dba">Legion V. Omni-Operation Holdings | LVOO · Houston, TX</div>
+    <div class="page-desc">Empire-wide oversight and control. Monitor all 10 divisions, submit cross-division requests, and track the full LVO portfolio from a single interface.</div>
+  </div>
+
+  <div class="kpi-grid kpi-grid-4">
+    <div class="kpi-card"><div class="kpi-label">Portfolio Revenue</div><div class="kpi-value">$4.2M</div><div class="kpi-sub gold">+12% YoY</div></div>
+    <div class="kpi-card"><div class="kpi-label">Active Divisions</div><div class="kpi-value">10</div><div class="kpi-sub">Fully operational</div></div>
+    <div class="kpi-card"><div class="kpi-label">Alliance Partners</div><div class="kpi-value">38</div><div class="kpi-sub">Active network</div></div>
+    <div class="kpi-card"><div class="kpi-label">Active Deals</div><div class="kpi-value">12</div><div class="kpi-sub">In pipeline</div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">Division Health</div>
+      <button class="btn btn-gold btn-sm" onclick="openEmpireRequest()">+ Empire-Wide Request</button>
+    </div>
+    <div class="division-grid">
+      ${[
+        {id:'vindex',    name:'Vindex',     nick:'The Gasoline', status:'Active',      note:'7 properties · 6 vehicles'},
+        {id:'operations',name:'Operations', nick:'The Engine',   status:'Active',      note:'5 GRO facilities active'},
+        {id:'alliance',  name:'Alliance',   nick:'The Brain',    status:'Active',      note:'38 partners · 7 ventures'},
+        {id:'obscura',   name:'Obscura',    nick:'The Base',     status:'Active',      note:'9 active clients'},
+        {id:'capital',   name:'Capital',    nick:'The Reservoir',status:'Active',      note:'$4.84M deployed'},
+        {id:'custodia',  name:'Custodia',   nick:'The Guard',    status:'Active',      note:'5 secured facilities'},
+        {id:'outreach',  name:'Outreach',   nick:'The Heart',    status:'Active',      note:'$182K donations YTD'},
+        {id:'alatus',    name:'Alatus',     nick:'The Wing',     status:'Active',      note:'42 flights · 4 drones'},
+        {id:'pedes',     name:'Pedes',      nick:'The Legs',     status:'Active',      note:'4 vehicles · 218 runs'},
+        {id:'petra',     name:'Petra',      nick:'The Bedrock',  status:'Development', note:'4 active builds'},
+      ].map(d=>`
+        <div class="division-card" onclick="navigate('${d.id}')">
+          <div class="division-card-header">
+            <div class="division-card-name">${d.name}</div>
+            <div class="division-card-dot dot-${d.status.toLowerCase()}"></div>
+          </div>
+          <div class="division-card-nick">${d.nick}</div>
+          <div class="division-card-note">${d.note}</div>
+        </div>`).join('')}
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="section">
+      <div class="section-title">Recent Activity</div>
+      <div class="activity-feed">
+        <div class="activity-item"><div class="activity-dot green"></div><div><div class="activity-time">Today · 10:20</div><div class="activity-text">GRO-08 quarterly safety inspection passed</div></div></div>
+        <div class="activity-item"><div class="activity-dot"></div><div><div class="activity-time">Yesterday</div><div class="activity-text">GRO-07 enrolled 2 new residents — academic intake complete</div></div></div>
+        <div class="activity-item"><div class="activity-dot"></div><div><div class="activity-time">2 days ago</div><div class="activity-text">Life-skills curriculum updated across all GRO facilities</div></div></div>
+        <div class="activity-item"><div class="activity-dot gold"></div><div><div class="activity-time">3 days ago</div><div class="activity-text">GRO-11 Sterling construction milestone reached — Petra</div></div></div>
+        <div class="activity-item"><div class="activity-dot"></div><div><div class="activity-time">4 days ago</div><div class="activity-text">B1 Escalade assigned to Pedes executive route</div></div></div>
+        <div class="activity-item"><div class="activity-dot red"></div><div><div class="activity-time">5 days ago</div><div class="activity-text">Security alert — A3 Commercial Hub under review (Custodia)</div></div></div>
+        <div class="activity-item"><div class="activity-dot"></div><div><div class="activity-time">6 days ago</div><div class="activity-text">First Up Consultants advisory engagement #12 initiated</div></div></div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-title">Capital Snapshot</div>
+      <div style="display:flex;flex-direction:column;gap:14px;margin-top:6px;">
+        ${[
+          {label:'Vindex',           val:35, amt:'$1.68M'},
+          {label:'Operations',       val:19, amt:'$900K'},
+          {label:'Petra',            val:16, amt:'$760K'},
+          {label:'Capital Reserve',  val:9,  amt:'$440K'},
+          {label:'Alatus',           val:5,  amt:'$240K'},
+          {label:'Other',            val:16, amt:'$800K'},
+        ].map(r=>`<div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px;font-size:10px;">
+            <span style="color:var(--text-dim)">${r.label}</span>
+            <span style="color:var(--gold)">${r.amt}</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${r.val}%"></div></div>
+        </div>`).join('')}
+      </div>
+    </div>
+  </div>
+</div>`;
+}
+
+function openEmpireRequest() {
+  openModal('Empire-Wide Request',
+    `<div class="form-group"><label class="form-label">Target Division</label>
+    <select class="form-select" id="emp-div">${divisions.filter(d=>d.id!=='overview').map(d=>`<option value="${d.id}">${d.label}</option>`).join('')}</select></div>
+    <div class="form-group"><label class="form-label">Request Type</label>
+    <input class="form-input" id="emp-type" placeholder="e.g. Capital Injection, Audit, Partnership..."></div>
+    <div class="form-group"><label class="form-label">Description</label>
+    <textarea class="form-textarea" id="emp-desc" placeholder="Describe the request..."></textarea></div>`,
+    `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+     <button class="btn btn-gold" onclick="submitEmpireReq()">Submit Request</button>`
+  );
+}
+
+function submitEmpireReq() {
+  const divId = document.getElementById('emp-div').value;
+  const type  = document.getElementById('emp-type').value.trim();
+  const desc  = document.getElementById('emp-desc').value.trim();
+  if (!type||!desc) return;
+  const d = divisions.find(x=>x.id===divId);
+  submitRequest(d?d.label:divId, type, desc);
+  closeModal();
+  showToast('Request routed to '+(d?d.label:divId));
+}
+
+/* ══════════════════════════════════════════════════════════
+   ██████  VINDEX
+══════════════════════════════════════════════════════════ */
+let vindexA = [
+  {tag:'A1',type:'Group Home',   status:'Active',      value:'$410K', addr:'Houston, TX'},
+  {tag:'A2',type:'Group Home',   status:'Active',      value:'$385K', addr:'Houston, TX'},
+  {tag:'A3',type:'Commercial',   status:'Active',      value:'$1.2M', addr:'Cypress, TX'},
+  {tag:'A4',type:'Group Home',   status:'Pending',     value:'$362K', addr:'Spring, TX'},
+  {tag:'A5',type:'Commercial',   status:'Development', value:'$940K', addr:'Katy, TX'},
+  {tag:'A6',type:'Group Home',   status:'Active',      value:'$298K', addr:'Cypress, TX'},
+  {tag:'A7',type:'Commercial',   status:'Active',      value:'$875K', addr:'Houston, TX'},
+];
+let vindexB = [
+  {tag:'B1',vehicle:'Escalade 2024',    status:'Active',  notes:'Pedes executive fleet'},
+  {tag:'B2',vehicle:'Transit Van 2023', status:'Active',  notes:'Custodia transport'},
+  {tag:'B3',vehicle:'Sprinter 2022',    status:'Active',  notes:'Heavy logistics'},
+  {tag:'B4',vehicle:'Charger 2024',     status:'Pending', notes:'Awaiting assignment'},
+  {tag:'B5',vehicle:'Yukon 2023',       status:'Active',  notes:'Executive run'},
+  {tag:'B6',vehicle:'Sienna 2022',      status:'Active',  notes:'GRO facility transport'},
+];
+
+function buildVindex() {
+  return `<div class="page" id="page-vindex">
+  <div class="page-header">
+    <div class="page-title"><span class="page-title-main">Vindex</span><span class="page-title-tag">The Gasoline</span></div>
+    <div class="page-dba">Legion V. Omni-Operation — Vindex | LVOV / LVO-OV</div>
+    <div class="page-desc">Physical asset management through Protected Series LLC structure. A-Series manages real estate holdings. B-Series manages the vehicle fleet across all divisions.</div>
+  </div>
+  ${reqBar('vindex',['Add Property','Add Vehicle','Update Asset Status','Request Appraisal','Flag for Sale','Internal Transfer','Capital Request'])}
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-label">Total Properties</div><div class="kpi-value" id="v-prop-count">7</div><div class="kpi-sub">A-Series assets</div></div>
+    <div class="kpi-card"><div class="kpi-label">Total Vehicles</div><div class="kpi-value" id="v-veh-count">6</div><div class="kpi-sub">B-Series fleet</div></div>
+    <div class="kpi-card"><div class="kpi-label">Portfolio Value</div><div class="kpi-value">$4.47M</div><div class="kpi-sub gold">Real estate + fleet</div></div>
+  </div>
+  <div class="section">
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab(this,'vtab-a','vindex-tabs')">A-Series — Real Estate</div>
+      <div class="tab" onclick="switchTab(this,'vtab-b','vindex-tabs')">B-Series — Vehicles</div>
+    </div>
+    <div id="vindex-tabs">
+      <div class="tab-content active" id="vtab-a">
+        <div class="section-header">
+          <div style="font-size:11px;color:var(--text-muted);letter-spacing:0.08em;">Protected Series — Real Property Holdings</div>
+          <button class="btn btn-gold btn-sm" onclick="openAddAsset('a')">+ Add Property</button>
+        </div>
+        <table class="data-table" id="vindex-a-table">
+          <thead><tr><th>Tag</th><th>Type</th><th>Location</th><th>Status</th><th>Value</th><th>Update</th></tr></thead>
+          <tbody>${vindexA.map(r=>`<tr>
+            <td class="gold-link">${r.tag}</td><td>${r.type}</td><td>${r.addr}</td>
+            <td>${badge(r.status)}</td><td>${r.value}</td>
+            <td><select class="status-select" onchange="updateRowStatus(this,3)"><option>Active</option><option>Pending</option><option>Development</option><option>Complete</option></select></td>
+          </tr>`).join('')}</tbody>
+        </table>
+      </div>
+      <div class="tab-content" id="vtab-b">
+        <div class="section-header">
+          <div style="font-size:11px;color:var(--text-muted);letter-spacing:0.08em;">Protected Series — Vehicle Fleet</div>
+          <button class="btn btn-gold btn-sm" onclick="openAddAsset('b')">+ Add Vehicle</button>
+        </div>
+        <table class="data-table" id="vindex-b-table">
+          <thead><tr><th>Tag</th><th>Vehicle</th><th>Status</th><th>Assignment</th><th>Update</th></tr></thead>
+          <tbody>${vindexB.map(r=>`<tr>
+            <td class="gold-link">${r.tag}</td><td>${r.vehicle}</td>
+            <td>${badge(r.status)}</td><td>${r.notes}</td>
+            <td><select class="status-select" onchange="updateRowStatus(this,2)"><option>Active</option><option>Pending</option><option>Sold</option></select></td>
+          </tr>`).join('')}</tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  ${reqLog('vindex')}
+</div>`;
+}
+
+function openAddAsset(type) {
+  if (type==='a') {
+    openModal('Add Property',
+      `<div class="form-row">
+        <div class="form-group"><label class="form-label">Type</label>
+        <select class="form-select" id="na-type"><option>Group Home</option><option>Commercial</option><option>Residential</option><option>Mixed Use</option></select></div>
+        <div class="form-group"><label class="form-label">Est. Value</label>
+        <input class="form-input" id="na-val" placeholder="$000K"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Location</label>
+      <input class="form-input" id="na-addr" placeholder="City, TX"></div>
+      <div class="form-group"><label class="form-label">Notes</label>
+      <input class="form-input" id="na-notes" placeholder="Additional notes..."></div>`,
+      `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+       <button class="btn btn-gold" onclick="addProperty()">Add to A-Series</button>`
+    );
+  } else {
+    openModal('Add Vehicle',
+      `<div class="form-row">
+        <div class="form-group"><label class="form-label">Year / Make / Model</label>
+        <input class="form-input" id="nv-model" placeholder="e.g. Suburban 2025"></div>
+        <div class="form-group"><label class="form-label">Assignment</label>
+        <input class="form-input" id="nv-notes" placeholder="Division or purpose..."></div>
+      </div>`,
+      `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+       <button class="btn btn-gold" onclick="addVehicle()">Add to B-Series</button>`
+    );
+  }
+}
+
+function addProperty() {
+  const type  = document.getElementById('na-type').value;
+  const val   = document.getElementById('na-val').value || 'TBD';
+  const addr  = document.getElementById('na-addr').value || 'TBD';
+  const next  = 'A' + (vindexA.length+1);
+  vindexA.push({tag:next,type,status:'Pending',value:val,addr});
+  const tbody = document.querySelector('#vindex-a-table tbody');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td class="gold-link">${next}</td><td>${type}</td><td>${addr}</td><td>${badge('Pending')}</td><td>${val}</td><td><select class="status-select" onchange="updateRowStatus(this,3)"><option>Active</option><option selected>Pending</option><option>Development</option></select></td>`;
+  tbody.appendChild(tr);
+  document.getElementById('v-prop-count').textContent = vindexA.length;
+  closeModal(); showToast(next+' added to A-Series');
+}
+
+function addVehicle() {
+  const model = document.getElementById('nv-model').value;
+  const notes = document.getElementById('nv-notes').value;
+  const next  = 'B' + (vindexB.length+1);
+  vindexB.push({tag:next,vehicle:model,status:'Pending',notes});
+  const tbody = document.querySelector('#vindex-b-table tbody');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td class="gold-link">${next}</td><td>${model}</td><td>${badge('Pending')}</td><td>${notes}</td><td><select class="status-select" onchange="updateRowStatus(this,2)"><option>Active</option><option selected>Pending</option><option>Sold</option></select></td>`;
+  tbody.appendChild(tr);
+  document.getElementById('v-veh-count').textContent = vindexB.length;
+  closeModal(); showToast(next+' added to B-Series');
+}
+
+/* ══════════════════════════════════════════════════════════
+   ██████  OPERATIONS
+══════════════════════════════════════════════════════════ */
+let groFacilities = [
+  {id:'GRO-05',name:'Haven House',  loc:'Houston, TX',  cap:'8/8',  status:'Active'},
+  {id:'GRO-07',name:'Cedar Point',  loc:'Cypress, TX',  cap:'6/8',  status:'Active'},
+  {id:'GRO-08',name:'Northgate',    loc:'Houston, TX',  cap:'8/8',  status:'Active'},
+  {id:'GRO-10',name:'Westfield',    loc:'Katy, TX',     cap:'5/8',  status:'Active'},
+  {id:'GRO-11',name:'Sterling',     loc:'Spring, TX',   cap:'0/8',  status:'Development'},
+  {id:'GRO-13',name:'Brookline',    loc:'Cypress, TX',  cap:'7/8',  status:'Active'},
+];
+let residentsServed = 34;
+
+function buildOperations() {
+  return `<div class="page" id="page-operations">
+  <div class="page-header">
+    <div class="page-title"><span class="page-title-main">Operations</span><span class="page-title-tag">The Engine</span></div>
+    <div class="page-dba">Legion V. Omni-Operation — Operations | LVOO / LVO-OO</div>
+    <div class="page-desc">High-volume cash flow through General Residential Operations (GRO 05–13). Safety, academic progress, life-skills development, and resident care across all facilities.</div>
+  </div>
+  ${reqBar('operations',['New GRO Facility Request','Resident Intake','Maintenance Request','Staff Request','Inspection Request','Incident Report','Curriculum Update'])}
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-label">Active GRO Facilities</div><div class="kpi-value" id="ops-fac-count">5</div></div>
+    <div class="kpi-card"><div class="kpi-label">Monthly Cash Flow</div><div class="kpi-value">$284K</div><div class="kpi-sub gold">+6% MoM</div></div>
+    <div class="kpi-card"><div class="kpi-label">Residents Served</div><div class="kpi-value" id="ops-res-count">${residentsServed}</div><div class="kpi-sub">Current active</div></div>
+  </div>
+  <div class="two-col">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">GRO Facility Directory</div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-outline btn-sm" onclick="openIntake()">Resident Intake</button>
+          <button class="btn btn-gold btn-sm" onclick="openIncident()">+ Incident Report</button>
+        </div>
+      </div>
+      <table class="data-table" id="ops-fac-table">
+        <thead><tr><th>Facility ID</th><th>Name</th><th>Location</th><th>Capacity</th><th>Status</th></tr></thead>
+        <tbody>${groFacilities.map(f=>`<tr>
+          <td class="gold-link">${f.id}</td><td>${f.name}</td><td>${f.loc}</td>
+          <td id="cap-${f.id}">${f.cap}</td><td>${badge(f.status)}</td>
+        </tr>`).join('')}</tbody>
+      </table>
+      <div style="margin-top:20px;">
+        <div style="font-size:9px;letter-spacing:0.2em;color:var(--text-muted);text-transform:uppercase;margin-bottom:14px;">Program Pillars</div>
+        <div class="tag-row">
+          <span class="tag">Academic Progress</span>
+          <span class="tag">Life Skills</span>
+          <span class="tag">Safety & Compliance</span>
+          <span class="tag">Resident Wellbeing</span>
+        </div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-title">Activity & Alerts</div>
+      <div class="activity-feed" id="ops-activity">
+        <div class="activity-item"><div class="activity-dot green"></div><div><div class="activity-time">Today · 10:20</div><div class="activity-text">GRO-08 quarterly safety inspection passed</div></div></div>
+        <div class="activity-item"><div class="activity-dot"></div><div><div class="activity-time">Yesterday</div><div class="activity-text">GRO-07 enrolled 2 new residents — academic intake complete</div></div></div>
+        <div class="activity-item"><div class="activity-dot"></div><div><div class="activity-time">2 days ago</div><div class="activity-text">Life-skills curriculum updated across all facilities</div></div></div>
+        <div class="activity-item"><div class="activity-dot gold"></div><div><div class="activity-time">3 days ago</div><div class="activity-text">GRO-11 Sterling construction milestone reached</div></div></div>
+        <div class="activity-item"><div class="activity-dot"></div><div><div class="activity-time">4 days ago</div><div class="activity-text">GRO-10 Westfield new resident enrolled — Q2 cohort</div></div></div>
+      </div>
+    </div>
+  </div>
+  ${reqLog('operations')}
+</div>`;
+}
+
+function openIncident() {
+  openModal('Incident Report',
+    `<div class="form-row">
+      <div class="form-group"><label class="form-label">Facility</label>
+      <select class="form-select" id="inc-fac">${groFacilities.map(f=>`<option>${f.id} — ${f.name}</option>`).join('')}</select></div>
+      <div class="form-group"><label class="form-label">Severity</label>
+      <select class="form-select" id="inc-sev"><option>Low</option><option>Medium</option><option>High</option><option>Critical</option></select></div>
+    </div>
+    <div class="form-group"><label class="form-label">Incident Type</label>
+    <select class="form-select" id="inc-type"><option>Routine Flag</option><option>Maintenance Issue</option><option>Safety Concern</option><option>Medical</option><option>Security Breach</option><option>Other</option></select></div>
+    <div class="form-group"><label class="form-label">Description</label>
+    <textarea class="form-textarea" id="inc-desc" placeholder="Describe the incident..."></textarea></div>`,
+    `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+     <button class="btn btn-danger" onclick="submitIncident()">File Report</button>`
+  );
+}
+
+function submitIncident() {
+  const fac = document.getElementById('inc-fac').value;
+  const sev = document.getElementById('inc-sev').value;
+  const desc = document.getElementById('inc-desc').value;
+  const feed = document.getElementById('ops-activity');
+  const item = document.createElement('div');
+  item.className = 'activity-item';
+  item.innerHTML = `<div class="activity-dot red"></div><div><div class="activity-time">Just now</div><div class="activity-text"><strong style="color:#e05555">[${sev} INCIDENT]</strong> ${fac} — ${desc}</div></div>`;
+  feed.prepend(item);
+  submitRequest('Operations','Incident Report',fac+' — '+desc);
+  closeModal(); showToast('Incident report filed');
+}
+
+function openIntake() {
+  openModal('Resident Intake',
+    `<div class="form-row">
+      <div class="form-group"><label class="form-label">Facility</label>
+      <select class="form-select" id="int-fac">${groFacilities.map(f=>`<option value="${f.id}">${f.id} — ${f.name}</option>`).join('')}</select></div>
+      <div class="form-group"><label class="form-label">Intake Date</label>
+      <input class="form-input" id="int-date" type="date" value="${new Date().toISOString().slice(0,10)}"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Program Track</label>
+    <select class="form-select" id="int-track"><option>Academic</option><option>Life Skills</option><option>Vocational</option><option>Transitional</option></select></div>
+    <div class="form-group"><label class="form-label">Notes</label>
+    <input class="form-input" id="int-notes" placeholder="Background, special needs..."></div>`,
+    `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+     <button class="btn btn-gold" onclick="submitIntake()">Complete Intake</button>`
+  );
+}
+
+function submitIntake() {
+  residentsServed++;
+  document.getElementById('ops-res-count').textContent = residentsServed;
+  const feed = document.getElementById('ops-activity');
+  const fac  = document.getElementById('int-fac')?.value || '';
+  const item = document.createElement('div');
+  item.className = 'activity-item';
+  item.innerHTML = `<div class="activity-dot green"></div><div><div class="activity-time">Just now</div><div class="activity-text">New resident intake complete — ${fac}</div></div>`;
+  feed.prepend(item);
+  closeModal(); showToast('Resident intake complete');
+}
+
+/* ══════════════════════════════════════════════════════════
+   ██████  ALLIANCE
+══════════════════════════════════════════════════════════ */
+let partners = [
+  {name:'Marcus Vale',    company:'Halcyon Capital',      tier:'Gold',   status:'Active',  date:'Jan 2023'},
+  {name:'Selene Brandt',  company:'Brightline Ventures',  tier:'Gold',   status:'Active',  date:'Mar 2023'},
+  {name:'Roman Ashford',  company:'Summit Advisors',      tier:'Gold',   status:'Active',  date:'Sep 2022'},
+  {name:'Idris Cole',     company:'Cedar & Stone',        tier:'Silver', status:'Active',  date:'Jul 2023'},
+  {name:'Nadia Orin',     company:'Orion Partners',       tier:'Silver', status:'Pending', date:'Nov 2024'},
+  {name:'Theo Marsh',     company:'Meridian Trust',       tier:'Bronze', status:'Active',  date:'Feb 2024'},
+  {name:'Priya Lattice',  company:'Lattice Group',        tier:'Bronze', status:'Pending', date:'May 2025'},
+];
+
+function buildAlliance() {
+  return `<div class="page" id="page-alliance">
+  <div class="page-header">
+    <div class="page-title"><span class="page-title-main">Alliance</span><span class="page-title-tag">The Brain</span></div>
+    <div class="page-dba">LVO Alliance LLC · Subsidiary: First Up Consultants LLC</div>
+    <div class="page-desc">Venture incubation, high-level strategic partnerships, and coalition hub. The intelligence and network nucleus of the LVO ecosystem. First Up Consultants LLC operates as the advisory arm.</div>
+  </div>
+  ${reqBar('alliance',['New Partner Application','Partnership Proposal','Venture Submission','Meeting Request','Coalition Inquiry','Advisory Engagement'])}
+  <div class="kpi-grid kpi-grid-4">
+    <div class="kpi-card"><div class="kpi-label">Network Partners</div><div class="kpi-value" id="al-partner-count">38</div></div>
+    <div class="kpi-card"><div class="kpi-label">Active Ventures</div><div class="kpi-value">7</div></div>
+    <div class="kpi-card"><div class="kpi-label">Advisory Revenue</div><div class="kpi-value">$610K</div><div class="kpi-sub gold">First Up Consultants</div></div>
+    <div class="kpi-card"><div class="kpi-label">Pending Applications</div><div class="kpi-value">6</div></div>
+  </div>
+  <div class="two-col">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">Partner Directory</div>
+        <button class="btn btn-gold btn-sm" onclick="openAddPartner()">+ New Partner</button>
+      </div>
+      <table class="data-table" id="alliance-table">
+        <thead><tr><th>Name</th><th>Company</th><th>Tier</th><th>Status</th><th>Joined</th></tr></thead>
+        <tbody>${partners.map(p=>`<tr>
+          <td class="gold-link">${p.name}</td><td>${p.company}</td>
+          <td>${tierBadge(p.tier)}</td><td>${badge(p.status)}</td><td>${p.date}</td>
+        </tr>`).join('')}</tbody>
+      </table>
+      <div style="margin-top:22px;">
+        <div class="section-header">
+          <div style="font-size:16px;font-family:'Cormorant Garamond',serif;color:var(--text);">Active Proposals</div>
+          <button class="btn btn-outline btn-sm" onclick="openProposal()">+ Add Proposal</button>
+        </div>
+        <table class="data-table" id="proposals-table">
+          <thead><tr><th>Partner</th><th>Title</th><th>Deal Type</th><th>Value</th><th>Status</th></tr></thead>
+          <tbody id="proposals-tbody">
+            <tr><td colspan="5" style="color:var(--text-muted);text-align:center;padding:16px 0;font-size:10px;">No proposals submitted yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-title">First Up Consultants LLC</div>
+      <p style="font-size:11px;color:var(--text-dim);line-height:1.65;margin-bottom:18px;">Strategic advisory subsidiary of Alliance. Drives venture incubation, coalition development, and high-value deal origination across the LVO portfolio.</p>
+      <div class="kpi-grid kpi-grid-2" style="gap:10px;margin-bottom:18px;">
+        <div class="kpi-card" style="padding:16px;"><div class="kpi-label">Active Engagements</div><div class="kpi-value" style="font-size:28px;">12</div></div>
+        <div class="kpi-card" style="padding:16px;"><div class="kpi-label">Active Coalitions</div><div class="kpi-value" style="font-size:28px;">4</div></div>
+        <div class="kpi-card" style="padding:16px;"><div class="kpi-label">YTD Revenue</div><div class="kpi-value" style="font-size:28px;">$610K</div></div>
+        <div class="kpi-card" style="padding:16px;"><div class="kpi-label">Deals Closed</div><div class="kpi-value" style="font-size:28px;">9</div></div>
+      </div>
+      <div class="tag-row">
+        <span class="tag">Advisory</span>
+        <span class="tag">Incubation</span>
+        <span class="tag">Coalition</span>
+        <span class="tag">Deal Origination</span>
+      </div>
+    </div>
+  </div>
+  ${reqLog('alliance')}
+</div>`;
+}
+
+function openAddPartner() {
+  openModal('New Partner',
+    `<div class="form-row">
+      <div class="form-group"><label class="form-label">Name</label><input class="form-input" id="np-name" placeholder="Full name"></div>
+      <div class="form-group"><label class="form-label">Company</label><input class="form-input" id="np-company" placeholder="Company name"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Tier</label>
+      <select class="form-select" id="np-tier"><option>Gold</option><option>Silver</option><option>Bronze</option></select></div>
+      <div class="form-group"><label class="form-label">Status</label>
+      <select class="form-select" id="np-status"><option>Active</option><option>Pending</option></select></div>
+    </div>
+    <div class="form-group"><label class="form-label">Notes</label><input class="form-input" id="np-notes" placeholder="Contact info, background..."></div>`,
+    `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+     <button class="btn btn-gold" onclick="addPartner()">Add Partner</button>`
+  );
+}
+
+function addPartner() {
+  const name    = document.getElementById('np-name').value.trim();
+  const company = document.getElementById('np-company').value.trim();
+  const tier    = document.getElementById('np-tier').value;
+  const status  = document.getElementById('np-status').value;
+  if (!name||!company) return;
+  const now = new Date().toLocaleDateString('en-US',{month:'short',year:'numeric'});
+  const tbody = document.querySelector('#alliance-table tbody');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td class="gold-link">${name}</td><td>${company}</td><td>${tierBadge(tier)}</td><td>${badge(status)}</td><td>${now}</td>`;
+  tbody.appendChild(tr);
+  document.getElementById('al-partner-count').textContent = parseInt(document.getElementById('al-partner-count').textContent)+1;
+  closeModal(); showToast(name+' added to Alliance');
+}
+
+function openProposal() {
+  openModal('Partnership Proposal',
+    `<div class="form-row">
+      <div class="form-group"><label class="form-label">Partner / Company</label><input class="form-input" id="pr-name" placeholder="Name..."></div>
+      <div class="form-group"><label class="form-label">Proposed Value</label><input class="form-input" id="pr-val" placeholder="$0K"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Proposal Title</label><input class="form-input" id="pr-title" placeholder="Deal name..."></div>
+      <div class="form-group"><label class="form-label">Deal Type</label>
+      <select class="form-select" id="pr-type"><option>Joint Venture</option><option>Revenue Share</option><option>Equity</option><option>Advisory</option><option>Coalition</option></select></div>
+    </div>`,
+    `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+     <button class="btn btn-gold" onclick="addProposal()">Submit Proposal</button>`
+  );
+}
+
+function addProposal() {
+  const partner = document.getElementById('pr-name').value.trim();
+  const title   = document.getElementById('pr-title').value.trim();
+  const type    = document.getElementById('pr-type').value;
+  const val     = document.getElementById('pr-val').value || 'TBD';
+  if (!partner||!title) return;
+  const tbody = document.getElementById('proposals-tbody');
+  if (tbody.querySelector('td[colspan]')) tbody.innerHTML='';
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td class="gold-link">${partner}</td><td>${title}</td><td>${type}</td><td>${val}</td><td>${badge('Pending')}</td>`;
+  tbody.appendChild(tr);
+  closeModal(); showToast('Proposal submitted');
+}
+
+/* ══════════════════════════════════════════════════════════
+   ██████  OBSCURA
+══════════════════════════════════════════════════════════ */
+let obscuraProjects = [
+  {client:'Noir Atelier',      type:'Web Dev',       status:'Active',      deliverable:'Flagship Site'},
+  {client:'Cypress Forge',     type:'4K Branding',   status:'Development', deliverable:'Brand System'},
+  {client:'Halcyon Capital',   type:'Web Dev',       status:'Active',      deliverable:'Investor Portal'},
+  {client:'Vantablack Studio', type:'Industrial',    status:'Active',      deliverable:'Visual Identity'},
+  {client:'Mirage Collective', type:'Opiumcore',     status:'Development', deliverable:'Campaign Reel'},
+  {client:'Obsidian Realty',   type:'Full Identity', status:'Active',      deliverable:'Brand + Web'},
+  {client:'Vindex Internal',   type:'Web Dev',       status:'Active',      deliverable:'Asset Dashboard'},
+];
+
+function buildObscura() {
+  return `<div class="page" id="page-obscura">
+  <div class="page-header">
+    <div class="page-title"><span class="page-title-main">Obscura</span><span class="page-title-tag">The Base</span></div>
+    <div class="page-dba">LVO Obscura LLC · Houston & Cypress, TX</div>
+    <div class="page-desc">High-end web development and 4K digital branding studio. Serves internal LVO divisions and external clients. Specializes in Industrial and Opiumcore aesthetics.</div>
+  </div>
+  ${reqBar('obscura',['New Client Project','Brand Consultation','Web Dev Request','4K Shoot Request','Revision Request','Internal Division Project'])}
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-label">Active Clients</div><div class="kpi-value" id="ob-client-count">9</div></div>
+    <div class="kpi-card"><div class="kpi-label">Projects in Development</div><div class="kpi-value">3</div></div>
+    <div class="kpi-card"><div class="kpi-label">Markets Served</div><div class="kpi-value">2</div><div class="kpi-sub">Houston · Cypress</div></div>
+  </div>
+  <div class="tag-row"><span class="tag">Web Dev</span><span class="tag">4K Branding</span><span class="tag">Industrial</span><span class="tag">Opiumcore</span><span class="tag">Visual Identity</span></div>
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">Active Client Projects</div>
+      <button class="btn btn-gold btn-sm" onclick="openNewProject()">+ New Project</button>
+    </div>
+    <table class="data-table" id="obscura-table">
+      <thead><tr><th>Client</th><th>Project Type</th><th>Status</th><th>Deliverable</th><th>Update</th></tr></thead>
+      <tbody>${obscuraProjects.map(p=>`<tr>
+        <td class="gold-link">${p.client}</td><td>${p.type}</td>
+        <td>${badge(p.status)}</td><td>${p.deliverable}</td>
+        <td><select class="status-select" onchange="updateRowStatus(this,2)"><option>Active</option><option>Development</option><option>Revision</option><option>Complete</option></select></td>
+      </tr>`).join('')}</tbody>
+    </table>
+  </div>
+  ${reqLog('obscura')}
+</div>`;
+}
+
+function openNewProject() {
+  openModal('New Client Project',
+    `<div class="form-row">
+      <div class="form-group"><label class="form-label">Client Name</label><input class="form-input" id="np2-client" placeholder="Client or company..."></div>
+      <div class="form-group"><label class="form-label">Project Type</label>
+      <select class="form-select" id="np2-type"><option>Web Dev</option><option>4K Branding</option><option>Industrial</option><option>Opiumcore</option><option>Full Identity</option><option>Internal</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Deliverable</label><input class="form-input" id="np2-del" placeholder="e.g. Flagship Site"></div>
+      <div class="form-group"><label class="form-label">Priority</label>
+      <select class="form-select" id="np2-pri"><option>Standard</option><option>Rush</option></select></div>
+    </div>`,
+    `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+     <button class="btn btn-gold" onclick="addProject()">Add Project</button>`
+  );
+}
+
+function addProject() {
+  const client = document.getElementById('np2-client').value.trim();
+  const type   = document.getElementById('np2-type').value;
+  const del    = document.getElementById('np2-del').value.trim();
+  if (!client) return;
+  const tbody = document.querySelector('#obscura-table tbody');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td class="gold-link">${client}</td><td>${type}</td><td>${badge('Development')}</td><td>${del||'TBD'}</td><td><select class="status-select" onchange="updateRowStatus(this,2)"><option>Active</option><option selected>Development</option><option>Revision</option><option>Complete</option></select></td>`;
+  tbody.appendChild(tr);
+  document.getElementById('ob-client-count').textContent = parseInt(document.getElementById('ob-client-count').textContent)+1;
+  closeModal(); showToast('Project added for '+client);
+}
+
+/* ══════════════════════════════════════════════════════════
+   ██████  CAPITAL
+══════════════════════════════════════════════════════════ */
+let capitalAllocs = [
+  {div:'Vindex',      amt:'$1.2M',  purpose:'Property acquisition',      status:'Active'},
+  {div:'Vindex',      amt:'$480K',  purpose:'Vehicle fleet scaling',      status:'Active'},
+  {div:'Operations',  amt:'$900K',  purpose:'GRO facility build-out',     status:'Active'},
+  {div:'Petra',       amt:'$1.5M',  purpose:'Construction capital',       status:'Pending'},
+  {div:'Obscura',     amt:'$140K',  purpose:'Studio expansion',           status:'Complete'},
+  {div:'Alatus',      amt:'$620K',  purpose:'Drone fleet acquisition',    status:'Overdue'},
+  {div:'Alliance',    amt:'$200K',  purpose:'Venture incubation fund',    status:'Active'},
+];
+
+function buildCapital() {
+  return `<div class="page" id="page-capital">
+  <div class="page-header">
+    <div class="page-title"><span class="page-title-main">Capital</span><span class="page-title-tag">The Reservoir</span></div>
+    <div class="page-dba">Legion V. Omni-Operation — Capital | LVOC / LVO-OC</div>
+    <div class="page-desc">Internal treasury and empire financing hub. Capital allocation, internal lending, investment deployment, and liquidity management to fuel portfolio expansion.</div>
+  </div>
+  ${reqBar('capital',['Capital Injection Request','Internal Loan Request','Budget Approval','Capital Reallocation','Expense Report','Emergency Drawdown'])}
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-label">Total Deployed</div><div class="kpi-value">$4.84M</div><div class="kpi-sub gold">Across all divisions</div></div>
+    <div class="kpi-card"><div class="kpi-label">Portfolio Liquidity</div><div class="kpi-value">$2.1M</div><div class="kpi-sub">Reserve</div></div>
+    <div class="kpi-card"><div class="kpi-label">Active Internal Loans</div><div class="kpi-value">4</div><div class="kpi-sub">Inter-division</div></div>
+  </div>
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">Capital Allocation Ledger</div>
+      <button class="btn btn-gold btn-sm" onclick="openCapRequest()">+ New Request</button>
+    </div>
+    <table class="data-table" id="capital-table">
+      <thead><tr><th>Division</th><th>Amount</th><th>Purpose</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody>${capitalAllocs.map((a,i)=>`<tr>
+        <td>${a.div}</td>
+        <td style="color:var(--gold)">${a.amt}</td>
+        <td>${a.purpose}</td>
+        <td id="cap-status-${i}">${badge(a.status)}</td>
+        <td style="display:flex;gap:6px;flex-wrap:wrap;">
+          ${a.status==='Pending'
+            ? `<button class="btn btn-gold btn-sm" onclick="approveAlloc(${i})">Approve</button><button class="btn btn-danger btn-sm" onclick="rejectAlloc(${i})">Reject</button>`
+            : '<span style="color:var(--text-muted);font-size:10px;">—</span>'}
+        </td>
+      </tr>`).join('')}</tbody>
+    </table>
+  </div>
+  <div class="section">
+    <div class="section-title">12-Month Capital Flow</div>
+    <canvas id="capital-chart" height="155" style="width:100%;display:block;"></canvas>
+  </div>
+  ${reqLog('capital')}
+</div>`;
+}
+
+function approveAlloc(i) {
+  document.getElementById('cap-status-'+i).innerHTML = badge('Active');
+  document.querySelector(`#capital-table tbody tr:nth-child(${i+1}) td:last-child`).innerHTML = '<span style="color:var(--text-muted);font-size:10px;">—</span>';
+  showToast('Allocation approved');
+}
+
+function rejectAlloc(i) {
+  document.getElementById('cap-status-'+i).innerHTML = badge('Blocked');
+  document.querySelector(`#capital-table tbody tr:nth-child(${i+1}) td:last-child`).innerHTML = '<span style="color:var(--text-muted);font-size:10px;">—</span>';
+  showToast('Allocation rejected');
+}
+
+function openCapRequest() {
+  openModal('Capital Request',
+    `<div class="form-row">
+      <div class="form-group"><label class="form-label">Requesting Division</label>
+      <select class="form-select" id="cr-div">${divisions.filter(d=>d.id!=='overview'&&d.id!=='capital').map(d=>`<option>${d.label}</option>`).join('')}</select></div>
+      <div class="form-group"><label class="form-label">Amount</label><input class="form-input" id="cr-amt" placeholder="$0K"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Purpose</label><input class="form-input" id="cr-purpose" placeholder="Purpose of funds..."></div>
+    <div class="form-group"><label class="form-label">Urgency</label>
+    <select class="form-select" id="cr-urg"><option>Standard</option><option>Priority</option><option>Emergency</option></select></div>`,
+    `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+     <button class="btn btn-gold" onclick="addCapRequest()">Submit Request</button>`
+  );
+}
+
+function addCapRequest() {
+  const div     = document.getElementById('cr-div').value;
+  const amt     = document.getElementById('cr-amt').value || 'TBD';
+  const purpose = document.getElementById('cr-purpose').value.trim();
+  if (!purpose) return;
+  const tbody = document.querySelector('#capital-table tbody');
+  const i = tbody.children.length;
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td>${div}</td><td style="color:var(--gold)">${amt}</td><td>${purpose}</td><td id="cap-status-${i}">${badge('Pending')}</td><td style="display:flex;gap:6px;"><button class="btn btn-gold btn-sm" onclick="approveAlloc(${i})">Approve</button><button class="btn btn-danger btn-sm" onclick="rejectAlloc(${i})">Reject</button></td>`;
+  tbody.appendChild(tr);
+  closeModal(); showToast('Capital request submitted');
+}
+
+function drawCapitalChart() {
+  const canvas = document.getElementById('capital-chart');
+  if (!canvas) return;
+  const dpr = window.devicePixelRatio||1;
+  canvas.width  = canvas.offsetWidth * dpr;
+  canvas.height = 155 * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr,dpr);
+  const w = canvas.offsetWidth, h = 155;
+  const data   = [0.4,0.8,1.2,1.5,1.8,2.2,2.4,2.6,2.5,2.8,3.0,3.2];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const pad = {l:42,r:16,t:16,b:28};
+  const cw = w-pad.l-pad.r, ch = h-pad.t-pad.b;
+  const max=3.5;
+
+  const pts = data.map((v,i)=>({ x:pad.l+(i/(data.length-1))*cw, y:pad.t+ch-(v/max)*ch }));
+
+  // Grid
+  ctx.strokeStyle='#2a2a2a'; ctx.lineWidth=1;
+  [0,1,2,3,4].forEach(i=>{
+    const y = pad.t+(i/4)*ch;
+    ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(pad.l+cw,y); ctx.stroke();
+    ctx.fillStyle='#5a5650'; ctx.font=`9px "DM Mono"`;
+    ctx.fillText('$'+(3.5-i*0.875).toFixed(1)+'M', 0, y+3);
+  });
+
+  // Fill
+  const grad = ctx.createLinearGradient(0,pad.t,0,pad.t+ch);
+  grad.addColorStop(0,'#b8953f20'); grad.addColorStop(1,'#b8953f00');
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x,pad.t+ch);
+  pts.forEach(p=>ctx.lineTo(p.x,p.y));
+  ctx.lineTo(pts[pts.length-1].x,pad.t+ch);
+  ctx.closePath(); ctx.fillStyle=grad; ctx.fill();
+
+  // Line
+  ctx.beginPath(); ctx.strokeStyle='#b8953f'; ctx.lineWidth=1.5;
+  pts.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));
+  ctx.stroke();
+
+  // Dots
+  pts.forEach(p=>{ ctx.beginPath(); ctx.arc(p.x,p.y,2.5,0,Math.PI*2); ctx.fillStyle='#b8953f'; ctx.fill(); });
+
+  // Labels
+  ctx.fillStyle='#5a5650'; ctx.font=`8px "DM Mono"`;
+  pts.forEach((p,i)=>ctx.fillText(months[i],p.x-8,h-6));
+}
+
+/* ══════════════════════════════════════════════════════════
+   ██████  CUSTODIA
+══════════════════════════════════════════════════════════ */
+function buildCustodia() {
+  return `<div class="page" id="page-custodia">
+  <div class="page-header">
+    <div class="page-title"><span class="page-title-main">Custodia</span><span class="page-title-tag">The Guard</span></div>
+    <div class="page-dba">Legion V. Omni-Operation — Custodia | LVOS / LVO-OS</div>
+    <div class="page-desc">Protection and movement of all physical assets across the empire. Facility security operations, asset transport coordination, and threat response for all LVO properties.</div>
+  </div>
+  ${reqBar('custodia',['Security Audit Request','New Driver Assignment','Transport Route Request','Alert Escalation','Equipment Request','Inspection Scheduling'])}
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-label">Secured Facilities</div><div class="kpi-value">5</div></div>
+    <div class="kpi-card"><div class="kpi-label">Active Transport Routes</div><div class="kpi-value">3</div></div>
+    <div class="kpi-card"><div class="kpi-label">Security Alerts</div><div class="kpi-value">1</div><div class="kpi-sub red">Requires review</div></div>
+  </div>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab(this,'ctab-fac','custodia-tabs')">Facility Security</div>
+    <div class="tab" onclick="switchTab(this,'ctab-trans','custodia-tabs')">Asset Transport</div>
+    <div class="tab" onclick="switchTab(this,'ctab-log','custodia-tabs')">Alert Log</div>
+  </div>
+  <div id="custodia-tabs">
+    <div class="tab-content active" id="ctab-fac">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">Secured Properties — Vindex A-Series</div>
+          <button class="btn btn-danger btn-sm" onclick="openRaiseAlert()">⚠ Raise Alert</button>
+        </div>
+        <table class="data-table" id="custodia-fac-table">
+          <thead><tr><th>Property</th><th>Security Tier</th><th>Last Inspection</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td class="gold-link">A1 — Haven House</td><td>Tier 3</td><td>May 2025</td><td>${badge('Secured')}</td></tr>
+            <tr><td class="gold-link">A2 — Cedar Point</td><td>Tier 2</td><td>Apr 2025</td><td>${badge('Secured')}</td></tr>
+            <tr><td class="gold-link">A3 — Commercial Hub</td><td>Tier 4</td><td>May 2025</td><td>${badge('Alert')}</td></tr>
+            <tr><td class="gold-link">A6 — Northgate</td><td>Tier 3</td><td>Mar 2025</td><td>${badge('Secured')}</td></tr>
+            <tr><td class="gold-link">A7 — Brookline</td><td>Tier 2</td><td>May 2025</td><td>${badge('Secured')}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="tab-content" id="ctab-trans">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">Vehicle Movement — B-Series</div>
+          <button class="btn btn-gold btn-sm" onclick="openAssignDriver()">+ Assign Driver</button>
+        </div>
+        <table class="data-table" id="custodia-trans-table">
+          <thead><tr><th>Vehicle</th><th>Route</th><th>Driver</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td class="gold-link">B1 — Escalade</td><td>Houston → Cypress</td><td>M. Reyes</td><td>${badge('Active')}</td></tr>
+            <tr><td class="gold-link">B3 — Sprinter</td><td>Katy → Spring</td><td>D. Cole</td><td>${badge('Active')}</td></tr>
+            <tr><td class="gold-link">B2 — Transit Van</td><td>Cypress → Houston</td><td id="b2-driver">Unassigned</td><td>${badge('Pending')}</td></tr>
+            <tr><td class="gold-link">B6 — Sienna</td><td>Spring → Houston</td><td>L. Vance</td><td>${badge('Active')}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="tab-content" id="ctab-log">
+      <div class="section">
+        <div class="section-title">Alert Log</div>
+        <div class="activity-feed" id="alert-log">
+          <div class="activity-item"><div class="activity-dot red"></div><div><div class="activity-time">5 days ago</div><div class="activity-text"><strong style="color:#e05555">[Medium Alert]</strong> A3 Commercial Hub — Access breach reported, under active review</div></div></div>
+          <div class="activity-item"><div class="activity-dot green"></div><div><div class="activity-time">2 weeks ago</div><div class="activity-text">A1 Haven House — Security upgrade completed, Tier 3 verified</div></div></div>
+          <div class="activity-item"><div class="activity-dot"></div><div><div class="activity-time">1 month ago</div><div class="activity-text">A2 Cedar Point — Routine inspection passed</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  ${reqLog('custodia')}
+</div>`;
+}
+
+function openRaiseAlert() {
+  openModal('Raise Security Alert',
+    `<div class="form-row">
+      <div class="form-group"><label class="form-label">Property</label>
+      <select class="form-select" id="al2-prop"><option>A1 — Haven House</option><option>A2 — Cedar Point</option><option>A3 — Commercial Hub</option><option>A6 — Northgate</option><option>A7 — Brookline</option></select></div>
+      <div class="form-group"><label class="form-label">Severity</label>
+      <select class="form-select" id="al2-sev"><option>Low</option><option>Medium</option><option>Critical</option></select></div>
+    </div>
+    <div class="form-group"><label class="form-label">Alert Type</label>
+    <select class="form-select" id="al2-type"><option>Intrusion</option><option>Equipment Failure</option><option>Access Breach</option><option>Routine Flag</option><option>Vandalism</option></select></div>
+    <div class="form-group"><label class="form-label">Notes</label>
+    <textarea class="form-textarea" id="al2-notes" placeholder="Describe the alert..."></textarea></div>`,
+    `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+     <button class="btn btn-danger" onclick="submitAlert()">Raise Alert</button>`
+  );
+}
+
+function submitAlert() {
+  const prop  = document.getElementById('al2-prop').value;
+  const sev   = document.getElementById('al2-sev').value;
+  const type  = document.getElementById('al2-type').value;
+  const notes = document.getElementById('al2-notes').value;
+  const log   = document.getElementById('alert-log');
+  const item  = document.createElement('div');
+  item.className = 'activity-item';
+  item.innerHTML = `<div class="activity-dot red"></div><div><div class="activity-time">Just now</div><div class="activity-text"><strong style="color:#e05555">[${sev} — ${type}]</strong> ${prop} — ${notes}</div></div>`;
+  log.prepend(item);
+  submitRequest('Custodia','Security Alert — '+type,prop+' ['+sev+'] '+notes);
+  closeModal(); showToast('Security alert raised — '+prop);
+}
+
+function openAssignDriver() {
+  openModal('Assign Driver',
+    `<div class="form-row">
+      <div class="form-group"><label class="form-label">Vehicle</label>
+      <select class="form-select" id="ad-veh"><option>B2 — Transit Van</option><option>B1 — Escalade</option><option>B3 — Sprinter</option><option>B6 — Sienna</option></select></div>
+      <div class="form-group"><label class="form-label">Driver Name</label>
+      <input class="form-input" id="ad-driver" placeholder="Last, First..."></div>
+    </div>
+    <div class="form-group"><label class="form-label">Route</label>
+    <input class="form-input" id="ad-route" placeholder="Origin → Destination"></div>`,
+    `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+     <button class="btn btn-gold" onclick="assignDriver()">Assign</button>`
+  );
+}
+
+function assignDriver() {
+  const driver = document.getElementById('ad-driver').value.trim();
+  if (!driver) return;
+  document.getElementById('b2-driver').textContent = driver;
+  closeModal(); showToast('Driver assigned — '+driver);
+}
+
+/* ══════════════════════════════════════════════════════════
+   ██████  OUTREACH
+══════════════════════════════════════════════════════════ */
+let scholarshipsAwarded = 47;
+
+function buildOutreach() {
+  return `<div class="page" id="page-outreach">
+  <div class="page-header">
+    <div class="page-title"><span class="page-title-main">Outreach & Restoration</span><span class="page-title-tag">The Heart</span></div>
+    <div class="page-dba">Legion V. Omni-Operation — Outreach & Restoration | LVOOR / LVO-OR</div>
+    <div class="page-desc">LVO's .org presence. Tax-deductible donation processing, youth empowerment programming, scholarships for GRO residents, and community restoration initiatives.</div>
+  </div>
+  ${reqBar('outreach',['Donation Log','Scholarship Application','Program Enrollment','Grant Submission','Community Project Proposal','Volunteer Request'])}
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-label">Donations YTD</div><div class="kpi-value" id="out-donations">$182K</div><div class="kpi-sub gold">Tax-deductible</div></div>
+    <div class="kpi-card"><div class="kpi-label">Scholarships Awarded</div><div class="kpi-value" id="out-scholarships">${scholarshipsAwarded}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Active Programs</div><div class="kpi-value">4</div><div class="kpi-sub">Community initiatives</div></div>
+  </div>
+  <div class="two-col">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">Programs</div>
+        <button class="btn btn-gold btn-sm" onclick="openScholarship()">+ Award Scholarship</button>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Program</th><th>Status</th><th>Participants</th></tr></thead>
+        <tbody>
+          <tr><td class="gold-link">Youth Empowerment</td><td>${badge('Active')}</td><td>128</td></tr>
+          <tr><td class="gold-link">Tutoring Program</td><td>${badge('Active')}</td><td>86</td></tr>
+          <tr><td class="gold-link">Life Skills Workshops</td><td>${badge('Active')}</td><td>54</td></tr>
+          <tr><td class="gold-link">Community Restoration</td><td>${badge('Pending')}</td><td>0</td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:22px;">
+        <div class="section-header">
+          <div style="font-size:16px;font-family:'Cormorant Garamond',serif;">Scholarship Log</div>
+        </div>
+        <table class="data-table" id="scholarship-table">
+          <thead><tr><th>Recipient</th><th>Facility</th><th>Amount</th><th>Track</th></tr></thead>
+          <tbody id="scholarship-tbody">
+            <tr><td colspan="4" style="color:var(--text-muted);text-align:center;padding:14px 0;font-size:10px;">No entries yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">Donation Pipeline</div>
+        <button class="btn btn-outline btn-sm" onclick="openLogDonation()">+ Log Donation</button>
+      </div>
+      <div class="activity-feed" id="donation-feed">
+        <div class="activity-item"><div class="activity-dot green"></div><div><div class="activity-time">This Week</div><div class="activity-text">$24K in tax-deductible donations received</div></div></div>
+        <div class="activity-item"><div class="activity-dot"></div><div><div class="activity-time">Last Week</div><div class="activity-text">12 scholarships awarded to GRO residents</div></div></div>
+        <div class="activity-item"><div class="activity-dot"></div><div><div class="activity-time">This Month</div><div class="activity-text">Restoration Projects grant application submitted</div></div></div>
+        <div class="activity-item"><div class="activity-dot gold"></div><div><div class="activity-time">Q2</div><div class="activity-text">Youth Empowerment cohort 4 enrolled — 128 participants</div></div></div>
+      </div>
+    </div>
+  </div>
+  ${reqLog('outreach')}
+</div>`;
+}
+
+function openLogDonation() {
+  openModal('Log Donation',
+    `<div class="form-row">
+      <div class="form-group"><label class="form-label">Donor Name (optional)</label><input class="form-input" id="dn-name" placeholder="Anonymous..."></div>
+      <div class="form-group"><label class="form-label">Amount</label><input class="form-input" id="dn-amt" placeholder="$0K"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Type</label>
+      <select class="form-select" id="dn-type"><option>Cash</option><option>In-Kind</option><option>Grant</option><option>Planned Giving</option></select></div>
+      <div class="form-group"><label class="form-label">Date</label>
+      <input class="form-input" id="dn-date" type="date" value="${new Date().toISOString().slice(0,10)}"></div>
+    </div>`,
+    `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+     <button class="btn btn-gold" onclick="logDonation()">Log Donation</button>`
+  );
+}
+
+function logDonation() {
+  const name = document.getElementById('dn-name').value || 'Anonymous';
+  const amt  = document.getElementById('dn-amt').value || '$0';
+  const type = document.getElementById('dn-type').value;
+  const feed = document.getElementById('donation-feed');
+  const item = document.createElement('div');
+  item.className = 'activity-item';
+  item.innerHTML = `<div class="activity-dot green"></div><div><div class="activity-time">Just now</div><div class="activity-text">${amt} (${type}) received — ${name}</div></div>`;
+  feed.prepend(item);
+  closeModal(); showToast('Donation logged — '+amt);
+}
+
+function openScholarship() {
+  openModal('Award Scholarship',
+    `<div class="form-row">
+      <div class="form-group"><label class="form-label">Recipient Name</label><input class="form-input" id="sc-name" placeholder="Full name"></div>
+      <div class="form-group"><label class="form-label">GRO Facility</label>
+      <select class="form-select" id="sc-fac">${groFacilities.map(f=>`<option>${f.id} — ${f.name}</option>`).join('')}</select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Amount</label><input class="form-input" id="sc-amt" placeholder="$0K"></div>
+      <div class="form-group"><label class="form-label">Program Track</label>
+      <select class="form-select" id="sc-prog"><option>Tutoring</option><option>Life Skills</option><option>Academic</option><option>Vocational</option></select></div>
+    </div>`,
+    `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+     <button class="btn btn-gold" onclick="addScholarship()">Award Scholarship</button>`
+  );
+}
+
+function addScholarship() {
+  const name = document.getElementById('sc-name').value.trim();
+  const fac  = document.getElementById('sc-fac').value;
+  const amt  = document.getElementById('sc-amt').value || 'TBD';
+  const prog = document.getElementById('sc-prog').value;
+  if (!name) return;
+  const tbody = document.getElementById('scholarship-tbody');
+  if (tbody.querySelector('td[colspan]')) tbody.innerHTML='';
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td class="gold-link">${name}</td><td>${fac}</td><td>${amt}</td><td>${prog}</td>`;
+  tbody.appendChild(tr);
+  scholarshipsAwarded++;
+  document.getElementById('out-scholarships').textContent = scholarshipsAwarded;
+  closeModal(); showToast('Scholarship awarded to '+name);
+}
+
+/* ══════════════════════════════════════════════════════════
+   ██████  ALATUS
+══════════════════════════════════════════════════════════ */
+let flights = [
+  {origin:'Houston',  dest:'Dallas',   aircraft:'Citation CJ4', date:'May 12', status:'Completed'},
+  {origin:'Cypress',  dest:'Austin',   aircraft:'King Air 350', date:'May 18', status:'Completed'},
+  {origin:'Houston',  dest:'Miami',    aircraft:'Citation CJ4', date:'May 24', status:'Active'},
+  {origin:'Spring',   dest:'Atlanta',  aircraft:'King Air 350', date:'Jun 02', status:'Pending'},
+];
+let drones = [
+  {unit:'D-01', type:'Surveillance', assigned:'A1 — Haven House',    status:'Active'},
+  {unit:'D-02', type:'Mapping',      assigned:'A3 — Commercial Hub', status:'Active'},
+  {unit:'D-03', type:'Delivery',     assigned:'Operations HQ',       status:'Pending'},
+  {unit:'D-04', type:'Surveillance', assigned:'A6 — Northgate',      status:'Active'},
+];
+
+function buildAlatus() {
+  return `<div class="page" id="page-alatus">
+  <div class="page-header">
+    <div class="page-title"><span class="page-title-main">Alatus</span><span class="page-title-tag">The Wing</span></div>
+    <div class="page-dba">Legion V. Omni-Operation — Alatus | LVOOA / LVO-OA</div>
+    <div class="page-desc">Private aviation, drone operations, and aerospace logistics. Air superiority and aerial intelligence for the entire LVO empire.</div>
+  </div>
+  ${reqBar('alatus',['Charter Flight Request','Drone Deployment','Surveillance Mission','Cargo Run','Maintenance Grounding','Fleet Acquisition'])}
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-label">Charter Flights</div><div class="kpi-value">42</div><div class="kpi-sub">Total completed</div></div>
+    <div class="kpi-card"><div class="kpi-label">Drone Units</div><div class="kpi-value" id="al-drone-count">4</div><div class="kpi-sub">Deployed</div></div>
+    <div class="kpi-card"><div class="kpi-label">Territories Covered</div><div class="kpi-value">9</div><div class="kpi-sub">TX & Southeast</div></div>
+  </div>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab(this,'altab-fly','alatus-tabs')">Flight Log</div>
+    <div class="tab" onclick="switchTab(this,'altab-drone','alatus-tabs')">Drone Systems</div>
+  </div>
+  <div id="alatus-tabs">
+    <div class="tab-content active" id="altab-fly">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">Charter Flight Log</div>
+          <button class="btn btn-gold btn-sm" onclick="openScheduleFlight()">+ Schedule Flight</button>
+        </div>
+        <table class="data-table" id="alatus-flight-table">
+          <thead><tr><th>Origin</th><th>Destination</th><th>Aircraft</th><th>Date</th><th>Status</th></tr></thead>
+          <tbody>${flights.map(f=>`<tr>
+            <td class="gold-link">${f.origin}</td><td>${f.dest}</td>
+            <td>${f.aircraft}</td><td>${f.date}</td><td>${badge(f.status)}</td>
+          </tr>`).join('')}</tbody>
+        </table>
+      </div>
+    </div>
+    <div class="tab-content" id="altab-drone">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">Drone Operations</div>
+          <button class="btn btn-gold btn-sm" onclick="openDeployDrone()">+ Deploy Unit</button>
+        </div>
+        <table class="data-table" id="alatus-drone-table">
+          <thead><tr><th>Unit</th><th>Mission Type</th><th>Assigned To</th><th>Status</th></tr></thead>
+          <tbody>${drones.map(d=>`<tr>
+            <td class="gold-link">${d.unit}</td><td>${d.type}</td>
+            <td>${d.assigned}</td><td>${badge(d.status)}</td>
+          </tr>`).join('')}</tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  ${reqLog('alatus')}
+</div>`;
+}
+
+function openScheduleFlight() {
+  openModal('Schedule Flight',
+    `<div class="form-row">
+      <div class="form-group"><label class="form-label">Origin</label><input class="form-input" id="fl-orig" placeholder="City..."></div>
+      <div class="form-group"><label class="form-label">Destination</label><input class="form-input" id="fl-dest" placeholder="City..."></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Aircraft</label>
+      <select class="form-select" id="fl-aircraft"><option>Citation CJ4</option><option>King Air 350</option><option>Charter TBD</option></select></div>
+      <div class="form-group"><label class="form-label">Date</label>
+      <input class="form-input" id="fl-date" type="date" value="${new Date().toISOString().slice(0,10)}"></div>
+    </div>`,
+    `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+     <button class="btn btn-gold" onclick="addFlight()">Add to Log</button>`
+  );
+}
+
+function addFlight() {
+  const orig     = document.getElementById('fl-orig').value.trim();
+  const dest     = document.getElementById('fl-dest').value.trim();
+  const aircraft = document.getElementById('fl-aircraft').value;
+  const date     = document.getElementById('fl-date').value;
+  if (!orig||!dest) return;
+  const d = new Date(date);
+  const fmt = d.toLocaleDateString('en-US',{month:'short',day:'2-digit'});
+  const tbody = document.querySelector('#alatus-flight-table tbody');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td class="gold-link">${orig}</td><td>${dest}</td><td>${aircraft}</td><td>${fmt}</td><td>${badge('Pending')}</td>`;
+  tbody.appendChild(tr);
+  closeModal(); showToast('Flight scheduled: '+orig+' → '+dest);
+}
+
+function openDeployDrone() {
+  openModal('Deploy Drone Unit',
+    `<div class="form-row">
+      <div class="form-group"><label class="form-label">Unit ID</label>
+      <select class="form-select" id="dr-unit"><option>D-01</option><option>D-02</option><option>D-03</option><option>D-04</option><option>D-05 (new)</option></select></div>
+      <div class="form-group"><label class="form-label">Mission Type</label>
+      <select class="form-select" id="dr-type"><option>Surveillance</option><option>Delivery</option><option>Mapping</option><option>Perimeter</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Assigned Property</label>
+      <select class="form-select" id="dr-prop"><option>A1 — Haven House</option><option>A2 — Cedar Point</option><option>A3 — Commercial Hub</option><option>A6 — Northgate</option><option>Operations HQ</option></select></div>
+      <div class="form-group"><label class="form-label">Duration (hrs)</label>
+      <input class="form-input" id="dr-dur" placeholder="4" type="number"></div>
+    </div>`,
+    `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+     <button class="btn btn-gold" onclick="deployDrone()">Deploy</button>`
+  );
+}
+
+function deployDrone() {
+  const unit = document.getElementById('dr-unit').value;
+  const type = document.getElementById('dr-type').value;
+  const prop = document.getElementById('dr-prop').value;
+  const tbody = document.querySelector('#alatus-drone-table tbody');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td class="gold-link">${unit}</td><td>${type}</td><td>${prop}</td><td>${badge('Active')}</td>`;
+  tbody.appendChild(tr);
+  document.getElementById('al-drone-count').textContent = parseInt(document.getElementById('al-drone-count').textContent)+1;
+  closeModal(); showToast(unit+' deployed → '+prop);
+}
+
+/* ══════════════════════════════════════════════════════════
+   ██████  PEDES
+══════════════════════════════════════════════════════════ */
+let pedesRuns = [
+  {veh:'B1 — Escalade',  driver:'M. Reyes',    route:'Executive — Houston Loop',      status:'Active'},
+  {veh:'B3 — Sprinter',  driver:'D. Cole',     route:'Heavy Logistics — Katy→Spring', status:'Active'},
+  {veh:'B2 — Transit',   driver:'Unassigned',  route:'Standby',                       status:'Pending'},
+  {veh:'B6 — Sienna',    driver:'L. Vance',    route:'Final-Mile — Cypress',          status:'Active'},
+  {veh:'B5 — Yukon',     driver:'A. Bauer',    route:'Executive — Spring',            status:'Active'},
+];
+let runsCompleted = 218;
+
+function buildPedes() {
+  return `<div class="page" id="page-pedes">
+  <div class="page-header">
+    <div class="page-title"><span class="page-title-main">Pedes</span><span class="page-title-tag">The Legs</span></div>
+    <div class="page-dba">Legion V. Omni-Operation — Pedes | LVOOP / LVO-OP</div>
+    <div class="page-desc">Executive ground transport and heavy land logistics. Final-mile movement and asset delivery for every LVO division. Operates from the Vindex B-Series fleet.</div>
+  </div>
+  ${reqBar('pedes',['Executive Transport Request','Heavy Logistics Run','Driver Assignment','Vehicle Maintenance','Route Change','Emergency Run'])}
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-label">Active Vehicles</div><div class="kpi-value">4</div><div class="kpi-sub">B-Series fleet</div></div>
+    <div class="kpi-card"><div class="kpi-label">Runs Completed</div><div class="kpi-value" id="pedes-runs">218</div><div class="kpi-sub gold">Lifetime</div></div>
+    <div class="kpi-card"><div class="kpi-label">Divisions Served</div><div class="kpi-value">6</div></div>
+  </div>
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">Fleet Operations</div>
+      <button class="btn btn-gold btn-sm" onclick="openNewRun()">+ New Run</button>
+    </div>
+    <table class="data-table" id="pedes-table">
+      <thead><tr><th>Vehicle</th><th>Driver</th><th>Route</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody>${pedesRuns.map((r,i)=>`<tr>
+        <td class="gold-link">${r.veh}</td><td>${r.driver}</td><td>${r.route}</td>
+        <td id="pedes-status-${i}">${badge(r.status)}</td>
+        <td>${r.status==='Active'?`<button class="btn btn-outline btn-sm" onclick="completeRun(${i})">Mark Complete</button>`:'—'}</td>
+      </tr>`).join('')}</tbody>
+    </table>
+  </div>
+  <div class="integration-row">
+    <div class="integration-card"><strong>Vindex — B-Series</strong>Vehicle ownership & asset tracking</div>
+    <div class="integration-card"><strong>Custodia — The Guard</strong>Driver security & route oversight</div>
+    <div class="integration-card"><strong>Operations — The Engine</strong>GRO facility transport runs</div>
+  </div>
+  ${reqLog('pedes')}
+</div>`;
+}
+
+function completeRun(i) {
+  document.getElementById('pedes-status-'+i).innerHTML = badge('Complete');
+  document.querySelector(`#pedes-table tbody tr:nth-child(${i+1}) td:last-child`).innerHTML = '—';
+  runsCompleted++;
+  document.getElementById('pedes-runs').textContent = runsCompleted;
+  showToast('Run marked complete');
+}
+
+function openNewRun() {
+  openModal('New Transport Run',
+    `<div class="form-row">
+      <div class="form-group"><label class="form-label">Vehicle</label>
+      <select class="form-select" id="nr-veh"><option>B1 — Escalade</option><option>B2 — Transit</option><option>B3 — Sprinter</option><option>B5 — Yukon</option><option>B6 — Sienna</option></select></div>
+      <div class="form-group"><label class="form-label">Driver</label><input class="form-input" id="nr-driver" placeholder="Last, First..."></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Route</label><input class="form-input" id="nr-route" placeholder="Origin → Destination"></div>
+      <div class="form-group"><label class="form-label">Priority</label>
+      <select class="form-select" id="nr-pri"><option>Standard</option><option>Priority</option><option>Emergency</option></select></div>
+    </div>
+    <div class="form-group"><label class="form-label">Requesting Division</label>
+    <select class="form-select" id="nr-div">${divisions.filter(d=>d.id!=='overview').map(d=>`<option>${d.label}</option>`).join('')}</select></div>`,
+    `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+     <button class="btn btn-gold" onclick="addRun()">Add Run</button>`
+  );
+}
+
+function addRun() {
+  const veh    = document.getElementById('nr-veh').value;
+  const driver = document.getElementById('nr-driver').value.trim()||'Unassigned';
+  const route  = document.getElementById('nr-route').value.trim()||'TBD';
+  const tbody  = document.querySelector('#pedes-table tbody');
+  const i      = tbody.children.length;
+  const tr     = document.createElement('tr');
+  tr.innerHTML = `<td class="gold-link">${veh}</td><td>${driver}</td><td>${route}</td><td id="pedes-status-${i}">${badge('Active')}</td><td><button class="btn btn-outline btn-sm" onclick="completeRun(${i})">Mark Complete</button></td>`;
+  tbody.appendChild(tr);
+  closeModal(); showToast('Run added — '+veh);
+}
+
+/* ══════════════════════════════════════════════════════════
+   ██████  PETRA
+══════════════════════════════════════════════════════════ */
+let builds = [
+  {name:'GRO-11 Sterling',         type:'GRO Facility', div:'Operations', start:'Jan 2025', pct:62, status:'Active'},
+  {name:'Cypress Commercial Hub',  type:'Commercial',   div:'Vindex',     start:'Mar 2025', pct:40, status:'Active'},
+  {name:'Haven House Renovation',  type:'Renovation',   div:'Operations', start:'Feb 2025', pct:85, status:'Active'},
+  {name:'Northgate Expansion',     type:'Commercial',   div:'Vindex',     start:'Apr 2025', pct:15, status:'Pending'},
+  {name:'GRO-13 Brookline',        type:'GRO Facility', div:'Operations', start:'Nov 2024', pct:100,status:'Completed'},
+];
+
+function buildPetra() {
+  return `<div class="page" id="page-petra">
+  <div class="page-header">
+    <div class="page-title"><span class="page-title-main">Petra</span><span class="page-title-tag">The Bedrock</span></div>
+    <div class="page-dba">Legion V. Omni-Operation — Petra | LVOPR / LVO-OPR</div>
+    <div class="page-desc">Physical construction and infrastructure. Builds GRO facilities for Operations, commercial hubs for Vindex, and all renovation and expansion projects across the LVO footprint.</div>
+  </div>
+  ${reqBar('petra',['New Build Request','Renovation Request','Inspection Request','Material Order','Project Update','Contractor Coordination'])}
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-label">Active Projects</div><div class="kpi-value" id="petra-active">4</div></div>
+    <div class="kpi-card"><div class="kpi-label">Projects Completed</div><div class="kpi-value">9</div><div class="kpi-sub gold">All-time</div></div>
+    <div class="kpi-card"><div class="kpi-label">Divisions Served</div><div class="kpi-value">2</div><div class="kpi-sub">Operations · Vindex</div></div>
+  </div>
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">Active Builds</div>
+      <button class="btn btn-gold btn-sm" onclick="openNewBuild()">+ New Build</button>
+    </div>
+    <table class="data-table" id="petra-table">
+      <thead><tr><th>Project</th><th>Type</th><th>Division</th><th>Start</th><th>Completion</th><th>Status</th><th>Update %</th></tr></thead>
+      <tbody>${builds.map((b,i)=>`<tr>
+        <td class="gold-link">${b.name}</td><td>${b.type}</td><td>${b.div}</td><td>${b.start}</td>
+        <td>
+          <div class="progress-wrap">
+            <div class="progress-bar" style="width:80px"><div class="progress-fill" id="petra-fill-${i}" style="width:${b.pct}%"></div></div>
+            <span class="progress-label" id="petra-pct-${i}">${b.pct}%</span>
+          </div>
+        </td>
+        <td id="petra-status-${i}">${badge(b.status)}</td>
+        <td><input type="number" class="form-input" style="width:58px;padding:3px 5px;" min="0" max="100" value="${b.pct}" onchange="updateProgress(${i},this.value)"></td>
+      </tr>`).join('')}</tbody>
+    </table>
+  </div>
+  <div class="integration-row">
+    <div class="integration-card"><strong>Operations — The Engine</strong>GRO facility construction pipeline</div>
+    <div class="integration-card"><strong>Vindex — The Gasoline</strong>Commercial & residential builds</div>
+    <div class="integration-card"><strong>Capital — The Reservoir</strong>Construction financing</div>
+  </div>
+  ${reqLog('petra')}
+</div>`;
+}
+
+function updateProgress(i, val) {
+  val = Math.min(100,Math.max(0,parseInt(val)||0));
+  document.getElementById('petra-fill-'+i).style.width = val+'%';
+  document.getElementById('petra-pct-'+i).textContent  = val+'%';
+  if (val===100) { document.getElementById('petra-status-'+i).innerHTML = badge('Completed'); showToast('Project marked complete'); }
+}
+
+function openNewBuild() {
+  openModal('New Build Request',
+    `<div class="form-row">
+      <div class="form-group"><label class="form-label">Project Name</label><input class="form-input" id="nb-name" placeholder="Project name..."></div>
+      <div class="form-group"><label class="form-label">Type</label>
+      <select class="form-select" id="nb-type"><option>GRO Facility</option><option>Commercial</option><option>Renovation</option><option>Infrastructure</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Linked Division</label>
+      <select class="form-select" id="nb-div"><option>Operations</option><option>Vindex</option><option>Capital</option></select></div>
+      <div class="form-group"><label class="form-label">Est. Budget</label><input class="form-input" id="nb-budget" placeholder="$0K"></div>
+    </div>`,
+    `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+     <button class="btn btn-gold" onclick="addBuild()">Add Build</button>`
+  );
+}
+
+function addBuild() {
+  const name = document.getElementById('nb-name').value.trim();
+  const type = document.getElementById('nb-type').value;
+  const div  = document.getElementById('nb-div').value;
+  if (!name) return;
+  const tbody = document.querySelector('#petra-table tbody');
+  const i = tbody.children.length;
+  const now = new Date().toLocaleDateString('en-US',{month:'short',year:'numeric'});
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td class="gold-link">${name}</td><td>${type}</td><td>${div}</td><td>${now}</td>
+    <td><div class="progress-wrap"><div class="progress-bar" style="width:80px"><div class="progress-fill" id="petra-fill-${i}" style="width:0%"></div></div><span class="progress-label" id="petra-pct-${i}">0%</span></div></td>
+    <td id="petra-status-${i}">${badge('Active')}</td>
+    <td><input type="number" class="form-input" style="width:58px;padding:3px 5px;" min="0" max="100" value="0" onchange="updateProgress(${i},this.value)"></td>`;
+  tbody.appendChild(tr);
+  document.getElementById('petra-active').textContent = parseInt(document.getElementById('petra-active').textContent)+1;
+  closeModal(); showToast(name+' added to active builds');
+}
+</script>
+</body>
+</html>
+HTMLEOF
