@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LVO Command Center — Dashboard</title>
+<title>LVO Command Center</title>
 
 <!-- CLERK -->
 <script
@@ -15,716 +15,260 @@
 ></script>
 
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
-
 <style>
-/* ═══════════════════════════════════════════
-   ROOT VARIABLES
-═══════════════════════════════════════════ */
 :root {
-  --black:       #0a0a0a;
-  --surface:     #111111;
-  --card:        #161616;
-  --card-hover:  #1c1c1c;
-  --border:      #2a2a2a;
-  --border-gold: #b8953f44;
-  --gold:        #b8953f;
-  --gold-light:  #d4a853;
-  --gold-dim:    #7a5f1a;
-  --gold-glow:   #b8953f18;
-  --text:        #e8e6e0;
-  --text-dim:    #9a9690;
-  --text-muted:  #5a5650;
-  --red:         #8b2020;
-  --red-light:   #c0392b;
-  --green-dim:   #1a3a2a;
-  --green:       #2d6a4a;
-  --sidebar-w:   224px;
+  --black:#0a0a0a;--surface:#111111;--card:#161616;--card-hover:#1c1c1c;
+  --border:#2a2a2a;--border-gold:#b8953f44;--gold:#b8953f;--gold-light:#d4a853;
+  --gold-dim:#7a5f1a;--gold-glow:#b8953f18;--text:#e8e6e0;--text-dim:#9a9690;
+  --text-muted:#5a5650;--red:#8b2020;--red-light:#c0392b;--green:#2d6a4a;
+  --sidebar-w:224px;
 }
-
-/* ═══════════════════════════════════════════
-   RESET & BASE
-═══════════════════════════════════════════ */
-*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-
-html { font-size: 13px; }
-
-body {
-  background: var(--black);
-  color: var(--text);
-  font-family: 'DM Mono', monospace;
-  min-height: 100vh;
-  overflow-x: hidden;
-}
-
-/* Grain overlay */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
-  pointer-events: none;
-  z-index: 9999;
-  opacity: 0.3;
-}
-
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover { background: var(--gold-dim); }
-
-/* ═══════════════════════════════════════════
-   APP SHELL
-═══════════════════════════════════════════ */
-#app { display: none; height: 100vh; overflow: hidden; }
-#app.visible { display: flex; animation: fadeIn 0.6s ease; }
-
-@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-
-#loading-screen {
-  position: fixed;
-  inset: 0;
-  background: var(--black);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  gap: 20px;
-}
-
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 1px solid var(--border);
-  border-top-color: var(--gold);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.loading-text {
-  font-size: 11px;
-  letter-spacing: 0.2em;
-  color: var(--text-muted);
-  text-transform: uppercase;
-}
-
-/* ═══════════════════════════════════════════
-   SIDEBAR
-═══════════════════════════════════════════ */
-#sidebar {
-  width: var(--sidebar-w);
-  min-width: var(--sidebar-w);
-  background: var(--surface);
-  border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  overflow-y: auto;
-  overflow-x: hidden;
-  flex-shrink: 0;
-}
-
-.sidebar-logo {
-  padding: 26px 22px 18px;
-  border-bottom: 1px solid var(--border);
-}
-
-.sidebar-logo-text {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 30px;
-  font-weight: 300;
-  letter-spacing: 0.35em;
-  color: var(--gold);
-  line-height: 1;
-  margin-bottom: 5px;
-}
-
-.sidebar-logo-sub {
-  font-size: 8px;
-  letter-spacing: 0.12em;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  line-height: 1.5;
-}
-
-.sidebar-nav { flex: 1; padding: 10px 0; }
-
-.nav-section-label {
-  font-size: 8px;
-  letter-spacing: 0.25em;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  padding: 14px 22px 6px;
-  opacity: 0.6;
-}
-
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 22px;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-  border-left: 2px solid transparent;
-  border-right: 2px solid transparent;
-}
-
-.nav-item:hover { background: var(--gold-glow); }
-.nav-item.active { background: var(--gold-glow); border-left-color: var(--gold); }
-
-.nav-icon {
-  width: 15px;
-  height: 15px;
-  color: var(--text-muted);
-  flex-shrink: 0;
-}
-.nav-item.active .nav-icon, .nav-item:hover .nav-icon { color: var(--gold); }
-
-.nav-label { font-size: 11.5px; color: var(--text-dim); letter-spacing: 0.04em; }
-.nav-sub   { font-size: 8px; color: var(--text-muted); letter-spacing: 0.12em; text-transform: uppercase; margin-top: 1px; }
-.nav-item.active .nav-label, .nav-item:hover .nav-label { color: var(--text); }
-
-.sidebar-bottom {
-  padding: 18px 22px;
-  border-top: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.auth-status {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 9px;
-  letter-spacing: 0.18em;
-  color: var(--text-muted);
-  text-transform: uppercase;
-}
-
-.auth-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
-
-/* ═══════════════════════════════════════════
-   MAIN CONTENT
-═══════════════════════════════════════════ */
-#main {
-  flex: 1;
-  height: 100vh;
-  overflow-y: auto;
-  background: var(--black);
-  min-width: 0;
-}
-
-.page { display: none; padding: 36px 44px 60px; animation: pageIn 0.25s ease; }
-.page.active { display: block; }
-
-@keyframes pageIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
-
-/* ═══════════════════════════════════════════
-   TOP BAR
-═══════════════════════════════════════════ */
-.top-bar {
-  position: sticky;
-  top: 0;
-  background: var(--black);
-  border-bottom: 1px solid var(--border);
-  padding: 13px 44px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  z-index: 100;
-}
-
-.top-bar-left { font-size: 9px; letter-spacing: 0.22em; color: var(--text-muted); text-transform: uppercase; }
-.top-bar-right { display: flex; align-items: center; gap: 14px; }
-.top-bar-user { font-size: 9px; letter-spacing: 0.15em; color: var(--gold); text-transform: uppercase; }
-
-.notif-btn {
-  position: relative;
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  padding: 4px;
-  transition: color 0.2s;
-  line-height: 0;
-}
-.notif-btn:hover { color: var(--gold); }
-
-.notif-count {
-  position: absolute;
-  top: -4px; right: -4px;
-  background: var(--gold);
-  color: var(--black);
-  font-size: 8px;
-  font-weight: 700;
-  width: 15px; height: 15px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'DM Mono', monospace;
-}
-
-/* ═══════════════════════════════════════════
-   PAGE HEADER
-═══════════════════════════════════════════ */
-.page-header { margin-bottom: 28px; border-bottom: 1px solid var(--border); padding-bottom: 20px; }
-
-.page-title {
-  display: flex;
-  align-items: baseline;
-  gap: 14px;
-  margin-bottom: 4px;
-}
-
-.page-title-main {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 44px;
-  font-weight: 300;
-  color: var(--text);
-  letter-spacing: 0.02em;
-  line-height: 1;
-}
-
-.page-title-tag {
-  font-size: 9px;
-  letter-spacing: 0.35em;
-  color: var(--gold);
-  text-transform: uppercase;
-}
-
-.page-dba {
-  font-size: 9px;
-  letter-spacing: 0.2em;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  margin-bottom: 8px;
-}
-
-.page-desc {
-  font-size: 12px;
-  color: var(--text-muted);
-  line-height: 1.65;
-  max-width: 640px;
-}
-
-/* ═══════════════════════════════════════════
-   KPI GRID
-═══════════════════════════════════════════ */
-.kpi-grid   { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 24px; }
-.kpi-grid-4 { grid-template-columns: repeat(4,1fr); }
-.kpi-grid-2 { grid-template-columns: repeat(2,1fr); }
-
-.kpi-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  padding: 22px;
-  transition: border-color 0.2s, background 0.2s;
-}
-.kpi-card:hover { border-color: var(--border-gold); background: var(--card-hover); }
-
-.kpi-label { font-size: 8px; letter-spacing: 0.3em; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px; }
-.kpi-value { font-family: 'Cormorant Garamond', serif; font-size: 38px; font-weight: 300; color: var(--text); line-height: 1; margin-bottom: 4px; }
-.kpi-sub   { font-size: 9px; color: var(--text-muted); letter-spacing: 0.1em; }
-.kpi-sub.gold { color: var(--gold); }
-.kpi-sub.red  { color: var(--red-light); }
-
-/* ═══════════════════════════════════════════
-   SECTION
-═══════════════════════════════════════════ */
-.section {
-  background: var(--card);
-  border: 1px solid var(--border);
-  padding: 22px;
-  margin-bottom: 18px;
-}
-
-.section-title {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 20px;
-  font-weight: 400;
-  color: var(--text);
-  margin-bottom: 18px;
-  letter-spacing: 0.04em;
-}
-
-.section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 18px;
-}
-
-/* ═══════════════════════════════════════════
-   TABLE
-═══════════════════════════════════════════ */
-.data-table { width: 100%; border-collapse: collapse; }
-
-.data-table th {
-  font-size: 8px;
-  letter-spacing: 0.25em;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  padding: 0 14px 10px 0;
-  text-align: left;
-  border-bottom: 1px solid var(--border);
-}
-
-.data-table td {
-  padding: 12px 14px 12px 0;
-  border-bottom: 1px solid var(--border);
-  color: var(--text-dim);
-  font-size: 11.5px;
-}
-
-.data-table tr:last-child td { border-bottom: none; }
-.data-table tr:hover td { color: var(--text); }
-.data-table .gold-link { color: var(--gold); cursor: pointer; }
-
-/* ═══════════════════════════════════════════
-   BADGES
-═══════════════════════════════════════════ */
-.badge {
-  display: inline-block;
-  padding: 3px 9px;
-  font-size: 8px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  border: 1px solid;
-  white-space: nowrap;
-}
-
-.badge-active      { color: var(--gold);    border-color: var(--gold-dim);  background: #b8953f08; }
-.badge-pending     { color: #c8a050;        border-color: #8b6020;          background: #8b60200a; }
-.badge-development { color: var(--text-dim); border-color: var(--border);   background: transparent; }
-.badge-complete, .badge-completed { color: #6aaa80; border-color: #2d6a4a; background: #2d6a4a0a; }
-.badge-blocked, .badge-alert, .badge-overdue { color: #e05555; border-color: var(--red); background: #8b20200a; }
-.badge-secured     { color: #6aaa80; border-color: #2d6a4a; background: #2d6a4a0a; }
-.badge-submitted   { color: #7090c0; border-color: #304060; background: #3040600a; }
-.badge-review      { color: #c0a020; border-color: #806800; background: #8068000a; }
-.badge-gold        { color: var(--gold-light); border-color: var(--gold-dim); background: #b8953f0a; }
-.badge-silver      { color: #a0a0b0; border-color: #606070; background: transparent; }
-.badge-bronze      { color: #c09060; border-color: #7a5030; background: transparent; }
-.badge-sold        { color: var(--text-muted); border-color: var(--border); background: transparent; }
-
-/* ═══════════════════════════════════════════
-   BUTTONS
-═══════════════════════════════════════════ */
-.btn {
-  font-family: 'DM Mono', monospace;
-  font-size: 9px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  padding: 9px 18px;
-  cursor: pointer;
-  border: none;
-  transition: all 0.2s;
-  white-space: nowrap;
-}
-.btn-gold    { background: var(--gold); color: var(--black); font-weight: 500; }
-.btn-gold:hover { background: var(--gold-light); }
-.btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
-.btn-outline:hover { border-color: var(--gold); color: var(--gold); }
-.btn-sm { padding: 5px 11px; font-size: 8px; }
-.btn-danger { background: transparent; border: 1px solid var(--red); color: #e05555; }
-.btn-danger:hover { background: var(--red); color: var(--text); }
-.btn:disabled { opacity:0.45; cursor:not-allowed; pointer-events:none; }
-
-/* ═══════════════════════════════════════════
-   TABS
-═══════════════════════════════════════════ */
-.tabs { display: flex; margin-bottom: 18px; border-bottom: 1px solid var(--border); }
-
-.tab {
-  padding: 9px 18px;
-  font-size: 9px;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  transition: color 0.2s, border-color 0.2s;
-  margin-bottom: -1px;
-}
-.tab:hover { color: var(--text-dim); }
-.tab.active { color: var(--gold); border-bottom-color: var(--gold); }
-.tab-content { display: none; }
-.tab-content.active { display: block; }
-
-/* ═══════════════════════════════════════════
-   LAYOUT HELPERS
-═══════════════════════════════════════════ */
-.two-col { display: grid; grid-template-columns: 1fr 360px; gap: 18px; }
-.three-col { display: grid; grid-template-columns: repeat(3,1fr); gap: 18px; }
-
-/* ═══════════════════════════════════════════
-   ACTIVITY FEED
-═══════════════════════════════════════════ */
-.activity-feed { display: flex; flex-direction: column; }
-
-.activity-item {
-  padding: 12px 0;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-}
-.activity-item:last-child { border-bottom: none; }
-.activity-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold-dim); margin-top: 4px; flex-shrink: 0; }
-.activity-dot.red   { background: var(--red-light); }
-.activity-dot.green { background: var(--green); }
-.activity-dot.gold  { background: var(--gold); }
-.activity-time { font-size: 9px; color: var(--text-muted); letter-spacing: 0.1em; white-space: nowrap; }
-.activity-text { font-size: 11.5px; color: var(--text-dim); line-height: 1.5; }
-
-/* ═══════════════════════════════════════════
-   PROGRESS BAR
-═══════════════════════════════════════════ */
-.progress-wrap  { display: flex; align-items: center; gap: 10px; }
-.progress-bar   { flex: 1; height: 2px; background: var(--border); }
-.progress-fill  { height: 100%; background: var(--gold); transition: width 0.4s; }
-.progress-label { font-size: 10px; color: var(--gold); min-width: 34px; text-align: right; }
-
-/* ═══════════════════════════════════════════
-   FORMS
-═══════════════════════════════════════════ */
-.form-group  { margin-bottom: 16px; }
-.form-row    { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-.form-label  { display: block; font-size: 8px; letter-spacing: 0.25em; color: var(--text-muted); text-transform: uppercase; margin-bottom: 7px; }
-
-.form-input, .form-select, .form-textarea {
-  width: 100%;
-  background: var(--card);
-  border: none;
-  border-bottom: 1px solid var(--border);
-  color: var(--text);
-  font-family: 'DM Mono', monospace;
-  font-size: 12px;
-  padding: 9px 10px;
-  outline: none;
-  transition: border-color 0.2s;
-}
-.form-input:focus, .form-select:focus, .form-textarea:focus { border-bottom-color: var(--gold); }
-.form-input::placeholder { color: var(--text-muted); }
-.form-select option { background: var(--surface); }
-.form-textarea { resize: vertical; min-height: 75px; }
-
-/* ═══════════════════════════════════════════
-   STATUS SELECT
-═══════════════════════════════════════════ */
-.status-select {
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-  font-family: 'DM Mono', monospace;
-  font-size: 8px;
-  padding: 3px 8px;
-  cursor: pointer;
-  outline: none;
-  letter-spacing: 0.1em;
-}
-.status-select:focus { border-color: var(--gold); }
-.status-select option { background: var(--surface); }
-
-/* ═══════════════════════════════════════════
-   REQUEST BAR
-═══════════════════════════════════════════ */
-.request-bar {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 24px;
-  padding: 14px 18px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-top: 1px solid var(--border-gold);
-  align-items: flex-end;
-}
-
-.request-bar select, .request-bar input {
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid var(--border);
-  color: var(--text);
-  font-family: 'DM Mono', monospace;
-  font-size: 11px;
-  padding: 5px 6px;
-  outline: none;
-  transition: border-color 0.2s;
-}
-.request-bar input { flex: 1; }
-.request-bar input::placeholder { color: var(--text-muted); }
-.request-bar input:focus, .request-bar select:focus { border-bottom-color: var(--gold); }
-.request-bar select { color: var(--text-dim); min-width: 170px; background: var(--card); }
-.request-bar select option { background: var(--surface); }
-
-/* ═══════════════════════════════════════════
-   MODAL
-═══════════════════════════════════════════ */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: #0a0a0acc;
-  z-index: 500;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  backdrop-filter: blur(4px);
-}
-.modal-overlay.open { display: flex; }
-
-.modal {
-  background: var(--surface);
-  border: 1px solid var(--border-gold);
-  width: 520px;
-  max-width: 92vw;
-  max-height: 88vh;
-  overflow-y: auto;
-  padding: 30px;
-  animation: modalIn 0.22s ease;
-}
-
-@keyframes modalIn { from { opacity:0; transform:scale(0.97) translateY(8px); } to { opacity:1; transform:scale(1) translateY(0); } }
-
-.modal-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 22px; }
-
-.modal-title {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 24px;
-  font-weight: 400;
-  color: var(--text);
-  letter-spacing: 0.04em;
-}
-
-.modal-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 18px; padding: 0; line-height: 1; transition: color 0.2s; }
-.modal-close:hover { color: var(--text); }
-.modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 22px; }
-
-/* ═══════════════════════════════════════════
-   NOTIFICATION PANEL
-═══════════════════════════════════════════ */
-.notif-panel {
-  position: fixed;
-  top: 0; right: -380px;
-  width: 380px;
-  height: 100vh;
-  background: var(--surface);
-  border-left: 1px solid var(--border);
-  z-index: 400;
-  transition: right 0.3s ease;
-  display: flex;
-  flex-direction: column;
-}
-.notif-panel.open { right: 0; }
-
-.notif-panel-header {
-  padding: 22px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.notif-panel-title { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 400; letter-spacing: 0.04em; }
-.notif-panel-body  { flex: 1; overflow-y: auto; padding: 14px 22px; }
-
-.notif-entry { padding: 13px 0; border-bottom: 1px solid var(--border); }
-.notif-entry:last-child { border-bottom: none; }
-.notif-entry-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 3px; }
-.notif-division { font-size: 8px; letter-spacing: 0.2em; color: var(--gold); text-transform: uppercase; }
-.notif-time     { font-size: 8px; color: var(--text-muted); }
-.notif-type     { font-size: 10px; color: var(--text); letter-spacing: 0.08em; margin-bottom: 3px; }
-.notif-desc     { font-size: 10px; color: var(--text-dim); line-height: 1.45; }
-
-/* ═══════════════════════════════════════════
-   REQUEST LOG
-═══════════════════════════════════════════ */
-.request-log { margin-top: 22px; }
-.request-log-title { font-size: 9px; letter-spacing: 0.25em; color: var(--text-muted); text-transform: uppercase; margin-bottom: 12px; }
-
-.request-entry { padding: 11px 0; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 4px; }
-.request-entry:last-child { border-bottom: none; }
-.request-entry-header { display: flex; align-items: center; justify-content: space-between; }
-.request-entry-type   { font-size: 10px; color: var(--text); letter-spacing: 0.08em; }
-.request-entry-time   { font-size: 8px; color: var(--text-muted); }
-.request-entry-desc   { font-size: 10px; color: var(--text-dim); line-height: 1.4; }
-
-/* ═══════════════════════════════════════════
-   TAGS
-═══════════════════════════════════════════ */
-.tag-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
-.tag { padding: 4px 13px; font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase; border: 1px solid var(--gold-dim); color: var(--gold); background: var(--gold-glow); }
-
-/* ═══════════════════════════════════════════
-   DIVISION HEALTH GRID
-═══════════════════════════════════════════ */
-.division-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 12px; margin-bottom: 24px; }
-
-.division-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  padding: 16px;
-  cursor: pointer;
-  transition: border-color 0.2s, background 0.2s;
-}
-.division-card:hover { border-color: var(--border-gold); background: var(--card-hover); }
-
-.division-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; }
-.division-card-name   { font-family: 'Cormorant Garamond', serif; font-size: 16px; color: var(--text); }
-.division-card-dot    { width: 7px; height: 7px; border-radius: 50%; }
-.dot-active      { background: #4aaa70; }
-.dot-pending     { background: #c8a050; }
-.dot-development { background: var(--text-muted); }
-.division-card-nick   { font-size: 8px; letter-spacing: 0.14em; color: var(--gold); text-transform: uppercase; margin-bottom: 5px; }
-.division-card-note   { font-size: 9px; color: var(--text-muted); line-height: 1.4; }
-
-/* ═══════════════════════════════════════════
-   INTEGRATION CARDS
-═══════════════════════════════════════════ */
-.integration-row { display: flex; gap: 12px; margin-top: 18px; flex-wrap: wrap; }
-.integration-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  padding: 13px 16px;
-  font-size: 10px;
-  color: var(--text-muted);
-  letter-spacing: 0.08em;
-  min-width: 180px;
-}
-.integration-card strong { color: var(--gold); display: block; margin-bottom: 3px; font-size: 9px; letter-spacing: 0.15em; font-weight: 400; }
-
-/* ═══════════════════════════════════════════
-   TOAST
-═══════════════════════════════════════════ */
-.toast {
-  position: fixed;
-  bottom: 28px;
-  right: 28px;
-  background: var(--card);
-  border: 1px solid var(--border-gold);
-  color: var(--text);
-  font-family: 'DM Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 0.1em;
-  padding: 13px 18px;
-  z-index: 9001;
-  animation: toastIn 0.3s ease;
-}
-
-@keyframes toastIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
-
-/* ═══════════════════════════════════════════
-   CLERK OVERRIDES
-═══════════════════════════════════════════ */
-.cl-rootBox                      { font-family: 'DM Mono', monospace !important; }
-.cl-userButtonPopoverCard        { background: var(--surface) !important; border: 1px solid var(--border-gold) !important; border-radius: 0 !important; }
-.cl-userButtonPopoverActionButton{ border-radius: 0 !important; color: var(--text-dim) !important; }
-.cl-userButtonPopoverActionButton:hover { background: var(--gold-glow) !important; color: var(--gold) !important; }
-.cl-userButtonPopoverActionButtonText { font-family: 'DM Mono', monospace !important; font-size: 11px !important; }
-.cl-userButtonBox                { border-radius: 0 !important; }
-.cl-avatarBox                    { border-radius: 0 !important; border: 1px solid var(--border-gold) !important; }
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{font-size:13px}
+body{background:var(--black);color:var(--text);font-family:'DM Mono',monospace;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;opacity:0.3}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+/* LOADING SCREEN */
+#loading-screen{position:fixed;inset:0;background:var(--black);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000;gap:20px}
+.loading-spinner{width:40px;height:40px;border:1px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:11px;letter-spacing:.2em;color:var(--text-muted);text-transform:uppercase}
+
+#app{display:none;height:100vh;overflow:hidden}
+#app.visible{display:flex;animation:fadeIn .5s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+/* SIDEBAR */
+#sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;overflow-y:auto;overflow-x:hidden;flex-shrink:0}
+.back-btn{display:flex;align-items:center;gap:8px;padding:14px 22px;border-bottom:1px solid var(--border);cursor:pointer;color:var(--text-muted);font-size:9px;letter-spacing:.18em;text-transform:uppercase;text-decoration:none;transition:color .2s,background .2s}
+.back-btn:hover{color:var(--gold);background:var(--gold-glow)}
+.back-btn svg{flex-shrink:0}
+.sidebar-logo{padding:20px 22px 16px;border-bottom:1px solid var(--border)}
+.sidebar-logo-text{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:300;letter-spacing:.35em;color:var(--gold);line-height:1;margin-bottom:5px}
+.sidebar-logo-sub{font-size:8px;letter-spacing:.12em;color:var(--text-muted);text-transform:uppercase;line-height:1.5}
+.sidebar-nav{flex:1;padding:10px 0}
+.nav-section-label{font-size:8px;letter-spacing:.25em;color:var(--text-muted);text-transform:uppercase;padding:14px 22px 6px;opacity:.6}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 22px;cursor:pointer;transition:background .15s,color .15s;border-left:2px solid transparent}
+.nav-item:hover{background:var(--gold-glow)}
+.nav-item.active{background:var(--gold-glow);border-left-color:var(--gold)}
+.nav-icon{width:15px;height:15px;color:var(--text-muted);flex-shrink:0}
+.nav-item.active .nav-icon,.nav-item:hover .nav-icon{color:var(--gold)}
+.nav-label{font-size:11.5px;color:var(--text-dim);letter-spacing:.04em}
+.nav-sub{font-size:8px;color:var(--text-muted);letter-spacing:.12em;text-transform:uppercase;margin-top:1px}
+.nav-item.active .nav-label,.nav-item:hover .nav-label{color:var(--text)}
+.sidebar-bottom{padding:18px 22px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:10px}
+.auth-status{display:flex;align-items:center;gap:8px;font-size:9px;letter-spacing:.18em;color:var(--text-muted);text-transform:uppercase}
+.auth-dot{width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0}
+
+/* CLERK OVERRIDES */
+.cl-rootBox{font-family:'DM Mono',monospace!important}
+.cl-userButtonPopoverCard{background:var(--surface)!important;border:1px solid var(--border-gold)!important;border-radius:0!important}
+.cl-userButtonPopoverActionButton{border-radius:0!important;color:var(--text-dim)!important}
+.cl-userButtonPopoverActionButton:hover{background:var(--gold-glow)!important;color:var(--gold)!important}
+.cl-userButtonPopoverActionButtonText{font-family:'DM Mono',monospace!important;font-size:11px!important}
+.cl-userButtonBox{border-radius:0!important}
+.cl-avatarBox{border-radius:0!important;border:1px solid var(--border-gold)!important}
+
+/* MAIN */
+#main{flex:1;height:100vh;overflow-y:auto;background:var(--black);min-width:0}
+.page{display:none;padding:36px 44px 60px;animation:pageIn .25s ease}
+.page.active{display:block}
+@keyframes pageIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* TOP BAR */
+.top-bar{position:sticky;top:0;background:var(--black);border-bottom:1px solid var(--border);padding:13px 44px;display:flex;align-items:center;justify-content:space-between;z-index:100}
+.top-bar-left{font-size:9px;letter-spacing:.22em;color:var(--text-muted);text-transform:uppercase}
+.top-bar-right{display:flex;align-items:center;gap:14px}
+.top-bar-user{font-size:9px;letter-spacing:.15em;color:var(--gold);text-transform:uppercase}
+
+/* PAGE HEADER */
+.page-header{margin-bottom:28px;border-bottom:1px solid var(--border);padding-bottom:20px}
+.page-title{display:flex;align-items:baseline;gap:14px;margin-bottom:4px}
+.page-title-main{font-family:'Cormorant Garamond',serif;font-size:44px;font-weight:300;color:var(--text);letter-spacing:.02em;line-height:1}
+.page-title-tag{font-size:9px;letter-spacing:.35em;color:var(--gold);text-transform:uppercase}
+.page-dba{font-size:9px;letter-spacing:.2em;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px}
+.page-desc{font-size:12px;color:var(--text-muted);line-height:1.65;max-width:640px}
+
+/* KPI GRID */
+.kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px}
+.kpi-grid-4{grid-template-columns:repeat(4,1fr)}
+.kpi-grid-2{grid-template-columns:repeat(2,1fr)}
+.kpi-card{background:var(--card);border:1px solid var(--border);padding:22px;transition:border-color .2s,background .2s}
+.kpi-card:hover{border-color:var(--border-gold);background:var(--card-hover)}
+.kpi-label{font-size:8px;letter-spacing:.3em;color:var(--text-muted);text-transform:uppercase;margin-bottom:10px}
+.kpi-value{font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:300;color:var(--text);line-height:1;margin-bottom:4px}
+.kpi-sub{font-size:9px;color:var(--text-muted);letter-spacing:.1em}
+.kpi-sub.gold{color:var(--gold)}
+.kpi-sub.red{color:var(--red-light)}
+
+/* SECTION */
+.section{background:var(--card);border:1px solid var(--border);padding:22px;margin-bottom:18px}
+.section-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;color:var(--text);margin-bottom:18px;letter-spacing:.04em}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+
+/* TABLE */
+.data-table{width:100%;border-collapse:collapse}
+.data-table th{font-size:8px;letter-spacing:.25em;color:var(--text-muted);text-transform:uppercase;padding:0 14px 10px 0;text-align:left;border-bottom:1px solid var(--border)}
+.data-table td{padding:12px 14px 12px 0;border-bottom:1px solid var(--border);color:var(--text-dim);font-size:11.5px}
+.data-table tr:last-child td{border-bottom:none}
+.data-table tr:hover td{color:var(--text)}
+
+/* BADGES */
+.badge{display:inline-block;padding:3px 9px;font-size:8px;letter-spacing:.18em;text-transform:uppercase;border:1px solid;white-space:nowrap}
+.badge-active{color:var(--gold);border-color:var(--gold-dim);background:#b8953f08}
+.badge-pending{color:#c8a050;border-color:#8b6020;background:#8b60200a}
+.badge-development{color:var(--text-dim);border-color:var(--border);background:transparent}
+.badge-complete,.badge-completed{color:#6aaa80;border-color:#2d6a4a;background:#2d6a4a0a}
+.badge-blocked,.badge-alert,.badge-overdue{color:#e05555;border-color:var(--red);background:#8b20200a}
+.badge-secured{color:#6aaa80;border-color:#2d6a4a;background:#2d6a4a0a}
+.badge-submitted{color:#7090c0;border-color:#304060;background:#3040600a}
+.badge-review{color:#c0a020;border-color:#806800;background:#8068000a}
+.badge-sold{color:var(--text-muted);border-color:var(--border);background:transparent}
+.badge-operational{color:var(--gold);border-color:var(--gold-dim);background:#b8953f08}
+.badge-gold{color:var(--gold-light);border-color:var(--gold-dim);background:#b8953f0a}
+.badge-silver{color:#a0a0b0;border-color:#606070;background:transparent}
+.badge-bronze{color:#c09060;border-color:#7a5030;background:transparent}
+
+/* BUTTONS */
+.btn{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.22em;text-transform:uppercase;padding:9px 18px;cursor:pointer;border:none;transition:all .2s;white-space:nowrap}
+.btn-gold{background:var(--gold);color:var(--black);font-weight:500}
+.btn-gold:hover{background:var(--gold-light)}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text-muted)}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold)}
+.btn-sm{padding:5px 11px;font-size:8px}
+.btn-danger{background:transparent;border:1px solid var(--red);color:#e05555;font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.15em;text-transform:uppercase;padding:4px 8px;cursor:pointer;transition:all .2s}
+.btn-danger:hover{background:var(--red);color:var(--text)}
+
+/* TABS */
+.tabs{display:flex;margin-bottom:18px;border-bottom:1px solid var(--border)}
+.tab{padding:9px 18px;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;transition:color .2s,border-color .2s;margin-bottom:-1px}
+.tab:hover{color:var(--text-dim)}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* LAYOUT */
+.two-col{display:grid;grid-template-columns:1fr 360px;gap:18px}
+
+/* ACTIVITY */
+.activity-feed{display:flex;flex-direction:column}
+.activity-item{padding:12px 0;border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:flex-start}
+.activity-item:last-child{border-bottom:none}
+.activity-dot{width:6px;height:6px;border-radius:50%;background:var(--gold-dim);margin-top:4px;flex-shrink:0}
+.activity-dot.red{background:var(--red-light)}
+.activity-dot.green{background:var(--green)}
+.activity-dot.gold{background:var(--gold)}
+.activity-time{font-size:9px;color:var(--text-muted);letter-spacing:.1em;white-space:nowrap}
+.activity-text{font-size:11.5px;color:var(--text-dim);line-height:1.5}
+
+/* PROGRESS */
+.progress-wrap{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.progress-bar{flex:1;height:2px;background:var(--border)}
+.progress-fill{height:100%;background:var(--gold);transition:width .4s}
+.progress-label{font-size:10px;color:var(--gold);min-width:34px;text-align:right}
+
+/* FORMS */
+.form-group{margin-bottom:16px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-label{display:block;font-size:8px;letter-spacing:.25em;color:var(--text-muted);text-transform:uppercase;margin-bottom:7px}
+.form-input,.form-select,.form-textarea{width:100%;background:var(--card);border:none;border-bottom:1px solid var(--border);color:var(--text);font-family:'DM Mono',monospace;font-size:12px;padding:9px 10px;outline:none;transition:border-color .2s}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-bottom-color:var(--gold)}
+.form-input::placeholder{color:var(--text-muted)}
+.form-select option{background:var(--surface)}
+.form-textarea{resize:vertical;min-height:75px}
+
+/* REQUEST BAR */
+.request-bar{display:flex;gap:10px;margin-bottom:24px;padding:14px 18px;background:var(--card);border:1px solid var(--border);border-top:1px solid var(--border-gold);align-items:flex-end}
+.request-bar select,.request-bar input{background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--text);font-family:'DM Mono',monospace;font-size:11px;padding:5px 6px;outline:none;transition:border-color .2s}
+.request-bar input{flex:1}
+.request-bar input::placeholder{color:var(--text-muted)}
+.request-bar input:focus,.request-bar select:focus{border-bottom-color:var(--gold)}
+.request-bar select{color:var(--text-dim);min-width:170px;background:var(--card)}
+.request-bar select option{background:var(--surface)}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:#0a0a0acc;z-index:500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border-gold);width:520px;max-width:92vw;max-height:88vh;overflow-y:auto;padding:30px;animation:modalIn .22s ease}
+@keyframes modalIn{from{opacity:0;transform:scale(.97) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px}
+.modal-title{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:400;color:var(--text);letter-spacing:.04em}
+.modal-close{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:0;line-height:1;transition:color .2s}
+.modal-close:hover{color:var(--text)}
+.modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:22px}
+
+/* NOTIF PANEL */
+.notif-panel{position:fixed;top:0;right:-420px;width:420px;height:100vh;background:var(--surface);border-left:1px solid var(--border);z-index:400;transition:right .3s ease;display:flex;flex-direction:column}
+.notif-panel.open{right:0}
+.notif-panel-header{padding:22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.notif-panel-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;letter-spacing:.04em}
+.notif-panel-body{flex:1;overflow-y:auto;padding:14px 22px}
+.notif-entry{padding:13px 0;border-bottom:1px solid var(--border)}
+.notif-entry:last-child{border-bottom:none}
+.notif-entry-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px}
+.notif-division{font-size:8px;letter-spacing:.2em;color:var(--gold);text-transform:uppercase}
+.notif-time{font-size:8px;color:var(--text-muted)}
+.notif-type{font-size:10px;color:var(--text);letter-spacing:.08em;margin-bottom:3px}
+.notif-desc{font-size:10px;color:var(--text-dim);line-height:1.45}
+
+/* NOTIF BTN */
+.notif-btn{position:relative;background:none;border:none;color:var(--text-muted);cursor:pointer;padding:4px;transition:color .2s;line-height:0}
+.notif-btn:hover{color:var(--gold)}
+.notif-count{position:absolute;top:-4px;right:-4px;background:var(--gold);color:var(--black);font-size:8px;font-weight:700;width:15px;height:15px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace}
+
+/* REQUEST LOG */
+.request-log{margin-top:22px}
+.request-log-title{font-size:9px;letter-spacing:.25em;color:var(--text-muted);text-transform:uppercase;margin-bottom:12px}
+.request-entry{padding:11px 0;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:4px}
+.request-entry:last-child{border-bottom:none}
+.request-entry-header{display:flex;align-items:center;justify-content:space-between}
+.request-entry-type{font-size:10px;color:var(--text);letter-spacing:.08em}
+.request-entry-time{font-size:8px;color:var(--text-muted)}
+.request-entry-desc{font-size:10px;color:var(--text-dim);line-height:1.4}
+
+/* TOAST */
+.toast{position:fixed;bottom:28px;right:28px;background:var(--card);border:1px solid var(--border-gold);color:var(--text);font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.1em;padding:13px 18px;z-index:9001;animation:toastIn .3s ease}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* ASSET CARD */
+.asset-card{background:var(--card);border:1px solid var(--border);padding:16px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;transition:border-color .2s}
+.asset-card:hover{border-color:var(--border-gold)}
+.asset-info{flex:1}
+.asset-id{font-size:9px;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;margin-bottom:3px}
+.asset-name{font-size:12px;color:var(--text);margin-bottom:4px}
+.asset-meta{font-size:9px;color:var(--text-muted)}
+.asset-actions{display:flex;gap:8px;align-items:center}
+
+/* HIVEMIND LINKS */
+.hive-link{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.hive-link:last-child{border-bottom:none}
+.hive-from{font-size:9px;letter-spacing:.15em;color:var(--gold);text-transform:uppercase;min-width:100px}
+.hive-arrow{color:var(--border);font-size:12px}
+.hive-to{font-size:9px;letter-spacing:.15em;color:var(--text-dim);text-transform:uppercase;cursor:pointer;transition:color .2s}
+.hive-to:hover{color:var(--gold)}
+.hive-desc{font-size:9px;color:var(--text-muted);margin-left:auto}
+
+/* DIVISION GRID */
+.division-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px}
+.division-card{background:var(--card);border:1px solid var(--border);padding:16px;cursor:pointer;transition:border-color .2s,background .2s}
+.division-card:hover{border-color:var(--border-gold);background:var(--card-hover)}
+.division-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.division-card-name{font-family:'Cormorant Garamond',serif;font-size:16px;color:var(--text)}
+.division-card-dot{width:7px;height:7px;border-radius:50%}
+.dot-active{background:#4aaa70}
+.dot-pending{background:#c8a050}
+.dot-development{background:var(--text-muted)}
+.division-card-nick{font-size:8px;letter-spacing:.14em;color:var(--gold);text-transform:uppercase;margin-bottom:5px}
+.division-card-note{font-size:9px;color:var(--text-muted);line-height:1.4}
+
+/* STATUS select inside table */
+.status-select{background:transparent;border:1px solid var(--border);color:var(--text-muted);font-family:'DM Mono',monospace;font-size:8px;padding:3px 8px;cursor:pointer;outline:none;letter-spacing:.1em}
+.status-select:focus{border-color:var(--gold)}
+.status-select option{background:var(--surface)}
+
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:40px 0;color:var(--text-muted);font-size:11px;letter-spacing:.1em}
 </style>
 </head>
 <body>
@@ -735,16 +279,17 @@ body::before {
 </div>
 
 <div id="app">
-
   <!-- SIDEBAR -->
   <nav id="sidebar">
+    <a class="back-btn" href="https://online.lvo-cloud.cloud">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Back to Portal
+    </a>
     <div class="sidebar-logo">
       <div class="sidebar-logo-text">LVO</div>
       <div class="sidebar-logo-sub">Legion V. Omni-Operation<br>Holdings LLC</div>
     </div>
-
     <div class="sidebar-nav" id="sidebar-nav"></div>
-
     <div class="sidebar-bottom">
       <div class="auth-status">
         <span class="auth-dot"></span>
@@ -760,10 +305,7 @@ body::before {
       <div class="top-bar-left" id="top-bar-label">LVO Command Center</div>
       <div class="top-bar-right">
         <button class="notif-btn" onclick="toggleNotifPanel()">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-          </svg>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           <span class="notif-count" id="notif-count">0</span>
         </button>
         <div id="clerk-topbar-btn"></div>
@@ -773,10 +315,10 @@ body::before {
   </div>
 </div>
 
-<!-- NOTIFICATION PANEL -->
+<!-- NOTIF PANEL -->
 <div class="notif-panel" id="notif-panel">
   <div class="notif-panel-header">
-    <div class="notif-panel-title">Submitted Requests</div>
+    <div class="notif-panel-title">All Requests</div>
     <button class="modal-close" onclick="toggleNotifPanel()">✕</button>
   </div>
   <div class="notif-panel-body" id="notif-panel-body">
@@ -788,7 +330,7 @@ body::before {
 <div class="modal-overlay" id="modal-overlay" onclick="closeModalOnOverlay(event)">
   <div class="modal" id="modal-box">
     <div class="modal-header">
-      <div class="modal-title" id="modal-title">Request</div>
+      <div class="modal-title" id="modal-title"></div>
       <button class="modal-close" onclick="closeModal()">✕</button>
     </div>
     <div id="modal-body"></div>
@@ -797,16 +339,16 @@ body::before {
 </div>
 
 <script>
-/* ═══════════════════════════════════════════
-   CLERK CONFIG & AUTH CHECK
-═══════════════════════════════════════════ */
+/* ═══════════════════════════════════
+   CLERK CONFIG & AUTH
+═══════════════════════════════════ */
 const CLERK_ALLOWED_DOMAINS = ['lvo-cloud.cloud','dash.lvo-cloud.cloud','login.lvo-cloud.cloud','online.lvo-cloud.cloud'];
 const LOGIN_URL = 'https://login.lvo-cloud.cloud';
 
 window.addEventListener('load', async () => {
   try {
-    await Clerk.load({ 
-      allowedRedirectOrigins: CLERK_ALLOWED_DOMAINS.map(d=>`https://${d}`) 
+    await Clerk.load({
+      allowedRedirectOrigins: CLERK_ALLOWED_DOMAINS.map(d=>`https://${d}`)
     });
   } catch(e) {
     console.error('Clerk load error:', e);
@@ -814,135 +356,136 @@ window.addEventListener('load', async () => {
     return;
   }
 
-  // If not authenticated, redirect to login
   if (!Clerk.user) {
     window.location.href = LOGIN_URL;
     return;
   }
 
-  // User is authenticated - initialize app
-  const app = document.getElementById('app');
-  const loadingScreen = document.getElementById('loading-screen');
-  const sidebarName = document.getElementById('sidebar-user-name');
-
-  // Mount user button
+  // Mount Clerk user buttons
   Clerk.mountUserButton(document.getElementById('clerk-topbar-btn'));
   Clerk.mountUserButton(document.getElementById('clerk-user-btn'));
 
-  // Set user display name
+  // Set display name in sidebar
   const displayName = Clerk.user.firstName
     ? Clerk.user.firstName + (Clerk.user.lastName ? ' ' + Clerk.user.lastName[0] + '.' : '')
     : (Clerk.user.primaryEmailAddress?.emailAddress || 'Authenticated');
-  sidebarName.textContent = displayName;
+  document.getElementById('sidebar-user-name').textContent = displayName;
 
-  // Hide loading, show app
-  loadingScreen.style.display = 'none';
-  app.classList.add('visible');
+  // Hide loading screen, show app
+  document.getElementById('loading-screen').style.display = 'none';
+  document.getElementById('app').classList.add('visible');
 
-  // Initialize app
+  // Initialize the dashboard
   initApp();
 
-  // Listen for sign-out
+  // Redirect on sign-out
   Clerk.addListener(({ user }) => {
-    if (!user) {
-      window.location.href = LOGIN_URL;
-    }
+    if (!user) window.location.href = LOGIN_URL;
   });
 });
 
-/* ═══════════════════════════════════════════
+/* ═══════════════════════════════════
    GLOBAL STATE
-═══════════════════════════════════════════ */
+═══════════════════════════════════ */
 let allRequests = [];
-let notifOpen   = false;
+let notifOpen = false;
 
-/* ═══════════════════════════════════════════
-   NAVIGATION STRUCTURE
-═══════════════════════════════════════════ */
+// ASSET STORE — keyed by series prefix
+const assetStore = {
+  'A': [
+    { id:'A1', name:'1420 Cypress Creek Blvd – Group Home', type:'Group Home', status:'Active', val:'$280,000' },
+    { id:'A2', name:'8910 S Main – Commercial Storefront', type:'Commercial', status:'Pending', val:'$410,000' },
+  ],
+  'B': [
+    { id:'B1', name:'2023 Chrysler 300S', type:'Sedan', status:'Active', val:'$34,500' },
+    { id:'B2', name:'2025 Suburban Z71', type:'SUV', status:'Active', val:'$72,000' },
+  ],
+  'GRO': [
+    { id:'GRO-01', name:'North Campus Facility', type:'GRO 5-8', status:'Active', val:'18 residents' },
+    { id:'GRO-02', name:'East Campus Facility', type:'GRO 9-13', status:'Pending', val:'12 residents' },
+  ],
+  'FLEET': [
+    { id:'FL-01', name:'Armored Suburban – Executive', type:'Armored SUV', status:'Active', val:'Custodia / Exec' },
+    { id:'FL-02', name:'Charger SRT – Rapid Response', type:'Performance Sedan', status:'Active', val:'Partner Transit' },
+  ],
+  'BUILD': [
+    { id:'BP-01', name:'GRO-01 HVAC Renovation', type:'Infrastructure', status:'Active', val:'$85,000' },
+    { id:'BP-02', name:'Commercial Hub – Phase 1', type:'New Build', status:'Development', val:'$320,000' },
+  ],
+  'AIR': [
+    { id:'AL-01', name:'Charter Agreement – Gulf Coast Aviation', type:'Charter', status:'Active', val:'On-demand' },
+    { id:'AL-02', name:'DJI Matrice 350 – Surveillance #1', type:'Drone', status:'Active', val:'Vindex / Custodia' },
+  ]
+};
+
+let assetCounters = { A:3, B:3, GRO:3, FLEET:3, BUILD:3, AIR:3 };
+
+/* ═══════════════════════════════════
+   NAVIGATION
+═══════════════════════════════════ */
 const divisions = [
-  { id:'overview',    label:'Overview',              sub:'',              icon:'grid',      section:'command' },
-  { id:'vindex',      label:'Vindex',                sub:'The Gasoline',  icon:'database',  section:'divisions' },
-  { id:'operations',  label:'Operations',            sub:'The Engine',    icon:'settings',  section:'divisions' },
-  { id:'alliance',    label:'Alliance',              sub:'The Brain',     icon:'users',     section:'divisions' },
-  { id:'obscura',     label:'Obscura',               sub:'The Base',      icon:'monitor',   section:'divisions' },
-  { id:'capital',     label:'Capital',               sub:'The Reservoir', icon:'briefcase', section:'divisions' },
-  { id:'custodia',    label:'Custodia',              sub:'The Guard',     icon:'shield',    section:'divisions' },
-  { id:'outreach',    label:'Outreach',              sub:'The Heart',     icon:'heart',     section:'divisions' },
-  { id:'alatus',      label:'Alatus',                sub:'The Wing',      icon:'wind',      section:'divisions' },
-  { id:'pedes',       label:'Pedes',                 sub:'The Legs',      icon:'truck',     section:'divisions' },
-  { id:'petra',       label:'Petra',                 sub:'The Bedrock',   icon:'triangle',  section:'divisions' },
+  { id:'overview',   label:'Overview',         sub:'',              icon:'grid',      section:'command' },
+  { id:'vindex',     label:'Vindex',            sub:'The Gasoline',  icon:'database',  section:'divisions' },
+  { id:'operations', label:'Operations',        sub:'The Engine',    icon:'settings',  section:'divisions' },
+  { id:'alliance',   label:'Alliance',          sub:'The Brain',     icon:'users',     section:'divisions' },
+  { id:'obscura',    label:'Obscura',           sub:'The Base',      icon:'monitor',   section:'divisions' },
+  { id:'capital',    label:'Capital',           sub:'The Reservoir', icon:'briefcase', section:'divisions' },
+  { id:'custodia',   label:'Custodia',          sub:'The Guard',     icon:'shield',    section:'divisions' },
+  { id:'outreach',   label:'Outreach',          sub:'The Heart',     icon:'heart',     section:'divisions' },
+  { id:'alatus',     label:'Alatus',            sub:'The Wing',      icon:'wind',      section:'divisions' },
+  { id:'pedes',      label:'Pedes',             sub:'The Legs',      icon:'truck',     section:'divisions' },
+  { id:'petra',      label:'Petra',             sub:'The Bedrock',   icon:'triangle',  section:'divisions' },
 ];
 
 const ICONS = {
-  grid:      `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>`,
-  database:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>`,
-  settings:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`,
-  users:     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
-  monitor:   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8m-4-4v4"/></svg>`,
-  briefcase: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>`,
-  shield:    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
-  heart:     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`,
-  wind:      `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/></svg>`,
-  truck:     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>`,
-  triangle:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>`,
+  grid:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>`,
+  database:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>`,
+  settings:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`,
+  users:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+  monitor:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8m-4-4v4"/></svg>`,
+  briefcase:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>`,
+  shield:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
+  heart:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`,
+  wind:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/></svg>`,
+  truck:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>`,
+  triangle:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>`,
 };
 
-/* ═══════════════════════════════════════════
-   HELPERS & UTILITIES
-═══════════════════════════════════════════ */
+/* ═══════════════════════════════════
+   HELPERS
+═══════════════════════════════════ */
 function badge(status) {
-  const map = {
-    'Active':'active','Pending':'pending','Development':'development',
-    'Complete':'complete','Completed':'completed','Blocked':'blocked',
-    'Alert':'alert','Secured':'secured','Overdue':'overdue','Sold':'sold',
-    'In Development':'development','Submitted':'submitted','In Review':'review'
-  };
+  const map = {'Active':'active','Pending':'pending','Development':'development','Complete':'complete','Completed':'completed','Blocked':'blocked','Alert':'alert','Secured':'secured','Overdue':'overdue','Sold':'sold','In Development':'development','Submitted':'submitted','In Review':'review','Operational':'operational'};
   return `<span class="badge badge-${map[status]||'pending'}">${status}</span>`;
 }
-
-function tierBadge(t) { return `<span class="badge badge-${t.toLowerCase()}">${t}</span>`; }
-
-function updateRowStatus(sel, idx) {
-  sel.closest('tr').querySelectorAll('td')[idx].innerHTML = badge(sel.value);
+function ts() { return new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); }
+function showToast(msg) {
+  const t = document.createElement('div'); t.className='toast'; t.textContent=msg;
+  document.body.appendChild(t); setTimeout(()=>t.remove(),2600);
 }
-
-function switchTab(el, targetId, groupId) {
+function openModal(title,bodyHTML,footerHTML='') {
+  document.getElementById('modal-title').textContent=title;
+  document.getElementById('modal-body').innerHTML=bodyHTML;
+  document.getElementById('modal-footer').innerHTML=footerHTML;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
+function closeModalOnOverlay(e) { if(e.target===document.getElementById('modal-overlay')) closeModal(); }
+function toggleNotifPanel() { notifOpen=!notifOpen; document.getElementById('notif-panel').classList.toggle('open',notifOpen); }
+function switchTab(el,targetId,groupId) {
   document.getElementById(groupId).querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
   el.closest('.section,.page').querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');
   document.getElementById(targetId).classList.add('active');
 }
 
-function showToast(msg) {
-  const t = document.createElement('div');
-  t.className = 'toast';
-  t.textContent = msg;
-  document.body.appendChild(t);
-  setTimeout(()=>t.remove(), 2600);
-}
-
-function openModal(title, bodyHTML, footerHTML) {
-  document.getElementById('modal-title').textContent = title;
-  document.getElementById('modal-body').innerHTML = bodyHTML;
-  document.getElementById('modal-footer').innerHTML = footerHTML;
-  document.getElementById('modal-overlay').classList.add('open');
-}
-function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
-function closeModalOnOverlay(e) { if(e.target===document.getElementById('modal-overlay')) closeModal(); }
-
-function toggleNotifPanel() {
-  notifOpen = !notifOpen;
-  document.getElementById('notif-panel').classList.toggle('open', notifOpen);
-}
-
 function submitRequest(division, type, desc) {
-  if (!type||!desc) return;
-  const ts = new Date();
-  const req = { division, type, desc, time: ts.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) };
+  if(!type||!desc) return;
+  const req = {division,type,desc,time:ts()};
   allRequests.unshift(req);
-  document.getElementById('notif-count').textContent = allRequests.length;
+  document.getElementById('notif-count').textContent=allRequests.length;
   const body = document.getElementById('notif-panel-body');
-  if (allRequests.length===1) body.innerHTML='';
+  if(allRequests.length===1) body.innerHTML='';
   body.innerHTML = allRequests.map(r=>`
     <div class="notif-entry">
       <div class="notif-entry-header"><span class="notif-division">${r.division}</span><span class="notif-time">${r.time}</span></div>
@@ -951,31 +494,28 @@ function submitRequest(division, type, desc) {
     </div>`).join('');
   appendToLog(division, req);
 }
-
 function appendToLog(divLabel, req) {
   const d = divisions.find(x=>x.label===divLabel||x.id===divLabel);
-  if (!d) return;
+  if(!d) return;
   const log = document.getElementById('reqlog-'+d.id);
-  if (!log) return;
+  if(!log) return;
   const empty = log.querySelector('.req-empty');
-  if (empty) empty.remove();
+  if(empty) empty.remove();
   const e = document.createElement('div');
-  e.className = 'request-entry';
-  e.innerHTML = `<div class="request-entry-header"><span class="request-entry-type">${req.type}</span><div style="display:flex;gap:8px;align-items:center;">${badge('Submitted')}<span class="request-entry-time">${req.time}</span></div></div><div class="request-entry-desc">${req.desc}</div>`;
-  log.appendChild(e);
+  e.className='request-entry';
+  e.innerHTML=`<div class="request-entry-header"><span class="request-entry-type">${req.type}</span><div style="display:flex;gap:8px;align-items:center;">${badge('Submitted')}<span class="request-entry-time">${req.time}</span></div></div><div class="request-entry-desc">${req.desc}</div>`;
+  log.prepend(e);
 }
-
 function doRequest(divId) {
   const type = document.getElementById('rtype-'+divId)?.value;
   const desc = document.getElementById('rdesc-'+divId)?.value?.trim();
-  if (!desc) { document.getElementById('rdesc-'+divId).style.borderBottomColor='var(--red-light)'; return; }
+  if(!desc) { document.getElementById('rdesc-'+divId).style.borderBottomColor='var(--red-light)'; return; }
   document.getElementById('rdesc-'+divId).style.borderBottomColor='';
   const d = divisions.find(x=>x.id===divId);
   submitRequest(d?d.label:divId, type, desc);
   document.getElementById('rdesc-'+divId).value='';
-  showToast('Request submitted to '+(d?d.label:divId));
+  showToast('Request submitted → '+(d?d.label:divId));
 }
-
 function reqBar(divId, types) {
   return `<div class="request-bar">
     <select id="rtype-${divId}">${types.map(t=>`<option>${t}</option>`).join('')}</select>
@@ -983,26 +523,88 @@ function reqBar(divId, types) {
     <button class="btn btn-gold btn-sm" onclick="doRequest('${divId}')">Submit</button>
   </div>`;
 }
-
 function reqLog(divId) {
-  return `<div class="request-log"><div class="request-log-title">Submitted Requests</div>
+  return `<div class="request-log"><div class="request-log-title">Request Log</div>
     <div id="reqlog-${divId}"><div class="req-empty" style="font-size:10px;color:var(--text-muted);padding:10px 0;">No requests yet.</div></div>
   </div>`;
 }
 
-/* ═══════════════════════════════════════════
-   APP INITIALIZATION
-═══════════════════════════════════════════ */
-function initApp() {
-  buildSidebar();
-  document.getElementById('pages-container').innerHTML = [
-    buildOverview(), buildVindex(), buildOperations(), buildAlliance(),
-    buildObscura(), buildCapital(), buildCustodia(), buildOutreach(),
-    buildAlatus(), buildPedes(), buildPetra()
-  ].join('');
-  navigate('overview');
+/* ═══════════════════════════════════
+   ASSET MANAGEMENT
+═══════════════════════════════════ */
+function renderAssets(series, containerId) {
+  const c = document.getElementById(containerId);
+  if(!c) return;
+  const assets = assetStore[series]||[];
+  if(assets.length===0){c.innerHTML='<div class="empty-state">No assets registered.</div>';return;}
+  c.innerHTML = assets.map(a=>`
+    <div class="asset-card" id="asset-card-${series}-${a.id}">
+      <div class="asset-info">
+        <div class="asset-id">LVOV — Series ${a.id}</div>
+        <div class="asset-name">${a.name}</div>
+        <div class="asset-meta">${a.type} &nbsp;·&nbsp; ${a.val}</div>
+      </div>
+      <div class="asset-actions">
+        ${badge(a.status)}
+        <button class="btn-danger" onclick="removeAsset('${series}','${a.id}','${containerId}')">Remove</button>
+      </div>
+    </div>`).join('');
+}
+function removeAsset(series, id, containerId) {
+  assetStore[series] = (assetStore[series]||[]).filter(a=>a.id!==id);
+  renderAssets(series, containerId);
+  showToast(`Asset ${id} removed`);
+  refreshOverviewKPIs();
+}
+function showAddAssetModal(series, containerId, fields) {
+  const fHTML = fields.map(f=>`<div class="form-group">
+    <label class="form-label">${f.label}</label>
+    <input class="form-input" id="nafield-${f.key}" placeholder="${f.placeholder||''}">
+  </div>`).join('');
+  openModal(`Add ${series}-Series Asset`, fHTML,
+    `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+     <button class="btn btn-gold" onclick="confirmAddAsset('${series}','${containerId}')">Add Asset</button>`
+  );
+  document.getElementById('nafield-name')?.focus();
+}
+function confirmAddAsset(series, containerId) {
+  const name = document.getElementById('nafield-name')?.value?.trim();
+  const type = document.getElementById('nafield-type')?.value?.trim()||'—';
+  const val  = document.getElementById('nafield-val')?.value?.trim()||'—';
+  if(!name) { showToast('Name is required'); return; }
+  const num = assetCounters[series]++;
+  const id = series+num;
+  (assetStore[series]=assetStore[series]||[]).push({id,name,type,status:'Pending',val});
+  closeModal();
+  renderAssets(series, containerId);
+  showToast(`Asset ${id} added`);
+  refreshOverviewKPIs();
+}
+function refreshOverviewKPIs() {
+  const total = Object.values(assetStore).reduce((s,arr)=>s+arr.length,0);
+  const el = document.getElementById('kpi-total-assets');
+  if(el) el.textContent = total;
 }
 
+/* ═══════════════════════════════════
+   HIVEMIND LINK HELPER
+═══════════════════════════════════ */
+function hiveLinks(links) {
+  return `<div class="section">
+    <div class="section-title">Division Links — Hivemind</div>
+    ${links.map(l=>`
+      <div class="hive-link">
+        <span class="hive-from">${l.from}</span>
+        <span class="hive-arrow">→</span>
+        <span class="hive-to" onclick="navigate('${l.toId}')">${l.to}</span>
+        <span class="hive-desc">${l.desc}</span>
+      </div>`).join('')}
+  </div>`;
+}
+
+/* ═══════════════════════════════════
+   SIDEBAR BUILD
+═══════════════════════════════════ */
 function buildSidebar() {
   const nav = document.getElementById('sidebar-nav');
   let html = '<div class="nav-section-label">Command</div>';
@@ -1023,67 +625,556 @@ function buildSidebar() {
 function navigate(id) {
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  const navEl  = document.getElementById('nav-'+id);
+  const navEl = document.getElementById('nav-'+id);
   const pageEl = document.getElementById('page-'+id);
-  if (navEl)  navEl.classList.add('active');
-  if (pageEl) pageEl.classList.add('active');
+  if(navEl) navEl.classList.add('active');
+  if(pageEl) pageEl.classList.add('active');
   const d = divisions.find(x=>x.id===id);
   document.getElementById('top-bar-label').textContent = d ? d.label+(d.sub?' — '+d.sub:'') : 'LVO';
-  if (id==='capital') setTimeout(drawCapitalChart,180);
+  setTimeout(()=>{
+    if(id==='vindex'){renderAssets('A','assets-a');renderAssets('B','assets-b');}
+    if(id==='operations') renderAssets('GRO','assets-gro');
+    if(id==='pedes') renderAssets('FLEET','assets-fleet');
+    if(id==='petra') renderAssets('BUILD','assets-build');
+    if(id==='alatus') renderAssets('AIR','assets-air');
+    if(id==='capital') drawCapitalChart();
+    if(id==='overview') refreshOverviewKPIs();
+  },50);
 }
 
-/* ══════════════════════════════════════════════════════════
-   ██████  DIVISION PAGE BUILDERS
-══════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════
+   PAGE BUILDERS
+═══════════════════════════════════ */
+function buildOverview() {
+  return `<div class="page" id="page-overview">
+    <div class="page-header">
+      <div class="page-title"><span class="page-title-main">Command Center</span><span class="page-title-tag">LVO Holdings LLC</span></div>
+      <div class="page-dba">Legion V. Omni-Operation Holdings | LVOO · Houston, TX</div>
+      <div class="page-desc">Empire-wide oversight. Monitor all 11 divisions, track assets, and coordinate cross-division activity from a single command interface.</div>
+    </div>
+    <div class="kpi-grid kpi-grid-4">
+      <div class="kpi-card"><div class="kpi-label">Total Assets</div><div class="kpi-value" id="kpi-total-assets">12</div><div class="kpi-sub gold">Across all series</div></div>
+      <div class="kpi-card"><div class="kpi-label">Active Divisions</div><div class="kpi-value">10</div><div class="kpi-sub">Fully operational</div></div>
+      <div class="kpi-card"><div class="kpi-label">Alliance Partners</div><div class="kpi-value">38</div><div class="kpi-sub">Active network</div></div>
+      <div class="kpi-card"><div class="kpi-label">Requests Today</div><div class="kpi-value" id="kpi-req-count">0</div><div class="kpi-sub">In pipeline</div></div>
+    </div>
+    <div class="section">
+      <div class="section-title">Division Status</div>
+      <div class="division-grid">
+        ${[
+          {id:'vindex',name:'Vindex',nick:'The Gasoline',note:'4 assets active',dot:'active'},
+          {id:'operations',name:'Operations',nick:'The Engine',note:'GRO 5-13 active',dot:'active'},
+          {id:'alliance',name:'Alliance',nick:'The Brain',note:'38 partners',dot:'active'},
+          {id:'obscura',name:'Obscura',nick:'The Base',note:'3 active clients',dot:'active'},
+          {id:'capital',name:'Capital',nick:'The Reservoir',note:'$2.1M liquidity',dot:'active'},
+          {id:'custodia',name:'Custodia',nick:'The Guard',note:'All props secured',dot:'active'},
+          {id:'outreach',name:'Outreach',nick:'The Heart',note:'2 programs active',dot:'pending'},
+          {id:'alatus',name:'Alatus',nick:'The Wing',note:'Charter + drones',dot:'pending'},
+          {id:'pedes',name:'Pedes',nick:'The Legs',note:'Fleet operational',dot:'active'},
+          {id:'petra',name:'Petra',nick:'The Bedrock',note:'2 builds active',dot:'active'},
+        ].map(d=>`<div class="division-card" onclick="navigate('${d.id}')">
+          <div class="division-card-header"><span class="division-card-name">${d.name}</span><span class="division-card-dot dot-${d.dot}"></span></div>
+          <div class="division-card-nick">${d.nick}</div>
+          <div class="division-card-note">${d.note}</div>
+        </div>`).join('')}
+      </div>
+    </div>
+    ${hiveLinks([
+      {from:'Vindex',to:'Capital',toId:'capital',desc:'Asset financing & acquisition loans'},
+      {from:'Operations',to:'Outreach',toId:'outreach',desc:'Youth from GRO → scholarship programs'},
+      {from:'Pedes',to:'Vindex',toId:'vindex',desc:'Fleet ops draws from B-Series vehicles'},
+      {from:'Pedes',to:'Custodia',toId:'custodia',desc:'Custodia provides drivers + security'},
+      {from:'Alatus',to:'Custodia',toId:'custodia',desc:'Drone surveillance feeds into guard ops'},
+      {from:'Petra',to:'Vindex',toId:'vindex',desc:'Constructs & renovates A-Series properties'},
+      {from:'Capital',to:'Petra',toId:'petra',desc:'Internal loans fund construction'},
+    ])}
+    <div class="section">
+      <div class="section-header"><div class="section-title">Command — Cross-Division Request</div></div>
+      ${reqBar('overview',['Cross-Division Coordination','Emergency Alert','Strategic Review','Budget Request','Compliance Flag','Partnership Inquiry'])}
+      ${reqLog('overview')}
+    </div>
+  </div>`;
+}
 
-/* [OVERVIEW, VINDEX, OPERATIONS, ALLIANCE, OBSCURA, CAPITAL, CUSTODIA, OUTREACH, ALATUS, PEDES, PETRA pages go here] */
-/* Due to character limits, these are truncated in actual output. Full implementation available in original dashboard document. */
+function buildVindex() {
+  return `<div class="page" id="page-vindex">
+    <div class="page-header">
+      <div class="page-title"><span class="page-title-main">Vindex</span><span class="page-title-tag">The Gasoline</span></div>
+      <div class="page-dba">LVO Vindex LLC | LVOV · Asset Management</div>
+      <div class="page-desc">Physical asset management through Protected Series LLC structure. Fuels the empire's wealth through real estate and vehicle holdings.</div>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-label">Real Estate Assets</div><div class="kpi-value">2</div><div class="kpi-sub gold">A-Series properties</div></div>
+      <div class="kpi-card"><div class="kpi-label">Vehicle Assets</div><div class="kpi-value">2</div><div class="kpi-sub">B-Series fleet</div></div>
+      <div class="kpi-card"><div class="kpi-label">Est. Portfolio Value</div><div class="kpi-value">$796K</div><div class="kpi-sub gold">Combined</div></div>
+    </div>
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab(this,'vtab-a','page-vindex')">A-Series — Real Estate</div>
+      <div class="tab" onclick="switchTab(this,'vtab-b','page-vindex')">B-Series — Vehicles</div>
+      <div class="tab" onclick="switchTab(this,'vtab-req','page-vindex')">Requests</div>
+    </div>
+    <div id="vtab-a" class="tab-content active">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">A-Series Properties</div>
+          <button class="btn btn-gold btn-sm" onclick="showAddAssetModal('A','assets-a',[{key:'name',label:'Property Name / Address',placeholder:'1234 Main St – Group Home'},{key:'type',label:'Type',placeholder:'Group Home / Commercial'},{key:'val',label:'Estimated Value',placeholder:'$350,000'}])">+ Add Property</button>
+        </div>
+        <div id="assets-a"></div>
+      </div>
+    </div>
+    <div id="vtab-b" class="tab-content">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">B-Series Vehicles</div>
+          <button class="btn btn-gold btn-sm" onclick="showAddAssetModal('B','assets-b',[{key:'name',label:'Vehicle',placeholder:'2024 Chevy Suburban'},{key:'type',label:'Type',placeholder:'SUV / Sedan'},{key:'val',label:'Value',placeholder:'$45,000'}])">+ Add Vehicle</button>
+        </div>
+        <div id="assets-b"></div>
+      </div>
+    </div>
+    <div id="vtab-req" class="tab-content">
+      ${reqBar('vindex',['Property Acquisition','Vehicle Purchase','Asset Disposal','Maintenance Request','Inspection','Valuation Update','Compliance Review'])}
+      ${reqLog('vindex')}
+      ${hiveLinks([
+        {from:'Vindex',to:'Capital',toId:'capital',desc:'Request acquisition financing from Reservoir'},
+        {from:'Vindex',to:'Petra',toId:'petra',desc:'Commission renovations on A-Series'},
+        {from:'Vindex',to:'Custodia',toId:'custodia',desc:'Deploy security to properties'},
+        {from:'Vindex',to:'Pedes',toId:'pedes',desc:'Assign B-Series vehicles to fleet ops'},
+      ])}
+    </div>
+  </div>`;
+}
 
-function buildOverview() { return '<div class="page" id="page-overview"><div class="page-header"><div class="page-title"><span class="page-title-main">Command Center</span><span class="page-title-tag">LVO Holdings LLC</span></div><div class="page-dba">Legion V. Omni-Operation Holdings | LVOO · Houston, TX</div><div class="page-desc">Empire-wide oversight and control. Monitor all 11 divisions, submit cross-division requests, and track the full LVO portfolio from a single interface.</div></div><div class="kpi-grid kpi-grid-4"><div class="kpi-card"><div class="kpi-label">Portfolio Revenue</div><div class="kpi-value">$4.2M</div><div class="kpi-sub gold">+12% YoY</div></div><div class="kpi-card"><div class="kpi-label">Active Divisions</div><div class="kpi-value">10</div><div class="kpi-sub">Fully operational</div></div><div class="kpi-card"><div class="kpi-label">Alliance Partners</div><div class="kpi-value">38</div><div class="kpi-sub">Active network</div></div><div class="kpi-card"><div class="kpi-label">Active Deals</div><div class="kpi-value">12</div><div class="kpi-sub">In pipeline</div></div></div><p style="padding:20px;text-align:center;color:var(--text-muted);">Dashboard pages are loading. Full division data coming shortly...</p></div>'; }
+function buildOperations() {
+  return `<div class="page" id="page-operations">
+    <div class="page-header">
+      <div class="page-title"><span class="page-title-main">Operations</span><span class="page-title-tag">The Engine</span></div>
+      <div class="page-dba">LVO Operations LLC | LVOO · General Residential Operations GRO 5–13</div>
+      <div class="page-desc">High-volume cash flow through social services. Safety, academic progress, and life skills development for residents in the GRO program.</div>
+    </div>
+    <div class="kpi-grid kpi-grid-4">
+      <div class="kpi-card"><div class="kpi-label">GRO Facilities</div><div class="kpi-value">2</div><div class="kpi-sub gold">Active campuses</div></div>
+      <div class="kpi-card"><div class="kpi-label">Total Residents</div><div class="kpi-value">30</div><div class="kpi-sub">Enrolled</div></div>
+      <div class="kpi-card"><div class="kpi-label">Compliance Rate</div><div class="kpi-value">97%</div><div class="kpi-sub gold">State standards</div></div>
+      <div class="kpi-card"><div class="kpi-label">Monthly Revenue</div><div class="kpi-value">$84K</div><div class="kpi-sub">GRO billings</div></div>
+    </div>
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab(this,'otab-fac','page-operations')">Facilities</div>
+      <div class="tab" onclick="switchTab(this,'otab-res','page-operations')">Residents</div>
+      <div class="tab" onclick="switchTab(this,'otab-req','page-operations')">Requests</div>
+    </div>
+    <div id="otab-fac" class="tab-content active">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">GRO Facilities</div>
+          <button class="btn btn-gold btn-sm" onclick="showAddAssetModal('GRO','assets-gro',[{key:'name',label:'Facility Name',placeholder:'West Campus Facility'},{key:'type',label:'GRO Type',placeholder:'GRO 5-8'},{key:'val',label:'Capacity',placeholder:'15 residents'}])">+ Add Facility</button>
+        </div>
+        <div id="assets-gro"></div>
+      </div>
+    </div>
+    <div id="otab-res" class="tab-content">
+      <div class="section">
+        <div class="section-title">Resident Roster</div>
+        <table class="data-table">
+          <thead><tr><th>ID</th><th>Facility</th><th>Program</th><th>Status</th><th>Progress</th></tr></thead>
+          <tbody>
+            <tr><td>RES-001</td><td>North Campus</td><td>GRO-7</td><td>${badge('Active')}</td><td>Academic Track</td></tr>
+            <tr><td>RES-002</td><td>North Campus</td><td>GRO-6</td><td>${badge('Active')}</td><td>Life Skills</td></tr>
+            <tr><td>RES-003</td><td>East Campus</td><td>GRO-9</td><td>${badge('Pending')}</td><td>Intake</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div id="otab-req" class="tab-content">
+      ${reqBar('operations',['Facility Request','Resident Intake','Staff Request','Maintenance','Compliance Filing','Emergency','Supply Order'])}
+      ${reqLog('operations')}
+      ${hiveLinks([
+        {from:'Operations',to:'Outreach',toId:'outreach',desc:'Refer residents for scholarship & tutoring'},
+        {from:'Operations',to:'Vindex',toId:'vindex',desc:'GRO facilities housed in A-Series properties'},
+        {from:'Operations',to:'Capital',toId:'capital',desc:'Revenue flows into the Reservoir'},
+        {from:'Operations',to:'Custodia',toId:'custodia',desc:'Facility security & safety protocols'},
+      ])}
+    </div>
+  </div>`;
+}
 
-function buildVindex() { return '<div class="page" id="page-vindex"><div class="page-header"><div class="page-title"><span class="page-title-main">Vindex</span><span class="page-title-tag">The Gasoline</span></div></div><p style="padding:20px;text-align:center;color:var(--text-muted);">Vindex division dashboard...</p></div>'; }
+function buildAlliance() {
+  return `<div class="page" id="page-alliance">
+    <div class="page-header">
+      <div class="page-title"><span class="page-title-main">Alliance</span><span class="page-title-tag">The Brain</span></div>
+      <div class="page-dba">LVO Alliance LLC | Subsidiaries: First Up Consultants LLC</div>
+      <div class="page-desc">Strategic nucleus for venture incubation and high-level partnerships. Coalition hub bringing a network of allied companies under the LVO brand.</div>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-label">Active Partners</div><div class="kpi-value">38</div><div class="kpi-sub gold">Strategic alliances</div></div>
+      <div class="kpi-card"><div class="kpi-label">Active Ventures</div><div class="kpi-value">5</div><div class="kpi-sub">In incubation</div></div>
+      <div class="kpi-card"><div class="kpi-label">Subsidiaries</div><div class="kpi-value">1</div><div class="kpi-sub">First Up Consultants</div></div>
+    </div>
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab(this,'altab-p','page-alliance')">Partners</div>
+      <div class="tab" onclick="switchTab(this,'altab-v','page-alliance')">Ventures</div>
+      <div class="tab" onclick="switchTab(this,'altab-req','page-alliance')">Requests</div>
+    </div>
+    <div id="altab-p" class="tab-content active">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">Alliance Partners</div>
+          <button class="btn btn-gold btn-sm" onclick="openModal('Add Partner','<div class=form-group><label class=form-label>Company Name</label><input class=form-input id=p-name placeholder=\"Partner Co. LLC\"></div><div class=form-group><label class=form-label>Tier</label><select class=form-select id=p-tier><option>Gold</option><option>Silver</option><option>Bronze</option></select></div><div class=form-group><label class=form-label>Domain</label><input class=form-input id=p-domain placeholder=\"Real Estate / Tech / Logistics\"></div>','<button class=btn btn-outline onclick=closeModal()>Cancel</button><button class=\"btn btn-gold\" onclick=addPartner()>Add</button>')">+ Add Partner</button>
+        </div>
+        <table class="data-table" id="partners-table">
+          <thead><tr><th>Company</th><th>Tier</th><th>Domain</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>First Up Consultants LLC</td><td><span class="badge badge-gold">Gold</span></td><td>Consulting</td><td>${badge('Active')}</td></tr>
+            <tr><td>Cypress Capital Group</td><td><span class="badge badge-silver">Silver</span></td><td>Real Estate</td><td>${badge('Active')}</td></tr>
+            <tr><td>Houston Pro Transport</td><td><span class="badge badge-bronze">Bronze</span></td><td>Logistics</td><td>${badge('Pending')}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div id="altab-v" class="tab-content">
+      <div class="section">
+        <div class="section-title">Incubated Ventures</div>
+        <table class="data-table">
+          <thead><tr><th>Venture</th><th>Stage</th><th>Lead Division</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>LVO Wholesale Auction Licensing</td><td>Planning</td><td>Vindex</td><td>${badge('Pending')}</td></tr>
+            <tr><td>LVO Digital Brand Agency</td><td>Active</td><td>Obscura</td><td>${badge('Active')}</td></tr>
+            <tr><td>GRO Expansion — 3rd Campus</td><td>Planning</td><td>Operations</td><td>${badge('Development')}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div id="altab-req" class="tab-content">
+      ${reqBar('alliance',['Partnership Inquiry','Venture Proposal','Due Diligence Request','MOU Draft','Strategic Review','Co-Marketing'])}
+      ${reqLog('alliance')}
+    </div>
+  </div>`;
+}
 
-function buildOperations() { return '<div class="page" id="page-operations"><div class="page-header"><div class="page-title"><span class="page-title-main">Operations</span><span class="page-title-tag">The Engine</span></div></div><p style="padding:20px;text-align:center;color:var(--text-muted);">Operations division dashboard...</p></div>'; }
+function addPartner() {
+  const name = document.getElementById('p-name')?.value?.trim();
+  const tier = document.getElementById('p-tier')?.value;
+  const domain = document.getElementById('p-domain')?.value?.trim()||'—';
+  if(!name){showToast('Name required');return;}
+  const tb = document.getElementById('partners-table')?.querySelector('tbody');
+  if(tb){
+    const row = document.createElement('tr');
+    row.innerHTML=`<td>${name}</td><td><span class="badge badge-${tier.toLowerCase()}">${tier}</span></td><td>${domain}</td><td>${badge('Pending')}</td>`;
+    tb.appendChild(row);
+  }
+  closeModal(); showToast(`Partner added: ${name}`);
+}
 
-function buildAlliance() { return '<div class="page" id="page-alliance"><div class="page-header"><div class="page-title"><span class="page-title-main">Alliance</span><span class="page-title-tag">The Brain</span></div></div><p style="padding:20px;text-align:center;color:var(--text-muted);">Alliance division dashboard...</p></div>'; }
+function buildObscura() {
+  return `<div class="page" id="page-obscura">
+    <div class="page-header">
+      <div class="page-title"><span class="page-title-main">Obscura</span><span class="page-title-tag">The Base</span></div>
+      <div class="page-dba">LVO Obscura LLC | Digital & Web — Houston / Cypress</div>
+      <div class="page-desc">Technological foundation of the brand. High-end web development and 4K digital branding for Houston and Cypress businesses. Industrial & Opiumcore aesthetics.</div>
+    </div>
+    <div class="kpi-grid kpi-grid-4">
+      <div class="kpi-card"><div class="kpi-label">Active Clients</div><div class="kpi-value">3</div><div class="kpi-sub gold">Houston / Cypress</div></div>
+      <div class="kpi-card"><div class="kpi-label">Projects In Dev</div><div class="kpi-value">2</div><div class="kpi-sub">Web builds</div></div>
+      <div class="kpi-card"><div class="kpi-label">LVO Properties Branded</div><div class="kpi-value">6</div><div class="kpi-sub">Internal</div></div>
+      <div class="kpi-card"><div class="kpi-label">MRR</div><div class="kpi-value">$12K</div><div class="kpi-sub gold">Retainers</div></div>
+    </div>
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">Client Projects</div>
+        <button class="btn btn-gold btn-sm" onclick="openModal('New Project','<div class=form-group><label class=form-label>Client Name</label><input class=form-input id=ob-client placeholder=\"Client LLC\"></div><div class=form-group><label class=form-label>Service</label><select class=form-select id=ob-svc><option>Web Design</option><option>4K Video / Brand</option><option>Logo & Identity</option><option>Full Rebrand</option></select></div>','<button class=btn btn-outline onclick=closeModal()>Cancel</button><button class=\"btn btn-gold\" onclick=addObscuraProject()>Create</button>')">+ New Project</button>
+      </div>
+      <table class="data-table" id="obscura-table">
+        <thead><tr><th>Client</th><th>Service</th><th>Status</th><th>Due</th></tr></thead>
+        <tbody>
+          <tr><td>Vindex Internal</td><td>Dashboard + Brand System</td><td>${badge('Active')}</td><td>Ongoing</td></tr>
+          <tr><td>Cypress Industrial Co.</td><td>Website + 4K Branding</td><td>${badge('Active')}</td><td>Jul 2026</td></tr>
+          <tr><td>Outreach Org</td><td>LVO.org Build</td><td>${badge('Development')}</td><td>Aug 2026</td></tr>
+        </tbody>
+      </table>
+    </div>
+    ${reqBar('obscura',['New Web Project','Brand Package','4K Video','Logo Design','Site Update','SEO / Analytics'])}
+    ${reqLog('obscura')}
+  </div>`;
+}
+function addObscuraProject(){
+  const c=document.getElementById('ob-client')?.value?.trim();
+  const s=document.getElementById('ob-svc')?.value;
+  if(!c){showToast('Client name required');return;}
+  const tb=document.getElementById('obscura-table')?.querySelector('tbody');
+  if(tb){const r=document.createElement('tr');r.innerHTML=`<td>${c}</td><td>${s}</td><td>${badge('Pending')}</td><td>TBD</td>`;tb.appendChild(r);}
+  closeModal();showToast(`Project created for ${c}`);
+}
 
-function buildObscura() { return '<div class="page" id="page-obscura"><div class="page-header"><div class="page-title"><span class="page-title-main">Obscura</span><span class="page-title-tag">The Base</span></div></div><p style="padding:20px;text-align:center;color:var(--text-muted);">Obscura division dashboard...</p></div>'; }
+function buildCapital() {
+  return `<div class="page" id="page-capital">
+    <div class="page-header">
+      <div class="page-title"><span class="page-title-main">Capital</span><span class="page-title-tag">The Reservoir</span></div>
+      <div class="page-dba">LVO Capital LLC | LVOC · Internal Treasury & Finance</div>
+      <div class="page-desc">Internal treasury and financing hub. Capital allocation, internal lending, and strategic investment across the entire LVO-OO ecosystem.</div>
+    </div>
+    <div class="kpi-grid kpi-grid-4">
+      <div class="kpi-card"><div class="kpi-label">Total Deployed</div><div class="kpi-value">$4.84M</div><div class="kpi-sub gold">Across all divisions</div></div>
+      <div class="kpi-card"><div class="kpi-label">Available Liquidity</div><div class="kpi-value">$2.1M</div><div class="kpi-sub">Reserve</div></div>
+      <div class="kpi-card"><div class="kpi-label">Internal Loans</div><div class="kpi-value">4</div><div class="kpi-sub">Active</div></div>
+      <div class="kpi-card"><div class="kpi-label">ROI (Portfolio)</div><div class="kpi-value">18%</div><div class="kpi-sub gold">YoY</div></div>
+    </div>
+    <canvas id="capital-chart" height="155" style="width:100%;display:block;margin-bottom:18px;"></canvas>
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">Internal Loan Ledger</div>
+        <button class="btn btn-gold btn-sm" onclick="openModal('Record Loan','<div class=form-group><label class=form-label>Recipient Division</label><select class=form-select id=loan-div><option>Vindex</option><option>Operations</option><option>Petra</option><option>Pedes</option><option>Alatus</option></select></div><div class=form-group><label class=form-label>Amount</label><input class=form-input id=loan-amt placeholder=\"$250,000\"></div><div class=form-group><label class=form-label>Purpose</label><input class=form-input id=loan-purpose placeholder=\"Property acquisition\"></div>','<button class=btn btn-outline onclick=closeModal()>Cancel</button><button class=\"btn btn-gold\" onclick=addLoan()>Record</button>')">+ Record Loan</button>
+      </div>
+      <table class="data-table" id="loan-table">
+        <thead><tr><th>Division</th><th>Amount</th><th>Purpose</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Vindex</td><td>$280,000</td><td>A1 Property Acquisition</td><td>${badge('Active')}</td></tr>
+          <tr><td>Petra</td><td>$85,000</td><td>GRO-01 HVAC Renovation</td><td>${badge('Active')}</td></tr>
+          <tr><td>Pedes</td><td>$72,000</td><td>Fleet vehicle — Suburban Z71</td><td>${badge('Active')}</td></tr>
+          <tr><td>Alatus</td><td>$45,000</td><td>Drone systems procurement</td><td>${badge('Pending')}</td></tr>
+        </tbody>
+      </table>
+    </div>
+    ${reqBar('capital',['Loan Request','Capital Injection','Investment Proposal','Financial Review','Budget Approval','Expense Report'])}
+    ${reqLog('capital')}
+    ${hiveLinks([
+      {from:'Capital',to:'Vindex',toId:'vindex',desc:'Finance A/B Series acquisitions'},
+      {from:'Capital',to:'Petra',toId:'petra',desc:'Fund construction & renovations'},
+      {from:'Capital',to:'Pedes',toId:'pedes',desc:'Fleet vehicle financing'},
+    ])}
+  </div>`;
+}
+function addLoan(){
+  const div=document.getElementById('loan-div')?.value;
+  const amt=document.getElementById('loan-amt')?.value?.trim();
+  const pur=document.getElementById('loan-purpose')?.value?.trim()||'—';
+  if(!amt){showToast('Amount required');return;}
+  const tb=document.getElementById('loan-table')?.querySelector('tbody');
+  if(tb){const r=document.createElement('tr');r.innerHTML=`<td>${div}</td><td>${amt}</td><td>${pur}</td><td>${badge('Pending')}</td>`;tb.appendChild(r);}
+  closeModal();showToast(`Loan recorded → ${div}`);
+}
 
-function buildCapital() { return '<div class="page" id="page-capital"><div class="page-header"><div class="page-title"><span class="page-title-main">Capital</span><span class="page-title-tag">The Reservoir</span></div></div><div class="kpi-grid"><div class="kpi-card"><div class="kpi-label">Total Deployed</div><div class="kpi-value">$4.84M</div><div class="kpi-sub gold">Across all divisions</div></div><div class="kpi-card"><div class="kpi-label">Portfolio Liquidity</div><div class="kpi-value">$2.1M</div><div class="kpi-sub">Reserve</div></div><div class="kpi-card"><div class="kpi-label">Active Internal Loans</div><div class="kpi-value">4</div><div class="kpi-sub">Inter-division</div></div></div><canvas id="capital-chart" height="155" style="width:100%;display:block;margin-top:20px;"></canvas></div>'; }
+function buildCustodia() {
+  return `<div class="page" id="page-custodia">
+    <div class="page-header">
+      <div class="page-title"><span class="page-title-main">Custodia</span><span class="page-title-tag">The Guard</span></div>
+      <div class="page-dba">LVO Custodia LLC | LVOS · Logistics & Security</div>
+      <div class="page-desc">Safety and movement of all physical assets. Facility security, asset transport, and protection protocols across the empire.</div>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-label">Secured Properties</div><div class="kpi-value">2</div><div class="kpi-sub gold">A-Series</div></div>
+      <div class="kpi-card"><div class="kpi-label">Active Guards</div><div class="kpi-value">4</div><div class="kpi-sub">On rotation</div></div>
+      <div class="kpi-card"><div class="kpi-label">Incidents (30d)</div><div class="kpi-value">0</div><div class="kpi-sub gold">Clean record</div></div>
+    </div>
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">Property Security Status</div>
+        <button class="btn btn-gold btn-sm" onclick="openModal('Add Security Post','<div class=form-group><label class=form-label>Location</label><input class=form-input id=sec-loc placeholder=\"1420 Cypress Creek — GRO North\"></div><div class=form-group><label class=form-label>Type</label><select class=form-select id=sec-type><option>Camera System</option><option>Guard Post</option><option>Door Alerts</option><option>Perimeter</option></select></div>','<button class=btn btn-outline onclick=closeModal()>Cancel</button><button class=\"btn btn-gold\" onclick=addSecPost()>Add</button>')">+ Add Post</button>
+      </div>
+      <table class="data-table" id="security-table">
+        <thead><tr><th>Location</th><th>Type</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>1420 Cypress Creek – GRO North</td><td>Camera + Door Alerts</td><td>${badge('Secured')}</td></tr>
+          <tr><td>8910 S Main – Commercial</td><td>Camera System</td><td>${badge('Secured')}</td></tr>
+          <tr><td>Fleet Lot – B-Series</td><td>Perimeter Guard</td><td>${badge('Active')}</td></tr>
+        </tbody>
+      </table>
+    </div>
+    ${reqBar('custodia',['Security Deployment','Guard Request','Incident Report','Camera Install','Key/Access','Transport Request','Patrol Schedule'])}
+    ${reqLog('custodia')}
+    ${hiveLinks([
+      {from:'Custodia',to:'Vindex',toId:'vindex',desc:'Secure A-Series properties'},
+      {from:'Custodia',to:'Pedes',toId:'pedes',desc:'Provide drivers for executive transit'},
+      {from:'Custodia',to:'Alatus',toId:'alatus',desc:'Coordinate drone surveillance feeds'},
+    ])}
+  </div>`;
+}
+function addSecPost(){
+  const loc=document.getElementById('sec-loc')?.value?.trim();
+  const type=document.getElementById('sec-type')?.value;
+  if(!loc){showToast('Location required');return;}
+  const tb=document.getElementById('security-table')?.querySelector('tbody');
+  if(tb){const r=document.createElement('tr');r.innerHTML=`<td>${loc}</td><td>${type}</td><td>${badge('Pending')}</td>`;tb.appendChild(r);}
+  closeModal();showToast(`Security post added`);
+}
 
-function buildCustodia() { return '<div class="page" id="page-custodia"><div class="page-header"><div class="page-title"><span class="page-title-main">Custodia</span><span class="page-title-tag">The Guard</span></div></div><p style="padding:20px;text-align:center;color:var(--text-muted);">Custodia division dashboard...</p></div>'; }
+function buildOutreach() {
+  return `<div class="page" id="page-outreach">
+    <div class="page-header">
+      <div class="page-title"><span class="page-title-main">Outreach & Restoration</span><span class="page-title-tag">The Heart</span></div>
+      <div class="page-dba">LVO Outreach & Restoration LLC | LVOOR · LVO.org</div>
+      <div class="page-desc">The heart of the operation. Handles the .org presence, receives tax-deductible donations, and funds social impact programs aligned with the Legion's mission.</div>
+    </div>
+    <div class="kpi-grid kpi-grid-4">
+      <div class="kpi-card"><div class="kpi-label">Active Programs</div><div class="kpi-value">2</div><div class="kpi-sub gold">Youth empowerment</div></div>
+      <div class="kpi-card"><div class="kpi-label">Scholarships</div><div class="kpi-value">7</div><div class="kpi-sub">Awarded YTD</div></div>
+      <div class="kpi-card"><div class="kpi-label">Donations Received</div><div class="kpi-value">$34K</div><div class="kpi-sub gold">YTD</div></div>
+      <div class="kpi-card"><div class="kpi-label">Community Projects</div><div class="kpi-value">3</div><div class="kpi-sub">In progress</div></div>
+    </div>
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">Active Programs</div>
+        <button class="btn btn-gold btn-sm" onclick="openModal('Add Program','<div class=form-group><label class=form-label>Program Name</label><input class=form-input id=prog-name placeholder=\"STEM Mentorship 2026\"></div><div class=form-group><label class=form-label>Type</label><select class=form-select id=prog-type><option>Scholarship</option><option>Tutoring</option><option>Life Skills</option><option>Community Project</option></select></div><div class=form-group><label class=form-label>Budget</label><input class=form-input id=prog-budget placeholder=\"$10,000\"></div>','<button class=btn btn-outline onclick=closeModal()>Cancel</button><button class=\"btn btn-gold\" onclick=addProgram()>Add</button>')">+ Add Program</button>
+      </div>
+      <table class="data-table" id="programs-table">
+        <thead><tr><th>Program</th><th>Type</th><th>Budget</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>GRO Youth Scholarship Fund</td><td>Scholarship</td><td>$18,000</td><td>${badge('Active')}</td></tr>
+          <tr><td>Life Skills Workshop — North</td><td>Life Skills</td><td>$6,500</td><td>${badge('Active')}</td></tr>
+          <tr><td>Cypress Community Garden</td><td>Community Project</td><td>$4,000</td><td>${badge('Pending')}</td></tr>
+        </tbody>
+      </table>
+    </div>
+    ${reqBar('outreach',['Donation Processing','Scholarship Application','Program Launch','Volunteer Request','Grant Writing','Community Event'])}
+    ${reqLog('outreach')}
+    ${hiveLinks([
+      {from:'Outreach',to:'Operations',toId:'operations',desc:'GRO residents referred to scholarship programs'},
+      {from:'Outreach',to:'Obscura',toId:'obscura',desc:'LVO.org website built & maintained by Obscura'},
+      {from:'Outreach',to:'Capital',toId:'capital',desc:'Donations tracked via Capital ledger'},
+    ])}
+  </div>`;
+}
+function addProgram(){
+  const n=document.getElementById('prog-name')?.value?.trim();
+  const t=document.getElementById('prog-type')?.value;
+  const b=document.getElementById('prog-budget')?.value?.trim()||'TBD';
+  if(!n){showToast('Name required');return;}
+  const tb=document.getElementById('programs-table')?.querySelector('tbody');
+  if(tb){const r=document.createElement('tr');r.innerHTML=`<td>${n}</td><td>${t}</td><td>${b}</td><td>${badge('Pending')}</td>`;tb.appendChild(r);}
+  closeModal();showToast(`Program added: ${n}`);
+}
 
-function buildOutreach() { return '<div class="page" id="page-outreach"><div class="page-header"><div class="page-title"><span class="page-title-main">Outreach &amp; Restoration</span><span class="page-title-tag">The Heart</span></div></div><p style="padding:20px;text-align:center;color:var(--text-muted);">Outreach division dashboard...</p></div>'; }
+function buildAlatus() {
+  return `<div class="page" id="page-alatus">
+    <div class="page-header">
+      <div class="page-title"><span class="page-title-main">Alatus</span><span class="page-title-tag">The Wing</span></div>
+      <div class="page-dba">LVO Alatus LLC | LVOOA · Aviation, Drones & Aerospace</div>
+      <div class="page-desc">Private aviation, drones, and aerospace logistics. Air superiority — charter transport for executives, drone surveillance for properties, rapid asset delivery.</div>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-label">Air Assets</div><div class="kpi-value">2</div><div class="kpi-sub gold">Charter + Drone</div></div>
+      <div class="kpi-card"><div class="kpi-label">Missions (30d)</div><div class="kpi-value">6</div><div class="kpi-sub">Completed</div></div>
+      <div class="kpi-card"><div class="kpi-label">Surveillance Feeds</div><div class="kpi-value">3</div><div class="kpi-sub">Active properties</div></div>
+    </div>
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">Air Asset Registry</div>
+        <button class="btn btn-gold btn-sm" onclick="showAddAssetModal('AIR','assets-air',[{key:'name',label:'Asset Name',placeholder:'Charter Partner / Drone Model'},{key:'type',label:'Type',placeholder:'Charter / Drone / Fixed Wing'},{key:'val',label:'Coverage',placeholder:'Executive / Vindex Surveillance'}])">+ Add Asset</button>
+      </div>
+      <div id="assets-air"></div>
+    </div>
+    ${reqBar('alatus',['Charter Flight','Drone Deployment','Surveillance Request','Aerial Survey','Emergency Evac','Logistics Drop'])}
+    ${reqLog('alatus')}
+    ${hiveLinks([
+      {from:'Alatus',to:'Custodia',toId:'custodia',desc:'Drone feeds routed to Custodia guard ops'},
+      {from:'Alatus',to:'Vindex',toId:'vindex',desc:'Aerial surveys of A-Series properties'},
+      {from:'Alatus',to:'Capital',toId:'capital',desc:'Charter & drone costs financed via Reservoir'},
+    ])}
+  </div>`;
+}
 
-function buildAlatus() { return '<div class="page" id="page-alatus"><div class="page-header"><div class="page-title"><span class="page-title-main">Alatus</span><span class="page-title-tag">The Wing</span></div></div><p style="padding:20px;text-align:center;color:var(--text-muted);">Alatus division dashboard...</p></div>'; }
+function buildPedes() {
+  return `<div class="page" id="page-pedes">
+    <div class="page-header">
+      <div class="page-title"><span class="page-title-main">Pedes</span><span class="page-title-tag">The Legs</span></div>
+      <div class="page-dba">LVO Pedes LLC | LVOOP · Executive Ground Transport</div>
+      <div class="page-desc">Executive ground transport and heavy land logistics. The boots-on-the-ground force — luxury fleet movement, armored transit, professional chauffeurs. All black, all professional.</div>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-label">Fleet Size</div><div class="kpi-value">2</div><div class="kpi-sub gold">Active vehicles</div></div>
+      <div class="kpi-card"><div class="kpi-label">Drivers</div><div class="kpi-value">3</div><div class="kpi-sub">On roster</div></div>
+      <div class="kpi-card"><div class="kpi-label">Missions (30d)</div><div class="kpi-value">14</div><div class="kpi-sub gold">Completed</div></div>
+    </div>
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">Fleet Registry</div>
+        <button class="btn btn-gold btn-sm" onclick="showAddAssetModal('FLEET','assets-fleet',[{key:'name',label:'Vehicle',placeholder:'2024 Armored Suburban'},{key:'type',label:'Type',placeholder:'Armored SUV / Performance'},{key:'val',label:'Assignment',placeholder:'Executive / Partner Transit'}])">+ Add Vehicle</button>
+      </div>
+      <div id="assets-fleet"></div>
+    </div>
+    ${reqBar('pedes',['Executive Transport','Partner Pickup','Armored Run','Airport Transfer','Fleet Maintenance','Driver Assignment','Emergency Dispatch'])}
+    ${reqLog('pedes')}
+    ${hiveLinks([
+      {from:'Pedes',to:'Vindex',toId:'vindex',desc:'Operates B-Series vehicles from Vindex'},
+      {from:'Pedes',to:'Custodia',toId:'custodia',desc:'Custodia provides vetted drivers & security'},
+      {from:'Pedes',to:'Capital',toId:'capital',desc:'Fleet financing from Reservoir'},
+    ])}
+  </div>`;
+}
 
-function buildPedes() { return '<div class="page" id="page-pedes"><div class="page-header"><div class="page-title"><span class="page-title-main">Pedes</span><span class="page-title-tag">The Legs</span></div></div><p style="padding:20px;text-align:center;color:var(--text-muted);">Pedes division dashboard...</p></div>'; }
+function buildPetra() {
+  return `<div class="page" id="page-petra">
+    <div class="page-header">
+      <div class="page-title"><span class="page-title-main">Petra</span><span class="page-title-tag">The Bedrock</span></div>
+      <div class="page-dba">LVO Petra LLC | LVOPR · Construction & Infrastructure</div>
+      <div class="page-desc">The physical bedrock. Petra builds and renovates the empire's infrastructure — GRO facilities, commercial hubs, and all A-Series properties. Construction profits stay inside the organization.</div>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-label">Active Builds</div><div class="kpi-value">2</div><div class="kpi-sub gold">In progress</div></div>
+      <div class="kpi-card"><div class="kpi-label">Est. Project Value</div><div class="kpi-value">$405K</div><div class="kpi-sub">Combined</div></div>
+      <div class="kpi-card"><div class="kpi-label">Completed (YTD)</div><div class="kpi-value">1</div><div class="kpi-sub gold">Delivered</div></div>
+    </div>
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">Project Registry</div>
+        <button class="btn btn-gold btn-sm" onclick="showAddAssetModal('BUILD','assets-build',[{key:'name',label:'Project Name',placeholder:'GRO-02 Full Renovation'},{key:'type',label:'Type',placeholder:'New Build / Renovation / Infrastructure'},{key:'val',label:'Budget',placeholder:'$120,000'}])">+ Add Project</button>
+      </div>
+      <div id="assets-build"></div>
+    </div>
+    ${reqBar('petra',['New Build Request','Renovation Scope','Material Order','Contractor Assignment','Inspection Request','Blueprint Review','Permit Filing'])}
+    ${reqLog('petra')}
+    ${hiveLinks([
+      {from:'Petra',to:'Vindex',toId:'vindex',desc:'Builds & renovates A-Series properties'},
+      {from:'Petra',to:'Operations',toId:'operations',desc:'Constructs GRO campus facilities'},
+      {from:'Petra',to:'Capital',toId:'capital',desc:'Draws construction loans from Reservoir'},
+    ])}
+  </div>`;
+}
 
-function buildPetra() { return '<div class="page" id="page-petra"><div class="page-header"><div class="page-title"><span class="page-title-main">Petra</span><span class="page-title-tag">The Bedrock</span></div></div><p style="padding:20px;text-align:center;color:var(--text-muted);">Petra division dashboard...</p></div>'; }
-
+/* ═══════════════════════════════════
+   CAPITAL CHART
+═══════════════════════════════════ */
 function drawCapitalChart() {
   const canvas = document.getElementById('capital-chart');
-  if (!canvas) return;
+  if(!canvas) return;
   const dpr = window.devicePixelRatio||1;
-  canvas.width  = canvas.offsetWidth * dpr;
+  canvas.width = canvas.offsetWidth * dpr;
   canvas.height = 155 * dpr;
   const ctx = canvas.getContext('2d');
   ctx.scale(dpr,dpr);
-  const w = canvas.offsetWidth, h = 155;
-  const data   = [0.4,0.8,1.2,1.5,1.8,2.2,2.4,2.6,2.5,2.8,3.0,3.2];
-  const pad = {l:42,r:16,t:16,b:28};
-  const cw = w-pad.l-pad.r, ch = h-pad.t-pad.b;
+  const w=canvas.offsetWidth, h=155;
+  const data=[0.4,0.8,1.2,1.5,1.8,2.2,2.4,2.6,2.5,2.8,3.0,3.2];
+  const pad={l:42,r:16,t:16,b:28};
+  const cw=w-pad.l-pad.r, ch=h-pad.t-pad.b;
   const max=3.5;
-  const pts = data.map((v,i)=>({ x:pad.l+(i/(data.length-1))*cw, y:pad.t+ch-(v/max)*ch }));
-  ctx.strokeStyle='#2a2a2a'; ctx.lineWidth=1;
-  [0,1,2,3,4].forEach(i=>{ const y = pad.t+(i/4)*ch; ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(pad.l+cw,y); ctx.stroke(); });
-  const grad = ctx.createLinearGradient(0,pad.t,0,pad.t+ch);
-  grad.addColorStop(0,'#b8953f20'); grad.addColorStop(1,'#b8953f00');
-  ctx.beginPath(); ctx.moveTo(pts[0].x,pad.t+ch); pts.forEach(p=>ctx.lineTo(p.x,p.y)); ctx.lineTo(pts[pts.length-1].x,pad.t+ch); ctx.closePath(); ctx.fillStyle=grad; ctx.fill();
-  ctx.beginPath(); ctx.strokeStyle='#b8953f'; ctx.lineWidth=1.5; pts.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y)); ctx.stroke();
-  pts.forEach(p=>{ ctx.beginPath(); ctx.arc(p.x,p.y,2.5,0,Math.PI*2); ctx.fillStyle='#b8953f'; ctx.fill(); });
+  const pts=data.map((v,i)=>({x:pad.l+(i/(data.length-1))*cw,y:pad.t+ch-(v/max)*ch}));
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  ctx.strokeStyle='#2a2a2a';ctx.lineWidth=1;
+  [0,1,2,3,4].forEach(i=>{const y=pad.t+(i/4)*ch;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+cw,y);ctx.stroke();});
+  ctx.fillStyle='#5a5650';ctx.font=`9px 'DM Mono'`;
+  [3.5,2.6,1.75,0.87,0].forEach((v,i)=>{const y=pad.t+(i/4)*ch;ctx.fillText('$'+v.toFixed(1)+'M',2,y+3);});
+  const grad=ctx.createLinearGradient(0,pad.t,0,pad.t+ch);
+  grad.addColorStop(0,'#b8953f20');grad.addColorStop(1,'#b8953f00');
+  ctx.beginPath();ctx.moveTo(pts[0].x,pad.t+ch);pts.forEach(p=>ctx.lineTo(p.x,p.y));ctx.lineTo(pts[pts.length-1].x,pad.t+ch);ctx.closePath();ctx.fillStyle=grad;ctx.fill();
+  ctx.beginPath();ctx.strokeStyle='#b8953f';ctx.lineWidth=1.5;pts.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));ctx.stroke();
+  pts.forEach(p=>{ctx.beginPath();ctx.arc(p.x,p.y,2.5,0,Math.PI*2);ctx.fillStyle='#b8953f';ctx.fill();});
+  months.forEach((m,i)=>{const x=pad.l+(i/(data.length-1))*cw;ctx.fillStyle='#5a5650';ctx.font=`8px 'DM Mono'`;ctx.textAlign='center';ctx.fillText(m,x,h-4);});
+}
+
+/* ═══════════════════════════════════
+   INIT
+═══════════════════════════════════ */
+function initApp() {
+  buildSidebar();
+  document.getElementById('pages-container').innerHTML = [
+    buildOverview(), buildVindex(), buildOperations(), buildAlliance(),
+    buildObscura(), buildCapital(), buildCustodia(), buildOutreach(),
+    buildAlatus(), buildPedes(), buildPetra()
+  ].join('');
+  navigate('overview');
+  setInterval(()=>{
+    const el=document.getElementById('kpi-req-count');
+    if(el) el.textContent=allRequests.length;
+  },2000);
 }
 </script>
-
 </body>
 </html>
