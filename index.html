@@ -42,16 +42,13 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 
-/* AUTH GUARD */
 #auth-guard{position:fixed;inset:0;background:var(--black);display:flex;align-items:center;justify-content:center;z-index:9000}
 #auth-guard-text{font-size:9px;letter-spacing:.3em;color:var(--text-muted);text-transform:uppercase}
 
-/* APP */
 #app{display:none;height:100vh;overflow:hidden}
 #app.visible{display:flex;animation:fadeIn .6s ease}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 
-/* SIDEBAR */
 #sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;overflow-y:auto;overflow-x:hidden;flex-shrink:0}
 .sidebar-logo{padding:26px 22px 18px;border-bottom:1px solid var(--border)}
 .sidebar-logo-text{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:300;letter-spacing:.35em;color:var(--gold);line-height:1;margin-bottom:5px}
@@ -70,13 +67,11 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .auth-status{display:flex;align-items:center;gap:8px;font-size:9px;letter-spacing:.18em;color:var(--text-muted);text-transform:uppercase}
 .auth-dot{width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0}
 
-/* MAIN */
 #main{flex:1;height:100vh;overflow-y:auto;background:var(--black);min-width:0}
 .page{display:none;padding:36px 44px 60px;animation:pageIn .25s ease}
 .page.active{display:block}
 @keyframes pageIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
-/* TOP BAR */
 .top-bar{position:sticky;top:0;background:var(--black);border-bottom:1px solid var(--border);padding:13px 44px;display:flex;align-items:center;justify-content:space-between;z-index:100}
 .top-bar-left{font-size:9px;letter-spacing:.22em;color:var(--text-muted);text-transform:uppercase}
 .top-bar-right{display:flex;align-items:center;gap:14px}
@@ -84,7 +79,6 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .notif-btn:hover{color:var(--gold)}
 .notif-count{position:absolute;top:-4px;right:-4px;background:var(--gold);color:var(--black);font-size:8px;font-weight:700;width:15px;height:15px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace}
 
-/* PAGE HEADER */
 .page-header{margin-bottom:28px;border-bottom:1px solid var(--border);padding-bottom:20px}
 .page-title{display:flex;align-items:baseline;gap:14px;margin-bottom:4px}
 .page-title-main{font-family:'Cormorant Garamond',serif;font-size:44px;font-weight:300;color:var(--text);letter-spacing:.02em;line-height:1}
@@ -92,7 +86,16 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .page-dba{font-size:9px;letter-spacing:.2em;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px}
 .page-desc{font-size:12px;color:var(--text-muted);line-height:1.65;max-width:640px}
 
-/* KPI GRID */
+/* EDITABLE INLINE */
+.editable{cursor:text;border-bottom:1px dashed transparent;transition:border-color .2s,background .15s;padding:1px 3px;border-radius:2px;outline:none}
+.editable:hover{border-bottom-color:var(--gold-dim)}
+.editable:focus{border-bottom-color:var(--gold);background:var(--gold-glow)}
+.editable[contenteditable="true"]:empty:before{content:attr(data-placeholder);color:var(--text-muted);font-style:italic}
+.edit-mode-active .editable{border-bottom-color:var(--gold-dim)!important}
+.edit-hint{font-size:8px;letter-spacing:.18em;color:var(--gold-dim);text-transform:uppercase;padding:4px 10px;border:1px dashed var(--gold-dim);display:inline-flex;align-items:center;gap:6px;cursor:pointer;transition:all .2s;background:transparent;font-family:'DM Mono',monospace}
+.edit-hint:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-glow)}
+.edit-hint.active{border-color:var(--gold);color:var(--gold);background:var(--gold-glow)}
+
 .kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px}
 .kpi-grid-4{grid-template-columns:repeat(4,1fr)}
 .kpi-grid-2{grid-template-columns:repeat(2,1fr)}
@@ -104,20 +107,17 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .kpi-sub.gold{color:var(--gold)}
 .kpi-sub.red{color:var(--red-light)}
 
-/* SECTION */
 .section{background:var(--card);border:1px solid var(--border);padding:22px;margin-bottom:18px}
 .section-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;color:var(--text);margin-bottom:18px;letter-spacing:.04em}
 .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
 
-/* TABLE */
+/* INLINE-EDITABLE TABLE */
 .data-table{width:100%;border-collapse:collapse}
 .data-table th{font-size:8px;letter-spacing:.25em;color:var(--text-muted);text-transform:uppercase;padding:0 14px 10px 0;text-align:left;border-bottom:1px solid var(--border)}
-.data-table td{padding:12px 14px 12px 0;border-bottom:1px solid var(--border);color:var(--text-dim);font-size:11.5px}
+.data-table td{padding:10px 14px 10px 0;border-bottom:1px solid var(--border);color:var(--text-dim);font-size:11.5px;vertical-align:middle}
 .data-table tr:last-child td{border-bottom:none}
 .data-table tr:hover td{color:var(--text)}
-.data-table .gold-link{color:var(--gold);cursor:pointer}
 
-/* BADGES */
 .badge{display:inline-block;padding:3px 9px;font-size:8px;letter-spacing:.18em;text-transform:uppercase;border:1px solid;white-space:nowrap}
 .badge-active{color:var(--gold);border-color:var(--gold-dim);background:#b8953f08}
 .badge-pending{color:#c8a050;border-color:#8b6020;background:#8b60200a}
@@ -133,7 +133,6 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .badge-sold{color:var(--text-muted);border-color:var(--border);background:transparent}
 .badge-open{color:#e05555;border-color:var(--red);background:#8b20200a}
 
-/* BUTTONS */
 .btn{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.22em;text-transform:uppercase;padding:9px 18px;cursor:pointer;border:none;transition:all .2s;white-space:nowrap}
 .btn-gold{background:var(--gold);color:var(--black);font-weight:500}
 .btn-gold:hover{background:var(--gold-light)}
@@ -142,9 +141,9 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .btn-sm{padding:5px 11px;font-size:8px}
 .btn-danger{background:transparent;border:1px solid var(--red);color:#e05555}
 .btn-danger:hover{background:var(--red);color:var(--text)}
-.btn:disabled{opacity:.45;cursor:not-allowed;pointer-events:none}
+.btn-icon{background:transparent;border:1px solid var(--border);color:var(--text-muted);padding:4px 7px;font-size:11px;cursor:pointer;transition:all .2s;font-family:'DM Mono',monospace}
+.btn-icon:hover{border-color:var(--red-light);color:var(--red-light)}
 
-/* TABS */
 .tabs{display:flex;margin-bottom:18px;border-bottom:1px solid var(--border)}
 .tab{padding:9px 18px;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;transition:color .2s,border-color .2s;margin-bottom:-1px}
 .tab:hover{color:var(--text-dim)}
@@ -152,27 +151,20 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .tab-content{display:none}
 .tab-content.active{display:block}
 
-/* LAYOUT */
 .two-col{display:grid;grid-template-columns:1fr 360px;gap:18px}
 
-/* ACTIVITY FEED */
 .activity-feed{display:flex;flex-direction:column}
 .activity-item{padding:12px 0;border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:flex-start}
 .activity-item:last-child{border-bottom:none}
 .activity-dot{width:6px;height:6px;border-radius:50%;background:var(--gold-dim);margin-top:4px;flex-shrink:0}
-.activity-dot.red{background:var(--red-light)}
-.activity-dot.green{background:var(--green)}
-.activity-dot.gold{background:var(--gold)}
 .activity-time{font-size:9px;color:var(--text-muted);letter-spacing:.1em;white-space:nowrap}
 .activity-text{font-size:11.5px;color:var(--text-dim);line-height:1.5}
 
-/* PROGRESS */
 .progress-wrap{display:flex;align-items:center;gap:10px}
 .progress-bar{flex:1;height:2px;background:var(--border)}
 .progress-fill{height:100%;background:var(--gold);transition:width .4s}
 .progress-label{font-size:10px;color:var(--gold);min-width:34px;text-align:right}
 
-/* FORMS */
 .form-group{margin-bottom:16px}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .form-label{display:block;font-size:8px;letter-spacing:.25em;color:var(--text-muted);text-transform:uppercase;margin-bottom:7px}
@@ -181,10 +173,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .form-input::placeholder{color:var(--text-muted)}
 .form-select option{background:var(--surface)}
 .form-textarea{resize:vertical;min-height:75px}
-.status-select{background:transparent;border:1px solid var(--border);color:var(--text-muted);font-family:'DM Mono',monospace;font-size:8px;padding:3px 8px;cursor:pointer;outline:none;letter-spacing:.1em}
-.status-select option{background:var(--surface)}
 
-/* REQUEST BAR */
 .request-bar{display:flex;gap:10px;margin-bottom:24px;padding:14px 18px;background:var(--card);border:1px solid var(--border);border-top:1px solid var(--border-gold);align-items:flex-end}
 .request-bar select,.request-bar input{background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--text);font-family:'DM Mono',monospace;font-size:11px;padding:5px 6px;outline:none;transition:border-color .2s}
 .request-bar input{flex:1}
@@ -193,21 +182,9 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .request-bar select{color:var(--text-dim);min-width:170px;background:var(--card)}
 .request-bar select option{background:var(--surface)}
 
-/* REQUEST LOG */
-.request-log{margin-top:22px}
-.request-log-title{font-size:9px;letter-spacing:.25em;color:var(--text-muted);text-transform:uppercase;margin-bottom:12px}
-.request-entry{padding:11px 0;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:4px}
-.request-entry:last-child{border-bottom:none}
-.request-entry-header{display:flex;align-items:center;justify-content:space-between}
-.request-entry-type{font-size:10px;color:var(--text);letter-spacing:.08em}
-.request-entry-time{font-size:8px;color:var(--text-muted)}
-.request-entry-desc{font-size:10px;color:var(--text-dim);line-height:1.4}
-
-/* TAGS */
 .tag-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
 .tag{padding:4px 13px;font-size:8px;letter-spacing:.2em;text-transform:uppercase;border:1px solid var(--gold-dim);color:var(--gold);background:var(--gold-glow)}
 
-/* DIVISION GRID */
 .division-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px}
 .division-card{background:var(--card);border:1px solid var(--border);padding:16px;cursor:pointer;transition:border-color .2s,background .2s}
 .division-card:hover{border-color:var(--border-gold);background:var(--card-hover)}
@@ -220,21 +197,13 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .division-card-nick{font-size:8px;letter-spacing:.14em;color:var(--gold);text-transform:uppercase;margin-bottom:5px}
 .division-card-note{font-size:9px;color:var(--text-muted);line-height:1.4}
 
-/* INTEGRATION CARDS */
-.integration-row{display:flex;gap:12px;margin-top:18px;flex-wrap:wrap}
-.integration-card{background:var(--card);border:1px solid var(--border);padding:13px 16px;font-size:10px;color:var(--text-muted);letter-spacing:.08em;min-width:180px}
-.integration-card strong{color:var(--gold);display:block;margin-bottom:3px;font-size:9px;letter-spacing:.15em;font-weight:400}
-
-/* TOAST */
 .toast{position:fixed;bottom:28px;right:28px;background:var(--card);border:1px solid var(--border-gold);color:var(--text);font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.1em;padding:13px 18px;z-index:9001;animation:toastIn .3s ease}
 @keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 
-/* LOADING SPINNER */
 .spinner{display:inline-block;width:14px;height:14px;border:1px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-row{padding:20px;text-align:center;color:var(--text-muted);font-size:10px;letter-spacing:.2em}
 
-/* MODAL */
 .modal-overlay{position:fixed;inset:0;background:#0a0a0acc;z-index:500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
 .modal-overlay.open{display:flex}
 .modal{background:var(--surface);border:1px solid var(--border-gold);width:520px;max-width:92vw;max-height:88vh;overflow-y:auto;padding:30px;animation:modalIn .22s ease}
@@ -245,7 +214,6 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .modal-close:hover{color:var(--text)}
 .modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:22px}
 
-/* NOTIFICATION PANEL */
 .notif-panel{position:fixed;top:0;right:-380px;width:380px;height:100vh;background:var(--surface);border-left:1px solid var(--border);z-index:400;transition:right .3s ease;display:flex;flex-direction:column}
 .notif-panel.open{right:0}
 .notif-panel-header{padding:22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
@@ -259,13 +227,25 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .notif-type{font-size:10px;color:var(--text);letter-spacing:.08em;margin-bottom:3px}
 .notif-desc{font-size:10px;color:var(--text-dim);line-height:1.45}
 
-/* ADMIN PANEL */
 .admin-tabs{display:flex;gap:0;margin-bottom:20px;border-bottom:1px solid var(--border)}
 .admin-tab{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.2em;color:var(--text-muted);padding:9px 16px;cursor:pointer;text-transform:uppercase;border-bottom:2px solid transparent;transition:all .2s;background:none;border-left:none;border-right:none;border-top:none}
 .admin-tab:hover{color:var(--text-dim)}
 .admin-tab.active{color:var(--gold);border-bottom-color:var(--gold)}
 .admin-section{display:none}
 .admin-section.active{display:block;animation:pageIn .2s ease}
+
+/* ROW ADD TEMPLATE */
+.add-row-btn{display:flex;align-items:center;gap:8px;padding:10px 0;font-size:9px;letter-spacing:.2em;color:var(--text-muted);text-transform:uppercase;cursor:pointer;border-top:1px dashed var(--border);transition:color .2s;background:none;border-left:none;border-right:none;border-bottom:none;width:100%;font-family:'DM Mono',monospace;margin-top:4px}
+.add-row-btn:hover{color:var(--gold)}
+.add-row-btn::before{content:'＋';font-size:12px}
+
+/* STATUS INLINE SELECT */
+.status-select{background:transparent;border:1px solid var(--border);color:var(--text-muted);font-family:'DM Mono',monospace;font-size:8px;padding:3px 8px;cursor:pointer;outline:none;letter-spacing:.1em}
+.status-select option{background:var(--surface)}
+
+/* SAVE INDICATOR */
+.save-indicator{font-size:8px;letter-spacing:.18em;color:var(--text-muted);text-transform:uppercase;opacity:0;transition:opacity .3s}
+.save-indicator.show{opacity:1}
 
 .cl-avatarBox{border-radius:0!important;border:1px solid var(--border-gold)!important}
 .cl-userButtonPopoverCard{background:var(--surface)!important;border:1px solid var(--border-gold)!important;border-radius:0!important}
@@ -300,6 +280,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     <div class="top-bar">
       <div class="top-bar-left" id="top-bar-label">LVO Command Center</div>
       <div class="top-bar-right">
+        <span class="save-indicator" id="save-indicator">Saved</span>
         <button class="notif-btn" onclick="toggleNotifPanel()">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
@@ -314,7 +295,6 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   </div>
 </div>
 
-<!-- NOTIFICATION PANEL -->
 <div class="notif-panel" id="notif-panel">
   <div class="notif-panel-header">
     <div class="notif-panel-title">Requests</div>
@@ -325,7 +305,6 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   </div>
 </div>
 
-<!-- MODAL -->
 <div class="modal-overlay" id="modal-overlay" onclick="closeModalOnOverlay(event)">
   <div class="modal" id="modal-box">
     <div class="modal-header">
@@ -341,7 +320,6 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 /* ═══════════════════════════════════════════════════
    CONFIG
 ═══════════════════════════════════════════════════ */
-// ⚠ UPDATE THIS after deploying your Worker
 const WORKER_URL = 'https://lvo-command-worker.lvoholdings00.workers.dev';
 const LOGIN_URL  = 'https://login.lvo-cloud.cloud/';
 
@@ -353,9 +331,10 @@ const CLERK_APPEARANCE = {
 /* ═══════════════════════════════════════════════════
    STATE
 ═══════════════════════════════════════════════════ */
-let _user = null;   // { uid, name, isAdmin, token }
+let _user = null;
 let _requests = [];
 let notifOpen = false;
+let _editMode = {};
 
 const divisions = [
   {id:'overview',   label:'Overview',    sub:'',              icon:'grid',      section:'command'},
@@ -401,15 +380,16 @@ async function api(path, opts = {}) {
   }
   return res.json();
 }
-
-function apiGet(path) { return api(path); }
-function apiPost(path, body) { return api(path, { method: 'POST', body: JSON.stringify(body) }); }
-function apiPut(path, body)  { return api(path, { method: 'PUT',  body: JSON.stringify(body) }); }
-function apiDel(path)        { return api(path, { method: 'DELETE' }); }
+function apiGet(path)         { return api(path); }
+function apiPost(path, body)  { return api(path, { method: 'POST', body: JSON.stringify(body) }); }
+function apiPut(path, body)   { return api(path, { method: 'PUT',  body: JSON.stringify(body) }); }
+function apiDel(path)         { return api(path, { method: 'DELETE' }); }
 
 /* ═══════════════════════════════════════════════════
    HELPERS
 ═══════════════════════════════════════════════════ */
+const STATUS_OPTIONS = ['Active','Pending','Development','Complete','Completed','Blocked','Alert','Secured','Overdue','Sold','Submitted','In Review','Open','Closed','In Development'];
+
 function badge(status) {
   const map = {
     'Active':'active','Pending':'pending','Development':'development',
@@ -422,7 +402,7 @@ function badge(status) {
   return `<span class="badge badge-${key}">${status}</span>`;
 }
 
-function tierBadge(t) { return `<span class="badge badge-${(t||'bronze').toLowerCase()}">${t}</span>`; }
+function tierBadge(t) { return `<span class="badge badge-${(t||'bronze').toLowerCase()}">${t||'Bronze'}</span>`; }
 
 function showToast(msg) {
   const t = document.createElement('div');
@@ -431,9 +411,13 @@ function showToast(msg) {
   setTimeout(() => t.remove(), 2800);
 }
 
-function loading() {
-  return `<div class="loading-row"><span class="spinner"></span></div>`;
+function showSaved() {
+  const el = document.getElementById('save-indicator');
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 1800);
 }
+
+function loading() { return `<div class="loading-row"><span class="spinner"></span></div>`; }
 
 function openModal(title, bodyHTML, footerHTML) {
   document.getElementById('modal-title').textContent = title;
@@ -441,7 +425,7 @@ function openModal(title, bodyHTML, footerHTML) {
   document.getElementById('modal-footer').innerHTML = footerHTML;
   document.getElementById('modal-overlay').classList.add('open');
 }
-function closeModal()  { document.getElementById('modal-overlay').classList.remove('open'); }
+function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
 function closeModalOnOverlay(e) { if (e.target === document.getElementById('modal-overlay')) closeModal(); }
 function toggleNotifPanel() {
   notifOpen = !notifOpen;
@@ -456,11 +440,8 @@ function switchTab(el, targetId, groupId) {
 }
 
 async function submitRequest(division, type, desc) {
-  try {
-    await apiPost('/requests', { division, type, description: desc });
-  } catch(e) { /* non-fatal */ }
-  const ts = new Date();
-  const req = { division, type, desc, time: ts.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) };
+  try { await apiPost('/requests', { division, type, description: desc }); } catch(e) {}
+  const req = { division, type, desc, time: new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) };
   _requests.unshift(req);
   document.getElementById('notif-count').textContent = _requests.length;
   const body = document.getElementById('notif-panel-body');
@@ -492,6 +473,78 @@ function reqBar(divId, divLabel, types) {
 }
 
 /* ═══════════════════════════════════════════════════
+   INLINE EDIT SYSTEM
+   All data lives in backend. Edit mode turns cells into
+   contenteditable / selects and auto-saves on blur/change.
+═══════════════════════════════════════════════════ */
+
+function editBtn(pageId) {
+  return `<button class="edit-hint" id="edit-btn-${pageId}" onclick="toggleEditMode('${pageId}')">
+    ✎ <span>Edit Mode</span>
+  </button>`;
+}
+
+function toggleEditMode(pageId) {
+  _editMode[pageId] = !_editMode[pageId];
+  const btn = document.getElementById('edit-btn-' + pageId);
+  const page = document.getElementById('page-' + pageId);
+  if (btn) btn.classList.toggle('active', _editMode[pageId]);
+  if (page) {
+    page.querySelectorAll('[data-editable]').forEach(el => {
+      el.contentEditable = _editMode[pageId] ? 'true' : 'false';
+    });
+    page.querySelectorAll('.add-row-btn').forEach(el => {
+      el.style.display = _editMode[pageId] ? 'flex' : 'none';
+    });
+    page.querySelectorAll('.delete-row-btn').forEach(el => {
+      el.style.display = _editMode[pageId] ? 'inline-block' : 'none';
+    });
+  }
+  if (btn) btn.querySelector('span').textContent = _editMode[pageId] ? 'Done Editing' : 'Edit Mode';
+}
+
+// Make a cell editable — saves on blur to backend
+function ec(value, path, field, recordId, placeholder='—') {
+  const val = value || '';
+  return `<span class="editable" contenteditable="false" data-editable="1" data-path="${path}" data-field="${field}" data-id="${recordId}" data-placeholder="${placeholder}"
+    onblur="saveCell(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}">${val}</span>`;
+}
+
+async function saveCell(el) {
+  const val = el.textContent.trim();
+  const path = el.dataset.path;
+  const field = el.dataset.field;
+  const id = el.dataset.id;
+  if (!path || !id) return;
+  try {
+    await apiPut(`${path}/${id}`, { [field]: val });
+    showSaved();
+  } catch(e) { showToast('Save failed: ' + e.message); }
+}
+
+// Status select that saves immediately on change
+function statusSelect(current, path, id, options) {
+  const opts = options || STATUS_OPTIONS;
+  return `<select class="status-select" data-path="${path}" data-id="${id}"
+    onchange="saveStatus(this)">${opts.map(o => `<option ${o===current?'selected':''}>${o}</option>`).join('')}</select>`;
+}
+
+async function saveStatus(el) {
+  const val = el.value;
+  const path = el.dataset.path;
+  const id = el.dataset.id;
+  try {
+    await apiPut(`${path}/${id}`, { status: val });
+    showSaved();
+  } catch(e) { showToast('Save failed: ' + e.message); }
+}
+
+async function deleteRecord(path, id, reloader) {
+  if (!confirm('Delete this record? This cannot be undone.')) return;
+  try { await apiDel(`${path}/${id}`); reloader(); showToast('Deleted'); } catch(e) { showToast('Error: ' + e.message); }
+}
+
+/* ═══════════════════════════════════════════════════
    NAVIGATION
 ═══════════════════════════════════════════════════ */
 function navigate(id) {
@@ -503,21 +556,13 @@ function navigate(id) {
   if (pageEl) pageEl.classList.add('active');
   const d = divisions.find(x => x.id === id);
   document.getElementById('top-bar-label').textContent = d ? d.label + (d.sub ? ' — ' + d.sub : '') : 'LVO';
-
-  // Load data for the page
   const loaders = {
-    overview:   loadOverview,
-    vindex:     loadVindex,
-    operations: loadOperations,
-    alliance:   loadAlliance,
-    obscura:    loadObscura,
-    capital:    loadCapital,
-    custodia:   loadCustodia,
-    outreach:   loadOutreach,
-    alatus:     loadAlatus,
-    pedes:      loadPedes,
-    petra:      loadPetra,
-    admin:      loadAdmin,
+    overview:   loadOverview,   vindex:  loadVindex,
+    operations: loadOperations, alliance:loadAlliance,
+    obscura:    loadObscura,    capital: loadCapital,
+    custodia:   loadCustodia,   outreach:loadOutreach,
+    alatus:     loadAlatus,     pedes:   loadPedes,
+    petra:      loadPetra,      admin:   loadAdmin,
   };
   if (loaders[id]) loaders[id]();
 }
@@ -525,11 +570,7 @@ function navigate(id) {
 /* ═══════════════════════════════════════════════════
    APP INIT
 ═══════════════════════════════════════════════════ */
-function initApp() {
-  buildSidebar();
-  buildAllPages();
-  navigate('overview');
-}
+function initApp() { buildSidebar(); buildAllPages(); navigate('overview'); }
 
 function buildSidebar() {
   const nav = document.getElementById('sidebar-nav');
@@ -556,20 +597,20 @@ function buildAllPages() {
     buildOverviewShell(), buildVindexShell(), buildOperationsShell(),
     buildAllianceShell(), buildObscuraShell(), buildCapitalShell(),
     buildCustodiaShell(), buildOutreachShell(), buildAlatusShell(),
-    buildPedesShell(), buildPetraShell(), buildAdminShell(),
+    buildPedesShell(),   buildPetraShell(),   buildAdminShell(),
   ].join('');
 }
 
 /* ═══════════════════════════════════════════════════
-   PAGE SHELLS — static chrome only, data filled by loaders
+   PAGE SHELLS
 ═══════════════════════════════════════════════════ */
 
 function buildOverviewShell() {
   return `<div class="page" id="page-overview">
   <div class="page-header">
     <div class="page-title"><span class="page-title-main">Command Center</span><span class="page-title-tag">LVO Holdings LLC</span></div>
-    <div class="page-dba">Legion V. Omni-Operation Holdings | LVOO · Houston, TX</div>
-    <div class="page-desc">Empire-wide oversight. Monitor all 10 divisions, submit cross-division requests, and track the full LVO portfolio.</div>
+    <div class="page-dba">Legion V. Omni-Operation Holdings · Houston, TX</div>
+    <div class="page-desc">Empire-wide oversight. Monitor all 10 divisions and submit cross-division requests.</div>
   </div>
   <div class="kpi-grid kpi-grid-4" id="ov-kpis">${loading()}</div>
   <div class="section">
@@ -579,25 +620,19 @@ function buildOverviewShell() {
     </div>
     <div class="division-grid" id="ov-divisions">${loading()}</div>
   </div>
-  <div class="two-col">
-    <div class="section">
-      <div class="section-title">Recent Activity</div>
-      <div class="activity-feed" id="ov-activity">${loading()}</div>
-    </div>
-    <div class="section">
-      <div class="section-title">Capital Snapshot</div>
-      <div id="ov-capital">${loading()}</div>
-    </div>
-  </div>
 </div>`;
 }
 
 function buildVindexShell() {
   return `<div class="page" id="page-vindex">
   <div class="page-header">
-    <div class="page-title"><span class="page-title-main">Vindex</span><span class="page-title-tag">The Gasoline</span></div>
-    <div class="page-dba">Legion V. Omni-Operation — Vindex | LVOV / LVO-OV</div>
-    <div class="page-desc">Physical asset management. A-Series manages real estate. B-Series manages the vehicle fleet.</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <div>
+        <div class="page-title"><span class="page-title-main">Vindex</span><span class="page-title-tag">The Gasoline</span></div>
+        <div class="page-dba">Physical Asset Management · A-Series: Real Estate · B-Series: Vehicles</div>
+      </div>
+      ${_user?.isAdmin ? editBtn('vindex') : ''}
+    </div>
   </div>
   ${reqBar('vindex','Vindex',['Add Property','Add Vehicle','Update Asset Status','Request Appraisal','Flag for Sale','Internal Transfer','Capital Request'])}
   <div class="kpi-grid" id="vindex-kpis">${loading()}</div>
@@ -608,20 +643,18 @@ function buildVindexShell() {
     </div>
     <div id="vindex-tabs">
       <div class="tab-content active" id="vtab-a">
-        <div class="section-header">
-          <div style="font-size:11px;color:var(--text-muted)">Protected Series — Real Property Holdings</div>
-          ${_user?.isAdmin ? '<button class="btn btn-gold btn-sm" onclick="openAddProperty()">+ Add Property</button>' : ''}
-        </div>
-        <table class="data-table"><thead><tr><th>Tag</th><th>Type</th><th>Location</th><th>Status</th><th>Value</th>${_user?.isAdmin?'<th>Edit</th>':''}</tr></thead>
-        <tbody id="vindex-a-tbody">${loading()}</tbody></table>
+        <table class="data-table">
+          <thead><tr><th>Tag</th><th>Type</th><th>Address</th><th>City</th><th>Value</th><th>Status</th>${_user?.isAdmin?'<th></th>':''}</tr></thead>
+          <tbody id="vindex-a-tbody">${loading()}</tbody>
+        </table>
+        ${_user?.isAdmin ? `<button class="add-row-btn" style="display:none" onclick="addPropertyRow()">Add Property</button>` : ''}
       </div>
       <div class="tab-content" id="vtab-b">
-        <div class="section-header">
-          <div style="font-size:11px;color:var(--text-muted)">Protected Series — Vehicle Fleet</div>
-          ${_user?.isAdmin ? '<button class="btn btn-gold btn-sm" onclick="openAddVehicle()">+ Add Vehicle</button>' : ''}
-        </div>
-        <table class="data-table"><thead><tr><th>Tag</th><th>Vehicle</th><th>Status</th><th>Assignment</th>${_user?.isAdmin?'<th>Edit</th>':''}</tr></thead>
-        <tbody id="vindex-b-tbody">${loading()}</tbody></table>
+        <table class="data-table">
+          <thead><tr><th>Tag</th><th>Year / Make / Model</th><th>Assignment</th><th>Status</th>${_user?.isAdmin?'<th></th>':''}</tr></thead>
+          <tbody id="vindex-b-tbody">${loading()}</tbody>
+        </table>
+        ${_user?.isAdmin ? `<button class="add-row-btn" style="display:none" onclick="addVehicleRow()">Add Vehicle</button>` : ''}
       </div>
     </div>
   </div>
@@ -631,28 +664,29 @@ function buildVindexShell() {
 function buildOperationsShell() {
   return `<div class="page" id="page-operations">
   <div class="page-header">
-    <div class="page-title"><span class="page-title-main">Operations</span><span class="page-title-tag">The Engine</span></div>
-    <div class="page-dba">Legion V. Omni-Operation — Operations | LVOO / LVO-OO</div>
-    <div class="page-desc">General Residential Operations (GRO). Safety, academic progress, life-skills, and resident care across all facilities.</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <div>
+        <div class="page-title"><span class="page-title-main">Operations</span><span class="page-title-tag">The Engine</span></div>
+        <div class="page-dba">General Residential Operations · Safety, Academic, Life-Skills, Resident Care</div>
+      </div>
+      ${_user?.isAdmin ? editBtn('operations') : ''}
+    </div>
   </div>
   ${reqBar('operations','Operations',['New GRO Facility Request','Resident Intake','Maintenance Request','Staff Request','Inspection Request','Incident Report','Curriculum Update'])}
   <div class="kpi-grid" id="ops-kpis">${loading()}</div>
-  <div class="two-col">
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title">GRO Facility Directory</div>
-        <div style="display:flex;gap:8px">
-          <button class="btn btn-outline btn-sm" onclick="openIntake()">Resident Intake</button>
-          <button class="btn btn-gold btn-sm" onclick="openIncident()">+ Incident</button>
-        </div>
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">GRO Facility Directory</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-outline btn-sm" onclick="openIncident()">+ Incident</button>
+        ${_user?.isAdmin ? `<button class="btn btn-gold btn-sm" onclick="addFacilityRow()">+ Facility</button>` : ''}
       </div>
-      <table class="data-table"><thead><tr><th>ID</th><th>Name</th><th>Location</th><th>Occupancy</th><th>Status</th></tr></thead>
-      <tbody id="ops-fac-tbody">${loading()}</tbody></table>
     </div>
-    <div class="section">
-      <div class="section-title">Activity</div>
-      <div class="activity-feed" id="ops-activity">${loading()}</div>
-    </div>
+    <table class="data-table">
+      <thead><tr><th>ID</th><th>Name</th><th>Location</th><th>Occupied</th><th>Capacity</th><th>Status</th>${_user?.isAdmin?'<th></th>':''}</tr></thead>
+      <tbody id="ops-fac-tbody">${loading()}</tbody>
+    </table>
+    ${_user?.isAdmin ? `<button class="add-row-btn" style="display:none" onclick="addFacilityRow()">Add Facility</button>` : ''}
   </div>
 </div>`;
 }
@@ -660,34 +694,36 @@ function buildOperationsShell() {
 function buildAllianceShell() {
   return `<div class="page" id="page-alliance">
   <div class="page-header">
-    <div class="page-title"><span class="page-title-main">Alliance</span><span class="page-title-tag">The Brain</span></div>
-    <div class="page-dba">LVO Alliance LLC · Subsidiary: First Up Consultants LLC</div>
-    <div class="page-desc">Venture incubation, strategic partnerships, and coalition hub. First Up Consultants LLC operates as the advisory arm.</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <div>
+        <div class="page-title"><span class="page-title-main">Alliance</span><span class="page-title-tag">The Brain</span></div>
+        <div class="page-dba">Venture Incubation · Strategic Partnerships · Coalition Hub</div>
+      </div>
+      ${_user?.isAdmin ? editBtn('alliance') : ''}
+    </div>
   </div>
   ${reqBar('alliance','Alliance',['New Partner Application','Partnership Proposal','Venture Submission','Meeting Request','Coalition Inquiry','Advisory Engagement'])}
   <div class="kpi-grid kpi-grid-4" id="al-kpis">${loading()}</div>
-  <div class="two-col">
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title">Partner Directory</div>
-        ${_user?.isAdmin ? '<button class="btn btn-gold btn-sm" onclick="openAddPartner()">+ New Partner</button>' : ''}
-      </div>
-      <table class="data-table"><thead><tr><th>Name</th><th>Company</th><th>Tier</th><th>Status</th><th>Joined</th>${_user?.isAdmin?'<th>Edit</th>':''}</tr></thead>
-      <tbody id="al-partners-tbody">${loading()}</tbody></table>
-      <div style="margin-top:22px">
-        <div class="section-header">
-          <div style="font-family:'Cormorant Garamond',serif;font-size:16px;color:var(--text)">Proposals</div>
-          <button class="btn btn-outline btn-sm" onclick="openProposal()">+ Add Proposal</button>
-        </div>
-        <table class="data-table"><thead><tr><th>Partner</th><th>Title</th><th>Type</th><th>Value</th><th>Status</th></tr></thead>
-        <tbody id="al-proposals-tbody">${loading()}</tbody></table>
-      </div>
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">Partner Directory</div>
+      ${_user?.isAdmin ? `<button class="btn btn-gold btn-sm" onclick="addPartnerRow()">+ Partner</button>` : ''}
     </div>
-    <div class="section">
-      <div class="section-title">First Up Consultants LLC</div>
-      <p style="font-size:11px;color:var(--text-dim);line-height:1.65;margin-bottom:18px">Strategic advisory subsidiary. Drives venture incubation, coalition development, and deal origination.</p>
-      <div class="tag-row"><span class="tag">Advisory</span><span class="tag">Incubation</span><span class="tag">Coalition</span><span class="tag">Deal Origination</span></div>
+    <table class="data-table">
+      <thead><tr><th>Name</th><th>Company</th><th>Tier</th><th>Joined</th><th>Status</th>${_user?.isAdmin?'<th></th>':''}</tr></thead>
+      <tbody id="al-partners-tbody">${loading()}</tbody>
+    </table>
+    ${_user?.isAdmin ? `<button class="add-row-btn" style="display:none" onclick="addPartnerRow()">Add Partner</button>` : ''}
+  </div>
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">Proposals</div>
+      ${_user?.isAdmin ? `<button class="btn btn-outline btn-sm" onclick="addProposalRow()">+ Proposal</button>` : ''}
     </div>
+    <table class="data-table">
+      <thead><tr><th>Partner</th><th>Title</th><th>Type</th><th>Value</th><th>Status</th>${_user?.isAdmin?'<th></th>':''}</tr></thead>
+      <tbody id="al-proposals-tbody">${loading()}</tbody>
+    </table>
   </div>
 </div>`;
 }
@@ -695,20 +731,26 @@ function buildAllianceShell() {
 function buildObscuraShell() {
   return `<div class="page" id="page-obscura">
   <div class="page-header">
-    <div class="page-title"><span class="page-title-main">Obscura</span><span class="page-title-tag">The Base</span></div>
-    <div class="page-dba">LVO Obscura LLC · Houston & Cypress, TX</div>
-    <div class="page-desc">High-end web development and 4K digital branding. Industrial and Opiumcore aesthetics.</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <div>
+        <div class="page-title"><span class="page-title-main">Obscura</span><span class="page-title-tag">The Base</span></div>
+        <div class="page-dba">Web Development · 4K Digital Branding · Visual Identity</div>
+      </div>
+      ${_user?.isAdmin ? editBtn('obscura') : ''}
+    </div>
   </div>
   ${reqBar('obscura','Obscura',['New Client Project','Brand Consultation','Web Dev Request','4K Shoot','Revision Request','Internal Division Project'])}
   <div class="kpi-grid" id="ob-kpis">${loading()}</div>
-  <div class="tag-row"><span class="tag">Web Dev</span><span class="tag">4K Branding</span><span class="tag">Industrial</span><span class="tag">Opiumcore</span><span class="tag">Visual Identity</span></div>
   <div class="section">
     <div class="section-header">
-      <div class="section-title">Active Client Projects</div>
-      ${_user?.isAdmin ? '<button class="btn btn-gold btn-sm" onclick="openAddProject()">+ New Project</button>' : ''}
+      <div class="section-title">Client Projects</div>
+      ${_user?.isAdmin ? `<button class="btn btn-gold btn-sm" onclick="addProjectRow()">+ Project</button>` : ''}
     </div>
-    <table class="data-table"><thead><tr><th>Client</th><th>Type</th><th>Status</th><th>Deliverable</th><th>Priority</th>${_user?.isAdmin?'<th>Edit</th>':''}</tr></thead>
-    <tbody id="ob-tbody">${loading()}</tbody></table>
+    <table class="data-table">
+      <thead><tr><th>Client</th><th>Type</th><th>Deliverable</th><th>Priority</th><th>Status</th>${_user?.isAdmin?'<th></th>':''}</tr></thead>
+      <tbody id="ob-tbody">${loading()}</tbody>
+    </table>
+    ${_user?.isAdmin ? `<button class="add-row-btn" style="display:none" onclick="addProjectRow()">Add Project</button>` : ''}
   </div>
 </div>`;
 }
@@ -716,19 +758,26 @@ function buildObscuraShell() {
 function buildCapitalShell() {
   return `<div class="page" id="page-capital">
   <div class="page-header">
-    <div class="page-title"><span class="page-title-main">Capital</span><span class="page-title-tag">The Reservoir</span></div>
-    <div class="page-dba">Legion V. Omni-Operation — Capital | LVOC / LVO-OC</div>
-    <div class="page-desc">Internal treasury and empire financing hub. Allocation, lending, and liquidity management.</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <div>
+        <div class="page-title"><span class="page-title-main">Capital</span><span class="page-title-tag">The Reservoir</span></div>
+        <div class="page-dba">Internal Treasury · Empire Financing · Allocation & Liquidity</div>
+      </div>
+      ${_user?.isAdmin ? editBtn('capital') : ''}
+    </div>
   </div>
   ${reqBar('capital','Capital',['Capital Injection Request','Internal Loan Request','Budget Approval','Capital Reallocation','Expense Report','Emergency Drawdown'])}
   <div class="kpi-grid" id="cap-kpis">${loading()}</div>
   <div class="section">
     <div class="section-header">
       <div class="section-title">Capital Allocation Ledger</div>
-      ${_user?.isAdmin ? '<button class="btn btn-gold btn-sm" onclick="openAddAllocation()">+ New Allocation</button>' : ''}
+      ${_user?.isAdmin ? `<button class="btn btn-gold btn-sm" onclick="addAllocationRow()">+ Allocation</button>` : ''}
     </div>
-    <table class="data-table"><thead><tr><th>Division</th><th>Amount</th><th>Purpose</th><th>Urgency</th><th>Status</th>${_user?.isAdmin?'<th>Action</th>':''}</tr></thead>
-    <tbody id="cap-tbody">${loading()}</tbody></table>
+    <table class="data-table">
+      <thead><tr><th>Division</th><th>Amount</th><th>Purpose</th><th>Urgency</th><th>Status</th>${_user?.isAdmin?'<th>Action</th>':''}</tr></thead>
+      <tbody id="cap-tbody">${loading()}</tbody>
+    </table>
+    ${_user?.isAdmin ? `<button class="add-row-btn" style="display:none" onclick="addAllocationRow()">Add Allocation</button>` : ''}
   </div>
 </div>`;
 }
@@ -736,9 +785,13 @@ function buildCapitalShell() {
 function buildCustodiaShell() {
   return `<div class="page" id="page-custodia">
   <div class="page-header">
-    <div class="page-title"><span class="page-title-main">Custodia</span><span class="page-title-tag">The Guard</span></div>
-    <div class="page-dba">Legion V. Omni-Operation — Custodia | LVOS / LVO-OS</div>
-    <div class="page-desc">Protection and movement of all physical assets. Security, transport, and threat response.</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <div>
+        <div class="page-title"><span class="page-title-main">Custodia</span><span class="page-title-tag">The Guard</span></div>
+        <div class="page-dba">Protection & Movement of Physical Assets · Security · Transport · Threat Response</div>
+      </div>
+      ${_user?.isAdmin ? editBtn('custodia') : ''}
+    </div>
   </div>
   ${reqBar('custodia','Custodia',['Security Audit','New Driver Assignment','Transport Route Request','Alert Escalation','Equipment Request'])}
   <div class="kpi-grid" id="cust-kpis">${loading()}</div>
@@ -753,18 +806,23 @@ function buildCustodiaShell() {
           <div class="section-title">Security Alerts</div>
           <button class="btn btn-danger btn-sm" onclick="openRaiseAlert()">⚠ Raise Alert</button>
         </div>
-        <table class="data-table"><thead><tr><th>Property</th><th>Type</th><th>Severity</th><th>Status</th><th>Date</th></tr></thead>
-        <tbody id="cust-alerts-tbody">${loading()}</tbody></table>
+        <table class="data-table">
+          <thead><tr><th>Property</th><th>Type</th><th>Severity</th><th>Status</th><th>Date</th>${_user?.isAdmin?'<th></th>':''}</tr></thead>
+          <tbody id="cust-alerts-tbody">${loading()}</tbody>
+        </table>
       </div>
     </div>
     <div class="tab-content" id="ctab-drivers">
       <div class="section">
         <div class="section-header">
           <div class="section-title">Driver Assignments</div>
-          ${_user?.isAdmin ? '<button class="btn btn-gold btn-sm" onclick="openAssignDriver()">+ Assign Driver</button>' : ''}
+          ${_user?.isAdmin ? `<button class="btn btn-gold btn-sm" onclick="openAssignDriver()">+ Assign Driver</button>` : ''}
         </div>
-        <table class="data-table"><thead><tr><th>Vehicle</th><th>Driver</th><th>Route</th><th>Status</th></tr></thead>
-        <tbody id="cust-drivers-tbody">${loading()}</tbody></table>
+        <table class="data-table">
+          <thead><tr><th>Vehicle Tag</th><th>Driver</th><th>Route</th><th>Status</th>${_user?.isAdmin?'<th></th>':''}</tr></thead>
+          <tbody id="cust-drivers-tbody">${loading()}</tbody>
+        </table>
+        ${_user?.isAdmin ? `<button class="add-row-btn" style="display:none" onclick="openAssignDriver()">Add Driver</button>` : ''}
       </div>
     </div>
   </div>
@@ -774,9 +832,13 @@ function buildCustodiaShell() {
 function buildOutreachShell() {
   return `<div class="page" id="page-outreach">
   <div class="page-header">
-    <div class="page-title"><span class="page-title-main">Outreach</span><span class="page-title-tag">The Heart</span></div>
-    <div class="page-dba">Legion V. Omni-Operation — Outreach & Restoration | LVOOR / LVO-OR</div>
-    <div class="page-desc">Tax-deductible donations, youth empowerment, scholarships, and community restoration.</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <div>
+        <div class="page-title"><span class="page-title-main">Outreach</span><span class="page-title-tag">The Heart</span></div>
+        <div class="page-dba">Tax-Deductible Donations · Youth Empowerment · Scholarships · Community Restoration</div>
+      </div>
+      ${_user?.isAdmin ? editBtn('outreach') : ''}
+    </div>
   </div>
   ${reqBar('outreach','Outreach',['Donation Log','Scholarship Application','Program Enrollment','Grant Submission','Volunteer Request'])}
   <div class="kpi-grid" id="out-kpis">${loading()}</div>
@@ -784,18 +846,22 @@ function buildOutreachShell() {
     <div class="section">
       <div class="section-header">
         <div class="section-title">Scholarships</div>
-        <button class="btn btn-gold btn-sm" onclick="openScholarship()">+ Award</button>
+        ${_user?.isAdmin ? `<button class="btn btn-gold btn-sm" onclick="openScholarship()">+ Award</button>` : ''}
       </div>
-      <table class="data-table"><thead><tr><th>Recipient</th><th>Facility</th><th>Amount</th><th>Program</th></tr></thead>
-      <tbody id="out-scholarships-tbody">${loading()}</tbody></table>
+      <table class="data-table">
+        <thead><tr><th>Recipient</th><th>Facility</th><th>Amount</th><th>Program</th>${_user?.isAdmin?'<th></th>':''}</tr></thead>
+        <tbody id="out-scholarships-tbody">${loading()}</tbody>
+      </table>
     </div>
     <div class="section">
       <div class="section-header">
         <div class="section-title">Donations</div>
-        <button class="btn btn-outline btn-sm" onclick="openLogDonation()">+ Log</button>
+        ${_user?.isAdmin ? `<button class="btn btn-outline btn-sm" onclick="openLogDonation()">+ Log</button>` : ''}
       </div>
-      <table class="data-table"><thead><tr><th>Donor</th><th>Amount</th><th>Type</th><th>Date</th></tr></thead>
-      <tbody id="out-donations-tbody">${loading()}</tbody></table>
+      <table class="data-table">
+        <thead><tr><th>Donor</th><th>Amount</th><th>Type</th><th>Date</th>${_user?.isAdmin?'<th></th>':''}</tr></thead>
+        <tbody id="out-donations-tbody">${loading()}</tbody>
+      </table>
     </div>
   </div>
 </div>`;
@@ -804,9 +870,13 @@ function buildOutreachShell() {
 function buildAlatusShell() {
   return `<div class="page" id="page-alatus">
   <div class="page-header">
-    <div class="page-title"><span class="page-title-main">Alatus</span><span class="page-title-tag">The Wing</span></div>
-    <div class="page-dba">Legion V. Omni-Operation — Alatus | LVOOA / LVO-OA</div>
-    <div class="page-desc">Private aviation, drone operations, and aerospace logistics.</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <div>
+        <div class="page-title"><span class="page-title-main">Alatus</span><span class="page-title-tag">The Wing</span></div>
+        <div class="page-dba">Private Aviation · Drone Operations · Aerospace Logistics</div>
+      </div>
+      ${_user?.isAdmin ? editBtn('alatus') : ''}
+    </div>
   </div>
   ${reqBar('alatus','Alatus',['Charter Flight Request','Drone Deployment','Surveillance Mission','Cargo Run','Maintenance Grounding','Fleet Acquisition'])}
   <div class="kpi-grid" id="al2-kpis">${loading()}</div>
@@ -819,20 +889,26 @@ function buildAlatusShell() {
       <div class="section">
         <div class="section-header">
           <div class="section-title">Charter Flights</div>
-          ${_user?.isAdmin ? '<button class="btn btn-gold btn-sm" onclick="openScheduleFlight()">+ Schedule Flight</button>' : ''}
+          ${_user?.isAdmin ? `<button class="btn btn-gold btn-sm" onclick="addFlightRow()">+ Flight</button>` : ''}
         </div>
-        <table class="data-table"><thead><tr><th>Origin</th><th>Destination</th><th>Aircraft</th><th>Date</th><th>Status</th></tr></thead>
-        <tbody id="al-flights-tbody">${loading()}</tbody></table>
+        <table class="data-table">
+          <thead><tr><th>Origin</th><th>Destination</th><th>Aircraft</th><th>Date</th><th>Status</th>${_user?.isAdmin?'<th></th>':''}</tr></thead>
+          <tbody id="al-flights-tbody">${loading()}</tbody>
+        </table>
+        ${_user?.isAdmin ? `<button class="add-row-btn" style="display:none" onclick="addFlightRow()">Add Flight</button>` : ''}
       </div>
     </div>
     <div class="tab-content" id="altab-drone">
       <div class="section">
         <div class="section-header">
           <div class="section-title">Drone Operations</div>
-          ${_user?.isAdmin ? '<button class="btn btn-gold btn-sm" onclick="openDeployDrone()">+ Deploy</button>' : ''}
+          ${_user?.isAdmin ? `<button class="btn btn-gold btn-sm" onclick="addDroneRow()">+ Deploy</button>` : ''}
         </div>
-        <table class="data-table"><thead><tr><th>Unit</th><th>Mission</th><th>Assigned To</th><th>Status</th></tr></thead>
-        <tbody id="al-drones-tbody">${loading()}</tbody></table>
+        <table class="data-table">
+          <thead><tr><th>Unit</th><th>Mission Type</th><th>Assigned To</th><th>Status</th>${_user?.isAdmin?'<th></th>':''}</tr></thead>
+          <tbody id="al-drones-tbody">${loading()}</tbody>
+        </table>
+        ${_user?.isAdmin ? `<button class="add-row-btn" style="display:none" onclick="addDroneRow()">Add Drone</button>` : ''}
       </div>
     </div>
   </div>
@@ -842,19 +918,26 @@ function buildAlatusShell() {
 function buildPedesShell() {
   return `<div class="page" id="page-pedes">
   <div class="page-header">
-    <div class="page-title"><span class="page-title-main">Pedes</span><span class="page-title-tag">The Legs</span></div>
-    <div class="page-dba">Legion V. Omni-Operation — Pedes | LVOOP / LVO-OP</div>
-    <div class="page-desc">Executive ground transport and heavy land logistics. Final-mile movement for every division.</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <div>
+        <div class="page-title"><span class="page-title-main">Pedes</span><span class="page-title-tag">The Legs</span></div>
+        <div class="page-dba">Executive Ground Transport · Heavy Land Logistics · Final-Mile Movement</div>
+      </div>
+      ${_user?.isAdmin ? editBtn('pedes') : ''}
+    </div>
   </div>
   ${reqBar('pedes','Pedes',['Executive Transport Request','Heavy Logistics Run','Driver Assignment','Vehicle Maintenance','Route Change','Emergency Run'])}
   <div class="kpi-grid" id="ped-kpis">${loading()}</div>
   <div class="section">
     <div class="section-header">
       <div class="section-title">Fleet Operations</div>
-      ${_user?.isAdmin ? '<button class="btn btn-gold btn-sm" onclick="openNewRun()">+ New Run</button>' : ''}
+      ${_user?.isAdmin ? `<button class="btn btn-gold btn-sm" onclick="addRunRow()">+ Run</button>` : ''}
     </div>
-    <table class="data-table"><thead><tr><th>Vehicle</th><th>Driver</th><th>Route</th><th>Status</th>${_user?.isAdmin?'<th>Action</th>':''}</tr></thead>
-    <tbody id="ped-tbody">${loading()}</tbody></table>
+    <table class="data-table">
+      <thead><tr><th>Vehicle</th><th>Driver</th><th>Route</th><th>Priority</th><th>Status</th>${_user?.isAdmin?'<th></th>':''}</tr></thead>
+      <tbody id="ped-tbody">${loading()}</tbody>
+    </table>
+    ${_user?.isAdmin ? `<button class="add-row-btn" style="display:none" onclick="addRunRow()">Add Run</button>` : ''}
   </div>
 </div>`;
 }
@@ -862,19 +945,26 @@ function buildPedesShell() {
 function buildPetraShell() {
   return `<div class="page" id="page-petra">
   <div class="page-header">
-    <div class="page-title"><span class="page-title-main">Petra</span><span class="page-title-tag">The Bedrock</span></div>
-    <div class="page-dba">Legion V. Omni-Operation — Petra | LVOPR / LVO-OPR</div>
-    <div class="page-desc">Physical construction and infrastructure. GRO facilities, commercial hubs, renovations.</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <div>
+        <div class="page-title"><span class="page-title-main">Petra</span><span class="page-title-tag">The Bedrock</span></div>
+        <div class="page-dba">Physical Construction & Infrastructure · GRO Facilities · Commercial · Renovations</div>
+      </div>
+      ${_user?.isAdmin ? editBtn('petra') : ''}
+    </div>
   </div>
   ${reqBar('petra','Petra',['New Build Request','Renovation Request','Inspection Request','Material Order','Project Update','Contractor Coordination'])}
   <div class="kpi-grid" id="petra-kpis">${loading()}</div>
   <div class="section">
     <div class="section-header">
       <div class="section-title">Active Builds</div>
-      ${_user?.isAdmin ? '<button class="btn btn-gold btn-sm" onclick="openNewBuild()">+ New Build</button>' : ''}
+      ${_user?.isAdmin ? `<button class="btn btn-gold btn-sm" onclick="addBuildRow()">+ Build</button>` : ''}
     </div>
-    <table class="data-table"><thead><tr><th>Project</th><th>Type</th><th>Division</th><th>Progress</th><th>Status</th>${_user?.isAdmin?'<th>Update %</th>':''}</tr></thead>
-    <tbody id="petra-tbody">${loading()}</tbody></table>
+    <table class="data-table">
+      <thead><tr><th>Project</th><th>Type</th><th>Division</th><th>Progress</th><th>Budget</th><th>Status</th>${_user?.isAdmin?'<th></th>':''}</tr></thead>
+      <tbody id="petra-tbody">${loading()}</tbody>
+    </table>
+    ${_user?.isAdmin ? `<button class="add-row-btn" style="display:none" onclick="addBuildRow()">Add Build</button>` : ''}
   </div>
 </div>`;
 }
@@ -894,9 +984,10 @@ function buildAdminShell() {
     <div class="section">
       <div class="section-header"><div class="section-title">Submitted Requests</div>
       <button class="btn btn-outline btn-sm" onclick="loadAdminRequests()">↺ Refresh</button></div>
-      <table class="data-table"><thead><tr><th>Division</th><th>Type</th><th>Description</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
-      <tbody id="adm-requests-tbody"><tr><td colspan="6" class="loading-row">Click Refresh to load</td></tr></tbody>
-    </table>
+      <table class="data-table">
+        <thead><tr><th>Division</th><th>Type</th><th>Description</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
+        <tbody id="adm-requests-tbody"><tr><td colspan="6" class="loading-row">Click Refresh to load</td></tr></tbody>
+      </table>
     </div>
   </div>
   <div class="admin-section" id="adm-activity">
@@ -914,39 +1005,38 @@ function switchAdminTab(name, btn) {
   btn.classList.add('active');
   document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
   document.getElementById('adm-' + name).classList.add('active');
-  if (name === 'requests')  loadAdminRequests();
-  if (name === 'activity')  loadAdminActivity();
+  if (name === 'requests') loadAdminRequests();
+  if (name === 'activity') loadAdminActivity();
 }
 
 /* ═══════════════════════════════════════════════════
-   DATA LOADERS
+   DATA LOADERS  — render rows with inline-editable cells
 ═══════════════════════════════════════════════════ */
 
 async function loadOverview() {
   try {
-    const stats = await apiGet('/stats');
-    document.getElementById('ov-kpis').innerHTML = `
-      <div class="kpi-card"><div class="kpi-label">Properties</div><div class="kpi-value">${stats.properties}</div><div class="kpi-sub">A-Series active</div></div>
-      <div class="kpi-card"><div class="kpi-label">Vehicles</div><div class="kpi-value">${stats.vehicles}</div><div class="kpi-sub">B-Series fleet</div></div>
-      <div class="kpi-card"><div class="kpi-label">Active Facilities</div><div class="kpi-value">${stats.activeFacilities}</div><div class="kpi-sub">GRO operations</div></div>
-      <div class="kpi-card"><div class="kpi-label">Alliance Partners</div><div class="kpi-value">${stats.partners}</div><div class="kpi-sub gold">Active network</div></div>`;
-
-    const [props, allocs] = await Promise.all([
-      apiGet('/vindex/properties'),
-      apiGet('/capital/allocations'),
+    const [props, vehs, facs, partners, allocs, runs, builds] = await Promise.all([
+      apiGet('/vindex/properties'), apiGet('/vindex/vehicles'),
+      apiGet('/operations/facilities'), apiGet('/alliance/partners'),
+      apiGet('/capital/allocations'), apiGet('/pedes/runs'),
+      apiGet('/petra/builds')
     ]);
-
+    document.getElementById('ov-kpis').innerHTML = `
+      <div class="kpi-card"><div class="kpi-label">Properties</div><div class="kpi-value">${props.length}</div><div class="kpi-sub">A-Series</div></div>
+      <div class="kpi-card"><div class="kpi-label">Vehicles</div><div class="kpi-value">${vehs.length}</div><div class="kpi-sub">B-Series fleet</div></div>
+      <div class="kpi-card"><div class="kpi-label">Active Facilities</div><div class="kpi-value">${facs.filter(f=>f.status==='Active').length}</div><div class="kpi-sub">GRO operations</div></div>
+      <div class="kpi-card"><div class="kpi-label">Alliance Partners</div><div class="kpi-value">${partners.length}</div><div class="kpi-sub gold">Active network</div></div>`;
     const divCards = [
-      {id:'vindex',    name:'Vindex',     nick:'The Gasoline', note:`${props.length} properties`},
-      {id:'operations',name:'Operations', nick:'The Engine',   note:`${stats.activeFacilities} GRO active · ${stats.residentsServed} residents`},
-      {id:'alliance',  name:'Alliance',   nick:'The Brain',    note:`${stats.partners} partners`},
+      {id:'vindex',    name:'Vindex',     nick:'The Gasoline', note:`${props.length} properties · ${vehs.length} vehicles`},
+      {id:'operations',name:'Operations', nick:'The Engine',   note:`${facs.filter(f=>f.status==='Active').length} active facilities`},
+      {id:'alliance',  name:'Alliance',   nick:'The Brain',    note:`${partners.length} partners`},
       {id:'obscura',   name:'Obscura',    nick:'The Base',     note:'Web · Branding · 4K'},
-      {id:'capital',   name:'Capital',    nick:'The Reservoir',note:`${stats.activeAllocations} active allocations`},
+      {id:'capital',   name:'Capital',    nick:'The Reservoir',note:`${allocs.filter(a=>a.status==='Active').length} active allocations`},
       {id:'custodia',  name:'Custodia',   nick:'The Guard',    note:'Security & transport'},
       {id:'outreach',  name:'Outreach',   nick:'The Heart',    note:'Donations · Scholarships'},
-      {id:'alatus',    name:'Alatus',     nick:'The Wing',     note:`${stats.vehicles} fleet assets`},
-      {id:'pedes',     name:'Pedes',      nick:'The Legs',     note:`${stats.activeRuns} active runs`},
-      {id:'petra',     name:'Petra',      nick:'The Bedrock',  note:`${stats.activeBuilds} active builds`},
+      {id:'alatus',    name:'Alatus',     nick:'The Wing',     note:'Aviation · Drones'},
+      {id:'pedes',     name:'Pedes',      nick:'The Legs',     note:`${runs.filter(r=>r.status==='Active').length} active runs`},
+      {id:'petra',     name:'Petra',      nick:'The Bedrock',  note:`${builds.filter(b=>b.status==='Active').length} active builds`},
     ];
     document.getElementById('ov-divisions').innerHTML = divCards.map(d => `
       <div class="division-card" onclick="navigate('${d.id}')">
@@ -954,28 +1044,8 @@ async function loadOverview() {
         <div class="division-card-nick">${d.nick}</div>
         <div class="division-card-note">${d.note}</div>
       </div>`).join('');
-
-    // Capital snapshot
-    const byDiv = {};
-    allocs.forEach(a => {
-      const n = parseFloat(String(a.amount).replace(/[$,KMkm\s]/g, '')) || 0;
-      const mult = /M/i.test(a.amount) ? 1000 : /K/i.test(a.amount) ? 1 : 1;
-      byDiv[a.division] = (byDiv[a.division] || 0) + n * mult;
-    });
-    const total = Object.values(byDiv).reduce((a, b) => a + b, 0) || 1;
-    document.getElementById('ov-capital').innerHTML = Object.entries(byDiv).slice(0, 6).map(([div, amt]) => `
-      <div style="margin-bottom:14px">
-        <div style="display:flex;justify-content:space-between;margin-bottom:5px;font-size:10px">
-          <span style="color:var(--text-dim)">${div}</span>
-          <span style="color:var(--gold)">${amt >= 1000 ? '$' + (amt/1000).toFixed(1) + 'M' : '$' + amt + 'K'}</span>
-        </div>
-        <div class="progress-bar"><div class="progress-fill" style="width:${Math.round((amt/total)*100)}%"></div></div>
-      </div>`).join('');
-
-    document.getElementById('ov-activity').innerHTML = `
-      <div class="activity-item"><div class="activity-dot green"></div><div><div class="activity-time">Live</div><div class="activity-text">Dashboard loaded — ${stats.activeFacilities} active facilities, ${stats.partners} partners, ${stats.activeBuilds} builds in progress</div></div></div>`;
   } catch(e) {
-    document.getElementById('ov-kpis').innerHTML = `<div style="color:var(--red-light);font-size:10px;padding:10px">Error loading stats: ${e.message}</div>`;
+    document.getElementById('ov-kpis').innerHTML = `<div style="color:var(--red-light);font-size:10px;padding:10px;grid-column:1/-1">Could not load stats: ${e.message}</div>`;
   }
 }
 
@@ -986,419 +1056,309 @@ async function loadVindex() {
       <div class="kpi-card"><div class="kpi-label">Properties</div><div class="kpi-value">${props.length}</div><div class="kpi-sub">A-Series</div></div>
       <div class="kpi-card"><div class="kpi-label">Vehicles</div><div class="kpi-value">${vehs.length}</div><div class="kpi-sub">B-Series</div></div>
       <div class="kpi-card"><div class="kpi-label">Portfolio</div><div class="kpi-value">${props.length + vehs.length}</div><div class="kpi-sub gold">Total assets</div></div>`;
-    document.getElementById('vindex-a-tbody').innerHTML = props.map(p => `<tr>
-      <td class="gold-link">${p.tag}</td><td>${p.type}</td><td>${p.city}</td><td>${badge(p.status)}</td><td>${p.value||'—'}</td>
-      ${_user?.isAdmin ? `<td><button class="btn btn-outline btn-sm" onclick="openEditProperty(${JSON.stringify(p).replace(/"/g,'&quot;')})">Edit</button></td>` : ''}</tr>`).join('') || '<tr><td colspan="6" class="loading-row">No properties found</td></tr>';
-    document.getElementById('vindex-b-tbody').innerHTML = vehs.map(v => `<tr>
-      <td class="gold-link">${v.tag}</td><td>${v.vehicle}</td><td>${badge(v.status)}</td><td>${v.assignment||'—'}</td>
-      ${_user?.isAdmin ? `<td><button class="btn btn-outline btn-sm" onclick="openEditVehicle(${JSON.stringify(v).replace(/"/g,'&quot;')})">Edit</button></td>` : ''}</tr>`).join('') || '<tr><td colspan="5" class="loading-row">No vehicles found</td></tr>';
+    const admin = _user?.isAdmin;
+    document.getElementById('vindex-a-tbody').innerHTML = props.length ? props.map(p => `<tr>
+      <td>${ec(p.tag,'/vindex/properties','tag',p.id,'Tag')}</td>
+      <td>${ec(p.type,'/vindex/properties','type',p.id,'Type')}</td>
+      <td>${ec(p.address,'/vindex/properties','address',p.id,'Address')}</td>
+      <td>${ec(p.city,'/vindex/properties','city',p.id,'City')}</td>
+      <td>${ec(p.value,'/vindex/properties','value',p.id,'Value')}</td>
+      <td>${statusSelect(p.status,'/vindex/properties',p.id)}</td>
+      ${admin ? `<td><button class="btn-icon delete-row-btn" style="display:none" onclick="deleteRecord('/vindex/properties',${p.id},loadVindex)">✕</button></td>` : ''}</tr>`).join('')
+      : `<tr><td colspan="${admin?7:6}" class="loading-row">No properties yet — click Edit Mode to add</td></tr>`;
+    document.getElementById('vindex-b-tbody').innerHTML = vehs.length ? vehs.map(v => `<tr>
+      <td>${ec(v.tag,'/vindex/vehicles','tag',v.id,'Tag')}</td>
+      <td>${ec(v.vehicle,'/vindex/vehicles','vehicle',v.id,'Year / Make / Model')}</td>
+      <td>${ec(v.assignment,'/vindex/vehicles','assignment',v.id,'Assignment')}</td>
+      <td>${statusSelect(v.status,'/vindex/vehicles',v.id)}</td>
+      ${admin ? `<td><button class="btn-icon delete-row-btn" style="display:none" onclick="deleteRecord('/vindex/vehicles',${v.id},loadVindex)">✕</button></td>` : ''}</tr>`).join('')
+      : `<tr><td colspan="${admin?5:4}" class="loading-row">No vehicles yet — click Edit Mode to add</td></tr>`;
   } catch(e) { showToast('Vindex load error: ' + e.message); }
 }
 
 async function loadOperations() {
   try {
     const facs = await apiGet('/operations/facilities');
-    const active = facs.filter(f => f.status === 'Active');
-    const residents = facs.reduce((s, f) => s + (f.occupied || 0), 0);
+    const admin = _user?.isAdmin;
     document.getElementById('ops-kpis').innerHTML = `
-      <div class="kpi-card"><div class="kpi-label">Active Facilities</div><div class="kpi-value">${active.length}</div></div>
-      <div class="kpi-card"><div class="kpi-label">Residents Served</div><div class="kpi-value">${residents}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Active Facilities</div><div class="kpi-value">${facs.filter(f=>f.status==='Active').length}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Residents</div><div class="kpi-value">${facs.reduce((s,f)=>s+(f.occupied||0),0)}</div></div>
       <div class="kpi-card"><div class="kpi-label">Total Capacity</div><div class="kpi-value">${facs.reduce((s,f)=>s+(f.capacity||0),0)}</div></div>`;
-    document.getElementById('ops-fac-tbody').innerHTML = facs.map(f => `<tr>
-      <td class="gold-link">${f.facility_id}</td><td>${f.name}</td><td>${f.location}</td>
-      <td>${f.occupied||0}/${f.capacity||8}</td><td>${badge(f.status)}</td></tr>`).join('') || '<tr><td colspan="5" class="loading-row">No facilities found</td></tr>';
-    document.getElementById('ops-activity').innerHTML = facs.slice(0,5).map(f => `
-      <div class="activity-item"><div class="activity-dot ${f.status==='Active'?'green':''}"></div>
-      <div><div class="activity-time">${f.facility_id}</div><div class="activity-text">${f.name} · ${f.location} · ${f.occupied||0}/${f.capacity||8} occupied</div></div></div>`).join('');
+    document.getElementById('ops-fac-tbody').innerHTML = facs.length ? facs.map(f => `<tr>
+      <td>${ec(f.facility_id,'/operations/facilities','facility_id',f.id,'ID')}</td>
+      <td>${ec(f.name,'/operations/facilities','name',f.id,'Name')}</td>
+      <td>${ec(f.location,'/operations/facilities','location',f.id,'City, State')}</td>
+      <td>${ec(String(f.occupied||0),'/operations/facilities','occupied',f.id,'0')}</td>
+      <td>${ec(String(f.capacity||0),'/operations/facilities','capacity',f.id,'0')}</td>
+      <td>${statusSelect(f.status,'/operations/facilities',f.id)}</td>
+      ${admin ? `<td><button class="btn-icon delete-row-btn" style="display:none" onclick="deleteRecord('/operations/facilities',${f.id},loadOperations)">✕</button></td>` : ''}</tr>`).join('')
+      : `<tr><td colspan="${admin?7:6}" class="loading-row">No facilities yet — click Edit Mode to add</td></tr>`;
   } catch(e) { showToast('Operations load error: ' + e.message); }
 }
 
 async function loadAlliance() {
   try {
     const [partners, proposals] = await Promise.all([apiGet('/alliance/partners'), apiGet('/alliance/proposals')]);
-    const gold = partners.filter(p => p.tier === 'Gold').length;
+    const admin = _user?.isAdmin;
     document.getElementById('al-kpis').innerHTML = `
       <div class="kpi-card"><div class="kpi-label">Total Partners</div><div class="kpi-value">${partners.length}</div></div>
-      <div class="kpi-card"><div class="kpi-label">Gold Tier</div><div class="kpi-value">${gold}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Gold Tier</div><div class="kpi-value">${partners.filter(p=>p.tier==='Gold').length}</div></div>
       <div class="kpi-card"><div class="kpi-label">Proposals</div><div class="kpi-value">${proposals.length}</div></div>
       <div class="kpi-card"><div class="kpi-label">Active</div><div class="kpi-value">${partners.filter(p=>p.status==='Active').length}</div></div>`;
-    document.getElementById('al-partners-tbody').innerHTML = partners.map(p => `<tr>
-      <td class="gold-link">${p.name}</td><td>${p.company}</td><td>${tierBadge(p.tier)}</td><td>${badge(p.status)}</td><td>${p.joined||'—'}</td>
-      ${_user?.isAdmin ? `<td><button class="btn btn-outline btn-sm" onclick="openEditPartner(${JSON.stringify(p).replace(/"/g,'&quot;')})">Edit</button></td>` : ''}</tr>`).join('') || '<tr><td colspan="6" class="loading-row">No partners found</td></tr>';
-    document.getElementById('al-proposals-tbody').innerHTML = proposals.map(p => `<tr>
-      <td class="gold-link">${p.partner}</td><td>${p.title}</td><td>${p.deal_type}</td><td>${p.value||'TBD'}</td><td>${badge(p.status)}</td></tr>`).join('') || '<tr><td colspan="5" class="loading-row">No proposals yet</td></tr>';
+    const tierOpts = ['Gold','Silver','Bronze'];
+    document.getElementById('al-partners-tbody').innerHTML = partners.length ? partners.map(p => `<tr>
+      <td>${ec(p.name,'/alliance/partners','name',p.id,'Name')}</td>
+      <td>${ec(p.company,'/alliance/partners','company',p.id,'Company')}</td>
+      <td><select class="status-select" data-path="/alliance/partners" data-id="${p.id}" onchange="saveTier(this)">${tierOpts.map(t=>`<option ${t===p.tier?'selected':''}>${t}</option>`).join('')}</select></td>
+      <td>${ec(p.joined,'/alliance/partners','joined',p.id,'e.g. Jan 2025')}</td>
+      <td>${statusSelect(p.status,'/alliance/partners',p.id,['Active','Pending','Blocked'])}</td>
+      ${admin ? `<td><button class="btn-icon delete-row-btn" style="display:none" onclick="deleteRecord('/alliance/partners',${p.id},loadAlliance)">✕</button></td>` : ''}</tr>`).join('')
+      : `<tr><td colspan="${admin?6:5}" class="loading-row">No partners yet — click + Partner</td></tr>`;
+    document.getElementById('al-proposals-tbody').innerHTML = proposals.length ? proposals.map(p => `<tr>
+      <td>${ec(p.partner,'/alliance/proposals','partner',p.id,'Partner name')}</td>
+      <td>${ec(p.title,'/alliance/proposals','title',p.id,'Deal title')}</td>
+      <td>${ec(p.deal_type,'/alliance/proposals','deal_type',p.id,'Type')}</td>
+      <td>${ec(p.value,'/alliance/proposals','value',p.id,'Value')}</td>
+      <td>${statusSelect(p.status,'/alliance/proposals',p.id)}</td>
+      ${admin ? `<td><button class="btn-icon delete-row-btn" style="display:none" onclick="deleteRecord('/alliance/proposals',${p.id},loadAlliance)">✕</button></td>` : ''}</tr>`).join('')
+      : `<tr><td colspan="${admin?6:5}" class="loading-row">No proposals yet — click + Proposal</td></tr>`;
   } catch(e) { showToast('Alliance load error: ' + e.message); }
+}
+
+async function saveTier(el) {
+  const val = el.value;
+  const path = el.dataset.path;
+  const id = el.dataset.id;
+  try { await apiPut(`${path}/${id}`, { tier: val }); showSaved(); } catch(e) { showToast('Save failed: ' + e.message); }
 }
 
 async function loadObscura() {
   try {
     const projects = await apiGet('/obscura/projects');
+    const admin = _user?.isAdmin;
     document.getElementById('ob-kpis').innerHTML = `
       <div class="kpi-card"><div class="kpi-label">Total Projects</div><div class="kpi-value">${projects.length}</div></div>
       <div class="kpi-card"><div class="kpi-label">In Development</div><div class="kpi-value">${projects.filter(p=>p.status==='Development').length}</div></div>
       <div class="kpi-card"><div class="kpi-label">Active</div><div class="kpi-value">${projects.filter(p=>p.status==='Active').length}</div></div>`;
-    document.getElementById('ob-tbody').innerHTML = projects.map(p => `<tr>
-      <td class="gold-link">${p.client}</td><td>${p.type}</td><td>${badge(p.status)}</td><td>${p.deliverable||'—'}</td><td>${p.priority||'Standard'}</td>
-      ${_user?.isAdmin ? `<td><button class="btn btn-outline btn-sm" onclick="openEditProject(${JSON.stringify(p).replace(/"/g,'&quot;')})">Edit</button></td>` : ''}</tr>`).join('') || '<tr><td colspan="6" class="loading-row">No projects found</td></tr>';
+    document.getElementById('ob-tbody').innerHTML = projects.length ? projects.map(p => `<tr>
+      <td>${ec(p.client,'/obscura/projects','client',p.id,'Client name')}</td>
+      <td>${ec(p.type,'/obscura/projects','type',p.id,'Type')}</td>
+      <td>${ec(p.deliverable,'/obscura/projects','deliverable',p.id,'Deliverable')}</td>
+      <td>${ec(p.priority,'/obscura/projects','priority',p.id,'Standard')}</td>
+      <td>${statusSelect(p.status,'/obscura/projects',p.id)}</td>
+      ${admin ? `<td><button class="btn-icon delete-row-btn" style="display:none" onclick="deleteRecord('/obscura/projects',${p.id},loadObscura)">✕</button></td>` : ''}</tr>`).join('')
+      : `<tr><td colspan="${admin?6:5}" class="loading-row">No projects yet — click + Project</td></tr>`;
   } catch(e) { showToast('Obscura load error: ' + e.message); }
 }
 
 async function loadCapital() {
   try {
     const allocs = await apiGet('/capital/allocations');
-    const active = allocs.filter(a => a.status === 'Active');
+    const admin = _user?.isAdmin;
     document.getElementById('cap-kpis').innerHTML = `
       <div class="kpi-card"><div class="kpi-label">Total Allocations</div><div class="kpi-value">${allocs.length}</div></div>
-      <div class="kpi-card"><div class="kpi-label">Active</div><div class="kpi-value">${active.length}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Active</div><div class="kpi-value">${allocs.filter(a=>a.status==='Active').length}</div></div>
       <div class="kpi-card"><div class="kpi-label">Pending Approval</div><div class="kpi-value">${allocs.filter(a=>a.status==='Pending').length}</div><div class="kpi-sub red">Needs review</div></div>`;
-    document.getElementById('cap-tbody').innerHTML = allocs.map(a => `<tr>
-      <td>${a.division}</td><td style="color:var(--gold)">${a.amount}</td><td>${a.purpose}</td><td>${a.urgency||'Standard'}</td><td>${badge(a.status)}</td>
-      ${_user?.isAdmin ? `<td style="display:flex;gap:6px;flex-wrap:wrap">
-        ${a.status==='Pending'?`<button class="btn btn-gold btn-sm" onclick="approveAlloc(${a.id})">Approve</button><button class="btn btn-danger btn-sm" onclick="rejectAlloc(${a.id})">Reject</button>`:'—'}
-      </td>` : ''}</tr>`).join('') || '<tr><td colspan="6" class="loading-row">No allocations found</td></tr>';
+    document.getElementById('cap-tbody').innerHTML = allocs.length ? allocs.map(a => `<tr>
+      <td>${ec(a.division,'/capital/allocations','division',a.id,'Division')}</td>
+      <td style="color:var(--gold)">${ec(a.amount,'/capital/allocations','amount',a.id,'$0K')}</td>
+      <td>${ec(a.purpose,'/capital/allocations','purpose',a.id,'Purpose')}</td>
+      <td>${ec(a.urgency,'/capital/allocations','urgency',a.id,'Standard')}</td>
+      <td>${statusSelect(a.status,'/capital/allocations',a.id,['Active','Pending','Blocked','Complete'])}</td>
+      ${admin ? `<td><button class="btn-icon delete-row-btn" style="display:none" onclick="deleteRecord('/capital/allocations',${a.id},loadCapital)">✕</button></td>` : ''}</tr>`).join('')
+      : `<tr><td colspan="${admin?6:5}" class="loading-row">No allocations yet — click + Allocation</td></tr>`;
   } catch(e) { showToast('Capital load error: ' + e.message); }
 }
 
 async function loadCustodia() {
   try {
     const [alerts, drivers] = await Promise.all([apiGet('/custodia/alerts'), apiGet('/custodia/drivers')]);
+    const admin = _user?.isAdmin;
     const open = alerts.filter(a => a.status === 'Open').length;
     document.getElementById('cust-kpis').innerHTML = `
-      <div class="kpi-card"><div class="kpi-label">Open Alerts</div><div class="kpi-value">${open}</div>${open?'<div class="kpi-sub red">Requires review</div>':''}</div>
+      <div class="kpi-card"><div class="kpi-label">Open Alerts</div><div class="kpi-value">${open}</div>${open?`<div class="kpi-sub red">Requires review</div>`:''}</div>
       <div class="kpi-card"><div class="kpi-label">Active Drivers</div><div class="kpi-value">${drivers.filter(d=>d.status==='Active').length}</div></div>
-      <div class="kpi-card"><div class="kpi-label">Total Alerts</div><div class="kpi-value">${alerts.length}</div><div class="kpi-sub">All time</div></div>`;
-    document.getElementById('cust-alerts-tbody').innerHTML = alerts.map(a => `<tr>
-      <td class="gold-link">${a.property}</td><td>${a.type}</td><td>${a.severity}</td><td>${badge(a.status)}</td>
-      <td>${new Date(a.created_at).toLocaleDateString()}</td></tr>`).join('') || '<tr><td colspan="5" class="loading-row">No alerts</td></tr>';
-    document.getElementById('cust-drivers-tbody').innerHTML = drivers.map(d => `<tr>
-      <td class="gold-link">${d.vehicle_tag}</td><td>${d.driver}</td><td>${d.route||'—'}</td><td>${badge(d.status)}</td></tr>`).join('') || '<tr><td colspan="4" class="loading-row">No drivers assigned</td></tr>';
+      <div class="kpi-card"><div class="kpi-label">Total Alerts</div><div class="kpi-value">${alerts.length}</div></div>`;
+    document.getElementById('cust-alerts-tbody').innerHTML = alerts.length ? alerts.map(a => `<tr>
+      <td>${ec(a.property,'/custodia/alerts','property',a.id,'Property')}</td>
+      <td>${ec(a.type,'/custodia/alerts','type',a.id,'Type')}</td>
+      <td>${ec(a.severity,'/custodia/alerts','severity',a.id,'Low')}</td>
+      <td>${statusSelect(a.status,'/custodia/alerts',a.id,['Open','In Review','Closed'])}</td>
+      <td style="color:var(--text-muted);font-size:10px">${new Date(a.created_at).toLocaleDateString()}</td>
+      ${admin ? `<td><button class="btn-icon delete-row-btn" style="display:none" onclick="deleteRecord('/custodia/alerts',${a.id},loadCustodia)">✕</button></td>` : ''}</tr>`).join('')
+      : `<tr><td colspan="${admin?6:5}" class="loading-row">No alerts</td></tr>`;
+    document.getElementById('cust-drivers-tbody').innerHTML = drivers.length ? drivers.map(d => `<tr>
+      <td>${ec(d.vehicle_tag,'/custodia/drivers','vehicle_tag',d.id,'Vehicle tag')}</td>
+      <td>${ec(d.driver,'/custodia/drivers','driver',d.id,'Driver name')}</td>
+      <td>${ec(d.route,'/custodia/drivers','route',d.id,'Route')}</td>
+      <td>${statusSelect(d.status,'/custodia/drivers',d.id,['Active','Inactive','On Leave'])}</td>
+      ${admin ? `<td><button class="btn-icon delete-row-btn" style="display:none" onclick="deleteRecord('/custodia/drivers',${d.id},loadCustodia)">✕</button></td>` : ''}</tr>`).join('')
+      : `<tr><td colspan="${admin?5:4}" class="loading-row">No drivers assigned</td></tr>`;
   } catch(e) { showToast('Custodia load error: ' + e.message); }
 }
 
 async function loadOutreach() {
   try {
     const [donations, scholarships] = await Promise.all([apiGet('/outreach/donations'), apiGet('/outreach/scholarships')]);
+    const admin = _user?.isAdmin;
     document.getElementById('out-kpis').innerHTML = `
-      <div class="kpi-card"><div class="kpi-label">Total Donations</div><div class="kpi-value">${donations.length}</div><div class="kpi-sub gold">Tax-deductible</div></div>
+      <div class="kpi-card"><div class="kpi-label">Donations Logged</div><div class="kpi-value">${donations.length}</div><div class="kpi-sub gold">Tax-deductible</div></div>
       <div class="kpi-card"><div class="kpi-label">Scholarships</div><div class="kpi-value">${scholarships.length}</div></div>
-      <div class="kpi-card"><div class="kpi-label">Programs</div><div class="kpi-value">4</div><div class="kpi-sub">Active initiatives</div></div>`;
-    document.getElementById('out-scholarships-tbody').innerHTML = scholarships.map(s => `<tr>
-      <td class="gold-link">${s.recipient}</td><td>${s.facility_id||'—'}</td><td>${s.amount||'—'}</td><td>${s.program}</td></tr>`).join('') || '<tr><td colspan="4" class="loading-row">No scholarships yet</td></tr>';
-    document.getElementById('out-donations-tbody').innerHTML = donations.map(d => `<tr>
-      <td>${d.donor}</td><td style="color:var(--gold)">${d.amount}</td><td>${d.type}</td><td>${d.date||'—'}</td></tr>`).join('') || '<tr><td colspan="4" class="loading-row">No donations logged</td></tr>';
+      <div class="kpi-card"><div class="kpi-label">Active Programs</div><div class="kpi-value">—</div><div class="kpi-sub">Edit to set</div></div>`;
+    document.getElementById('out-scholarships-tbody').innerHTML = scholarships.length ? scholarships.map(s => `<tr>
+      <td>${ec(s.recipient,'/outreach/scholarships','recipient',s.id,'Recipient name')}</td>
+      <td>${ec(s.facility_id,'/outreach/scholarships','facility_id',s.id,'Facility')}</td>
+      <td>${ec(s.amount,'/outreach/scholarships','amount',s.id,'Amount')}</td>
+      <td>${ec(s.program,'/outreach/scholarships','program',s.id,'Program')}</td>
+      ${admin ? `<td><button class="btn-icon delete-row-btn" style="display:none" onclick="deleteRecord('/outreach/scholarships',${s.id},loadOutreach)">✕</button></td>` : ''}</tr>`).join('')
+      : `<tr><td colspan="${admin?5:4}" class="loading-row">No scholarships yet — click + Award</td></tr>`;
+    document.getElementById('out-donations-tbody').innerHTML = donations.length ? donations.map(d => `<tr>
+      <td>${ec(d.donor,'/outreach/donations','donor',d.id,'Donor or Anonymous')}</td>
+      <td style="color:var(--gold)">${ec(d.amount,'/outreach/donations','amount',d.id,'Amount')}</td>
+      <td>${ec(d.type,'/outreach/donations','type',d.id,'Type')}</td>
+      <td>${ec(d.date,'/outreach/donations','date',d.id,'Date')}</td>
+      ${admin ? `<td><button class="btn-icon delete-row-btn" style="display:none" onclick="deleteRecord('/outreach/donations',${d.id},loadOutreach)">✕</button></td>` : ''}</tr>`).join('')
+      : `<tr><td colspan="${admin?5:4}" class="loading-row">No donations logged yet — click + Log</td></tr>`;
   } catch(e) { showToast('Outreach load error: ' + e.message); }
 }
 
 async function loadAlatus() {
   try {
     const [flights, drones] = await Promise.all([apiGet('/alatus/flights'), apiGet('/alatus/drones')]);
+    const admin = _user?.isAdmin;
     document.getElementById('al2-kpis').innerHTML = `
       <div class="kpi-card"><div class="kpi-label">Total Flights</div><div class="kpi-value">${flights.length}</div></div>
       <div class="kpi-card"><div class="kpi-label">Active Drones</div><div class="kpi-value">${drones.filter(d=>d.status==='Active').length}</div></div>
       <div class="kpi-card"><div class="kpi-label">Drone Units</div><div class="kpi-value">${drones.length}</div></div>`;
-    document.getElementById('al-flights-tbody').innerHTML = flights.map(f => `<tr>
-      <td class="gold-link">${f.origin}</td><td>${f.destination}</td><td>${f.aircraft}</td>
-      <td>${f.date||'—'}</td><td>${badge(f.status)}</td></tr>`).join('') || '<tr><td colspan="5" class="loading-row">No flights found</td></tr>';
-    document.getElementById('al-drones-tbody').innerHTML = drones.map(d => `<tr>
-      <td class="gold-link">${d.unit}</td><td>${d.type}</td><td>${d.assigned_to||'—'}</td><td>${badge(d.status)}</td></tr>`).join('') || '<tr><td colspan="4" class="loading-row">No drones found</td></tr>';
+    document.getElementById('al-flights-tbody').innerHTML = flights.length ? flights.map(f => `<tr>
+      <td>${ec(f.origin,'/alatus/flights','origin',f.id,'Origin')}</td>
+      <td>${ec(f.destination,'/alatus/flights','destination',f.id,'Destination')}</td>
+      <td>${ec(f.aircraft,'/alatus/flights','aircraft',f.id,'Aircraft')}</td>
+      <td>${ec(f.date,'/alatus/flights','date',f.id,'Date')}</td>
+      <td>${statusSelect(f.status,'/alatus/flights',f.id,['Scheduled','Active','Complete','Cancelled'])}</td>
+      ${admin ? `<td><button class="btn-icon delete-row-btn" style="display:none" onclick="deleteRecord('/alatus/flights',${f.id},loadAlatus)">✕</button></td>` : ''}</tr>`).join('')
+      : `<tr><td colspan="${admin?6:5}" class="loading-row">No flights yet — click Edit Mode to add</td></tr>`;
+    document.getElementById('al-drones-tbody').innerHTML = drones.length ? drones.map(d => `<tr>
+      <td>${ec(d.unit,'/alatus/drones','unit',d.id,'Unit ID')}</td>
+      <td>${ec(d.type,'/alatus/drones','type',d.id,'Mission type')}</td>
+      <td>${ec(d.assigned_to,'/alatus/drones','assigned_to',d.id,'Assigned to')}</td>
+      <td>${statusSelect(d.status,'/alatus/drones',d.id,['Active','Standby','Maintenance','Retired'])}</td>
+      ${admin ? `<td><button class="btn-icon delete-row-btn" style="display:none" onclick="deleteRecord('/alatus/drones',${d.id},loadAlatus)">✕</button></td>` : ''}</tr>`).join('')
+      : `<tr><td colspan="${admin?5:4}" class="loading-row">No drones yet — click Edit Mode to add</td></tr>`;
   } catch(e) { showToast('Alatus load error: ' + e.message); }
 }
 
 async function loadPedes() {
   try {
     const runs = await apiGet('/pedes/runs');
+    const admin = _user?.isAdmin;
     document.getElementById('ped-kpis').innerHTML = `
       <div class="kpi-card"><div class="kpi-label">Active Runs</div><div class="kpi-value">${runs.filter(r=>r.status==='Active').length}</div></div>
       <div class="kpi-card"><div class="kpi-label">Completed</div><div class="kpi-value">${runs.filter(r=>r.status==='Complete').length}</div></div>
       <div class="kpi-card"><div class="kpi-label">Total Runs</div><div class="kpi-value">${runs.length}</div><div class="kpi-sub gold">All time</div></div>`;
-    document.getElementById('ped-tbody').innerHTML = runs.map(r => `<tr>
-      <td class="gold-link">${r.vehicle}</td><td>${r.driver}</td><td>${r.route||'—'}</td><td>${badge(r.status)}</td>
-      ${_user?.isAdmin ? `<td>${r.status==='Active'?`<button class="btn btn-outline btn-sm" onclick="completeRun(${r.id})">Complete</button>`:'—'}</td>` : ''}</tr>`).join('') || '<tr><td colspan="5" class="loading-row">No runs found</td></tr>';
+    document.getElementById('ped-tbody').innerHTML = runs.length ? runs.map(r => `<tr>
+      <td>${ec(r.vehicle,'/pedes/runs','vehicle',r.id,'Vehicle')}</td>
+      <td>${ec(r.driver,'/pedes/runs','driver',r.id,'Driver')}</td>
+      <td>${ec(r.route,'/pedes/runs','route',r.id,'Origin → Destination')}</td>
+      <td>${ec(r.priority,'/pedes/runs','priority',r.id,'Standard')}</td>
+      <td>${statusSelect(r.status,'/pedes/runs',r.id,['Active','Complete','Cancelled'])}</td>
+      ${admin ? `<td><button class="btn-icon delete-row-btn" style="display:none" onclick="deleteRecord('/pedes/runs',${r.id},loadPedes)">✕</button></td>` : ''}</tr>`).join('')
+      : `<tr><td colspan="${admin?6:5}" class="loading-row">No runs yet — click Edit Mode to add</td></tr>`;
   } catch(e) { showToast('Pedes load error: ' + e.message); }
 }
 
 async function loadPetra() {
   try {
     const builds = await apiGet('/petra/builds');
-    const active = builds.filter(b => b.status === 'Active');
+    const admin = _user?.isAdmin;
     document.getElementById('petra-kpis').innerHTML = `
-      <div class="kpi-card"><div class="kpi-label">Active Builds</div><div class="kpi-value">${active.length}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Active Builds</div><div class="kpi-value">${builds.filter(b=>b.status==='Active').length}</div></div>
       <div class="kpi-card"><div class="kpi-label">Completed</div><div class="kpi-value">${builds.filter(b=>b.status==='Completed').length}</div><div class="kpi-sub gold">All time</div></div>
       <div class="kpi-card"><div class="kpi-label">Total Projects</div><div class="kpi-value">${builds.length}</div></div>`;
-    document.getElementById('petra-tbody').innerHTML = builds.map((b, i) => `<tr>
-      <td class="gold-link">${b.name}</td><td>${b.type}</td><td>${b.division}</td>
-      <td><div class="progress-wrap"><div class="progress-bar" style="width:80px"><div class="progress-fill" id="pf-${b.id}" style="width:${b.progress}%"></div></div><span class="progress-label" id="pp-${b.id}">${b.progress}%</span></div></td>
-      <td id="ps-${b.id}">${badge(b.status)}</td>
-      ${_user?.isAdmin ? `<td><input type="number" class="form-input" style="width:60px;padding:3px 5px" min="0" max="100" value="${b.progress}" onchange="updateBuildProgress(${b.id},this,${JSON.stringify(b).replace(/"/g,'&quot;')})"></td>` : ''}</tr>`).join('') || '<tr><td colspan="6" class="loading-row">No builds found</td></tr>';
+    document.getElementById('petra-tbody').innerHTML = builds.length ? builds.map(b => `<tr>
+      <td>${ec(b.name,'/petra/builds','name',b.id,'Project name')}</td>
+      <td>${ec(b.type,'/petra/builds','type',b.id,'Type')}</td>
+      <td>${ec(b.division,'/petra/builds','division',b.id,'Division')}</td>
+      <td>
+        <div class="progress-wrap">
+          <div class="progress-bar" style="width:80px"><div class="progress-fill" id="pf-${b.id}" style="width:${b.progress||0}%"></div></div>
+          <span class="progress-label">${b.progress||0}%</span>
+          ${admin ? `<input type="number" style="width:42px;background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--text-muted);font-family:'DM Mono',monospace;font-size:10px;padding:1px 3px;outline:none;" min="0" max="100" value="${b.progress||0}" onchange="updateProgress('${b.id}',this)">` : ''}
+        </div>
+      </td>
+      <td>${ec(b.budget,'/petra/builds','budget',b.id,'Budget')}</td>
+      <td id="ps-${b.id}">${statusSelect(b.status,'/petra/builds',b.id,['Active','Pending','Completed','Blocked'])}</td>
+      ${admin ? `<td><button class="btn-icon delete-row-btn" style="display:none" onclick="deleteRecord('/petra/builds',${b.id},loadPetra)">✕</button></td>` : ''}</tr>`).join('')
+      : `<tr><td colspan="${admin?7:6}" class="loading-row">No builds yet — click Edit Mode to add</td></tr>`;
   } catch(e) { showToast('Petra load error: ' + e.message); }
 }
 
-async function loadAdmin() {
-  if (!_user?.isAdmin) return;
-  loadAdminRequests();
+async function updateProgress(id, input) {
+  const val = Math.min(100, Math.max(0, parseInt(input.value) || 0));
+  const bar = document.getElementById('pf-' + id);
+  if (bar) bar.style.width = val + '%';
+  try { await apiPut('/petra/builds/' + id, { progress: val }); showSaved(); } catch(e) { showToast('Error: ' + e.message); }
 }
+
+async function loadAdmin() { if (!_user?.isAdmin) return; loadAdminRequests(); }
 
 async function loadAdminRequests() {
   try {
     const reqs = await apiGet('/requests');
-    document.getElementById('adm-requests-tbody').innerHTML = reqs.map(r => `<tr>
+    document.getElementById('adm-requests-tbody').innerHTML = reqs.length ? reqs.map(r => `<tr>
       <td>${r.division}</td><td>${r.type}</td><td style="max-width:240px;word-break:break-word">${r.description}</td>
-      <td>${badge(r.status)}</td><td>${new Date(r.created_at).toLocaleDateString()}</td>
+      <td>${badge(r.status)}</td><td style="color:var(--text-muted);font-size:10px">${new Date(r.created_at).toLocaleDateString()}</td>
       <td style="display:flex;gap:6px">
         <button class="btn btn-gold btn-sm" onclick="updateReqStatus(${r.id},'Complete')">Complete</button>
         <button class="btn btn-outline btn-sm" onclick="updateReqStatus(${r.id},'In Review')">Review</button>
-      </td></tr>`).join('') || '<tr><td colspan="6" class="loading-row">No requests yet</td></tr>';
-  } catch(e) { showToast('Error loading requests: ' + e.message); }
+      </td></tr>`).join('')
+      : '<tr><td colspan="6" class="loading-row">No requests yet</td></tr>';
+  } catch(e) { showToast('Error: ' + e.message); }
 }
 
 async function updateReqStatus(id, status) {
-  try {
-    await apiPut('/requests?id=' + id, { status });
-    loadAdminRequests();
-    showToast('Request updated');
-  } catch(e) { showToast('Error: ' + e.message); }
+  try { await apiPut('/requests?id=' + id, { status }); loadAdminRequests(); showToast('Updated'); } catch(e) { showToast('Error: ' + e.message); }
 }
 
 async function loadAdminActivity() {
   try {
     const log = await apiGet('/activity');
-    const el  = document.getElementById('adm-activity-feed');
+    const el = document.getElementById('adm-activity-feed');
     if (!log.length) { el.innerHTML = '<div class="loading-row">No activity logged yet</div>'; return; }
     el.innerHTML = `<div class="activity-feed">${log.map(a => `
       <div class="activity-item"><div class="activity-dot"></div>
       <div><div class="activity-time">${new Date(a.created_at).toLocaleString()}</div>
       <div class="activity-text">[${a.division||'System'}] ${a.action}${a.actor?' · '+a.actor:''}</div></div></div>`).join('')}</div>`;
-  } catch(e) { showToast('Error loading activity: ' + e.message); }
+  } catch(e) { showToast('Error: ' + e.message); }
 }
 
 /* ═══════════════════════════════════════════════════
-   ACTION HANDLERS
+   ADD ROW HELPERS — create blank record via API then reload
+═══════════════════════════════════════════════════ */
+async function addRow(path, defaults, reloader) {
+  try { await apiPost(path, defaults); reloader(); } catch(e) { showToast('Error: ' + e.message); }
+}
+
+function addPropertyRow()   { addRow('/vindex/properties',   {tag:'',type:'Group Home',address:'',city:'Houston, TX',value:'',status:'Pending'}, loadVindex); }
+function addVehicleRow()    { addRow('/vindex/vehicles',     {tag:'',vehicle:'',assignment:'',status:'Pending'}, loadVindex); }
+function addFacilityRow()   { addRow('/operations/facilities',{facility_id:'',name:'',location:'Houston, TX',occupied:0,capacity:8,status:'Pending'}, loadOperations); }
+function addPartnerRow()    { addRow('/alliance/partners',   {name:'',company:'',tier:'Bronze',joined:'',status:'Pending'}, loadAlliance); }
+function addProposalRow()   { addRow('/alliance/proposals',  {partner:'',title:'',deal_type:'Joint Venture',value:'',status:'Submitted'}, loadAlliance); }
+function addProjectRow()    { addRow('/obscura/projects',    {client:'',type:'Web Dev',deliverable:'',priority:'Standard',status:'Development'}, loadObscura); }
+function addAllocationRow() { addRow('/capital/allocations', {division:'',amount:'',purpose:'',urgency:'Standard',status:'Pending'}, loadCapital); }
+function addFlightRow()     { addRow('/alatus/flights',      {origin:'',destination:'',aircraft:'',date:'',status:'Scheduled'}, loadAlatus); }
+function addDroneRow()      { addRow('/alatus/drones',       {unit:'',type:'Surveillance',assigned_to:'',status:'Standby'}, loadAlatus); }
+function addRunRow()        { addRow('/pedes/runs',           {vehicle:'',driver:'',route:'',priority:'Standard',status:'Active'}, loadPedes); }
+function addBuildRow()      { addRow('/petra/builds',         {name:'',type:'GRO Facility',division:'Operations',budget:'',progress:0,status:'Active'}, loadPetra); }
+
+/* ═══════════════════════════════════════════════════
+   MODAL ACTIONS  — quick-entry forms for non-admin actions
 ═══════════════════════════════════════════════════ */
 
-// ── CAPITAL ──
-async function approveAlloc(id) {
-  try { await apiPut('/capital/allocations/' + id, { status: 'Active' }); loadCapital(); showToast('Allocation approved'); } catch(e) { showToast('Error: ' + e.message); }
-}
-async function rejectAlloc(id) {
-  try { await apiPut('/capital/allocations/' + id, { status: 'Blocked' }); loadCapital(); showToast('Allocation rejected'); } catch(e) { showToast('Error: ' + e.message); }
-}
-function openAddAllocation() {
-  openModal('New Capital Allocation',
-    `<div class="form-row">
-      <div class="form-group"><label class="form-label">Division</label><select class="form-select" id="ca-div"><option>Vindex</option><option>Operations</option><option>Alliance</option><option>Obscura</option><option>Custodia</option><option>Outreach</option><option>Alatus</option><option>Pedes</option><option>Petra</option></select></div>
-      <div class="form-group"><label class="form-label">Amount</label><input class="form-input" id="ca-amt" placeholder="$0K"></div>
-    </div>
-    <div class="form-group"><label class="form-label">Purpose</label><input class="form-input" id="ca-purpose" placeholder="Purpose…"></div>
-    <div class="form-group"><label class="form-label">Urgency</label><select class="form-select" id="ca-urg"><option>Standard</option><option>Priority</option><option>Emergency</option></select></div>`,
-    `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-     <button class="btn btn-gold" onclick="saveAllocation()">Add Allocation</button>`
-  );
-}
-async function saveAllocation() {
-  const body = { division: document.getElementById('ca-div').value, amount: document.getElementById('ca-amt').value, purpose: document.getElementById('ca-purpose').value.trim(), urgency: document.getElementById('ca-urg').value };
-  if (!body.purpose) return;
-  try { await apiPost('/capital/allocations', body); closeModal(); loadCapital(); showToast('Allocation added'); } catch(e) { showToast('Error: ' + e.message); }
-}
-
-// ── VINDEX ──
-function openAddProperty() {
-  openModal('Add Property',
-    `<div class="form-row">
-      <div class="form-group"><label class="form-label">Tag</label><input class="form-input" id="ap-tag" placeholder="A8…"></div>
-      <div class="form-group"><label class="form-label">Type</label><select class="form-select" id="ap-type"><option>Group Home</option><option>Commercial</option><option>Residential</option><option>Mixed Use</option></select></div>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><label class="form-label">Address</label><input class="form-input" id="ap-addr" placeholder="Street address…"></div>
-      <div class="form-group"><label class="form-label">City</label><input class="form-input" id="ap-city" placeholder="Houston, TX"></div>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><label class="form-label">Value</label><input class="form-input" id="ap-val" placeholder="$000K"></div>
-      <div class="form-group"><label class="form-label">Status</label><select class="form-select" id="ap-status"><option>Active</option><option>Pending</option><option>Development</option></select></div>
-    </div>`,
-    `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-     <button class="btn btn-gold" onclick="saveProperty()">Add Property</button>`
-  );
-}
-async function saveProperty(id) {
-  const body = { tag: document.getElementById('ap-tag').value.trim(), type: document.getElementById('ap-type').value, address: document.getElementById('ap-addr').value.trim(), city: document.getElementById('ap-city').value || 'Houston, TX', value: document.getElementById('ap-val').value, status: document.getElementById('ap-status').value };
-  if (!body.tag || !body.address) return;
-  try {
-    if (id) await apiPut('/vindex/properties/' + id, body);
-    else await apiPost('/vindex/properties', body);
-    closeModal(); loadVindex(); showToast(id ? 'Property updated' : 'Property added');
-  } catch(e) { showToast('Error: ' + e.message); }
-}
-function openEditProperty(p) {
-  openModal('Edit Property',
-    `<div class="form-row">
-      <div class="form-group"><label class="form-label">Tag</label><input class="form-input" id="ap-tag" value="${p.tag}"></div>
-      <div class="form-group"><label class="form-label">Type</label><select class="form-select" id="ap-type"><option ${p.type==='Group Home'?'selected':''}>Group Home</option><option ${p.type==='Commercial'?'selected':''}>Commercial</option><option ${p.type==='Residential'?'selected':''}>Residential</option></select></div>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><label class="form-label">Address</label><input class="form-input" id="ap-addr" value="${p.address||''}"></div>
-      <div class="form-group"><label class="form-label">City</label><input class="form-input" id="ap-city" value="${p.city||''}"></div>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><label class="form-label">Value</label><input class="form-input" id="ap-val" value="${p.value||''}"></div>
-      <div class="form-group"><label class="form-label">Status</label><select class="form-select" id="ap-status"><option ${p.status==='Active'?'selected':''}>Active</option><option ${p.status==='Pending'?'selected':''}>Pending</option><option ${p.status==='Development'?'selected':''}>Development</option><option ${p.status==='Sold'?'selected':''}>Sold</option></select></div>
-    </div>`,
-    `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-     <button class="btn btn-danger btn-sm" onclick="deleteRecord('/vindex/properties/${p.id}',loadVindex)">Delete</button>
-     <button class="btn btn-gold" onclick="saveProperty(${p.id})">Save</button>`
-  );
-}
-
-function openAddVehicle() {
-  openModal('Add Vehicle',
-    `<div class="form-row">
-      <div class="form-group"><label class="form-label">Tag</label><input class="form-input" id="av-tag" placeholder="B7…"></div>
-      <div class="form-group"><label class="form-label">Year / Make / Model</label><input class="form-input" id="av-model" placeholder="Suburban 2025"></div>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><label class="form-label">Assignment</label><input class="form-input" id="av-assign" placeholder="Division or purpose…"></div>
-      <div class="form-group"><label class="form-label">Status</label><select class="form-select" id="av-status"><option>Active</option><option>Pending</option><option>Sold</option></select></div>
-    </div>`,
-    `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-     <button class="btn btn-gold" onclick="saveVehicle()">Add Vehicle</button>`
-  );
-}
-async function saveVehicle(id) {
-  const body = { tag: document.getElementById('av-tag').value.trim(), vehicle: document.getElementById('av-model').value.trim(), assignment: document.getElementById('av-assign').value, status: document.getElementById('av-status').value };
-  if (!body.tag || !body.vehicle) return;
-  try {
-    if (id) await apiPut('/vindex/vehicles/' + id, body);
-    else await apiPost('/vindex/vehicles', body);
-    closeModal(); loadVindex(); showToast(id ? 'Vehicle updated' : 'Vehicle added');
-  } catch(e) { showToast('Error: ' + e.message); }
-}
-function openEditVehicle(v) {
-  openModal('Edit Vehicle',
-    `<div class="form-row">
-      <div class="form-group"><label class="form-label">Tag</label><input class="form-input" id="av-tag" value="${v.tag}"></div>
-      <div class="form-group"><label class="form-label">Vehicle</label><input class="form-input" id="av-model" value="${v.vehicle}"></div>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><label class="form-label">Assignment</label><input class="form-input" id="av-assign" value="${v.assignment||''}"></div>
-      <div class="form-group"><label class="form-label">Status</label><select class="form-select" id="av-status"><option ${v.status==='Active'?'selected':''}>Active</option><option ${v.status==='Pending'?'selected':''}>Pending</option><option ${v.status==='Sold'?'selected':''}>Sold</option></select></div>
-    </div>`,
-    `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-     <button class="btn btn-danger btn-sm" onclick="deleteRecord('/vindex/vehicles/${v.id}',loadVindex)">Delete</button>
-     <button class="btn btn-gold" onclick="saveVehicle(${v.id})">Save</button>`
-  );
-}
-
-// ── ALLIANCE ──
-function openAddPartner() {
-  openModal('New Partner',
-    `<div class="form-row">
-      <div class="form-group"><label class="form-label">Name</label><input class="form-input" id="np-name" placeholder="Full name"></div>
-      <div class="form-group"><label class="form-label">Company</label><input class="form-input" id="np-company" placeholder="Company…"></div>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><label class="form-label">Tier</label><select class="form-select" id="np-tier"><option>Gold</option><option>Silver</option><option>Bronze</option></select></div>
-      <div class="form-group"><label class="form-label">Status</label><select class="form-select" id="np-status"><option>Active</option><option>Pending</option></select></div>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><label class="form-label">Joined</label><input class="form-input" id="np-joined" placeholder="Jan 2025"></div>
-      <div class="form-group"><label class="form-label">Notes</label><input class="form-input" id="np-notes" placeholder="Background…"></div>
-    </div>`,
-    `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-     <button class="btn btn-gold" onclick="savePartner()">Add Partner</button>`
-  );
-}
-async function savePartner(id) {
-  const body = { name: document.getElementById('np-name').value.trim(), company: document.getElementById('np-company').value.trim(), tier: document.getElementById('np-tier').value, status: document.getElementById('np-status').value, joined: document.getElementById('np-joined').value, notes: document.getElementById('np-notes').value };
-  if (!body.name || !body.company) return;
-  try {
-    if (id) await apiPut('/alliance/partners/' + id, body);
-    else await apiPost('/alliance/partners', body);
-    closeModal(); loadAlliance(); showToast(id ? 'Partner updated' : 'Partner added');
-  } catch(e) { showToast('Error: ' + e.message); }
-}
-function openEditPartner(p) {
-  openModal('Edit Partner',
-    `<div class="form-row">
-      <div class="form-group"><label class="form-label">Name</label><input class="form-input" id="np-name" value="${p.name}"></div>
-      <div class="form-group"><label class="form-label">Company</label><input class="form-input" id="np-company" value="${p.company}"></div>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><label class="form-label">Tier</label><select class="form-select" id="np-tier"><option ${p.tier==='Gold'?'selected':''}>Gold</option><option ${p.tier==='Silver'?'selected':''}>Silver</option><option ${p.tier==='Bronze'?'selected':''}>Bronze</option></select></div>
-      <div class="form-group"><label class="form-label">Status</label><select class="form-select" id="np-status"><option ${p.status==='Active'?'selected':''}>Active</option><option ${p.status==='Pending'?'selected':''}>Pending</option></select></div>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><label class="form-label">Joined</label><input class="form-input" id="np-joined" value="${p.joined||''}"></div>
-      <div class="form-group"><label class="form-label">Notes</label><input class="form-input" id="np-notes" value="${p.notes||''}"></div>
-    </div>`,
-    `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-     <button class="btn btn-danger btn-sm" onclick="deleteRecord('/alliance/partners/${p.id}',loadAlliance)">Delete</button>
-     <button class="btn btn-gold" onclick="savePartner(${p.id})">Save</button>`
-  );
-}
-function openProposal() {
-  openModal('New Proposal',
-    `<div class="form-row">
-      <div class="form-group"><label class="form-label">Partner</label><input class="form-input" id="pr-name" placeholder="Name…"></div>
-      <div class="form-group"><label class="form-label">Value</label><input class="form-input" id="pr-val" placeholder="$0K"></div>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><label class="form-label">Title</label><input class="form-input" id="pr-title" placeholder="Deal name…"></div>
-      <div class="form-group"><label class="form-label">Type</label><select class="form-select" id="pr-type"><option>Joint Venture</option><option>Revenue Share</option><option>Equity</option><option>Advisory</option><option>Coalition</option></select></div>
-    </div>`,
-    `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-     <button class="btn btn-gold" onclick="saveProposal()">Submit</button>`
-  );
-}
-async function saveProposal() {
-  const body = { partner: document.getElementById('pr-name').value.trim(), title: document.getElementById('pr-title').value.trim(), deal_type: document.getElementById('pr-type').value, value: document.getElementById('pr-val').value };
-  if (!body.partner || !body.title) return;
-  try { await apiPost('/alliance/proposals', body); closeModal(); loadAlliance(); showToast('Proposal submitted'); } catch(e) { showToast('Error: ' + e.message); }
-}
-
-// ── OBSCURA ──
-function openAddProject() {
-  openModal('New Project',
-    `<div class="form-row">
-      <div class="form-group"><label class="form-label">Client</label><input class="form-input" id="np2-client" placeholder="Client name…"></div>
-      <div class="form-group"><label class="form-label">Type</label><select class="form-select" id="np2-type"><option>Web Dev</option><option>4K Branding</option><option>Industrial</option><option>Opiumcore</option><option>Full Identity</option><option>Internal</option></select></div>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><label class="form-label">Deliverable</label><input class="form-input" id="np2-del" placeholder="Flagship Site…"></div>
-      <div class="form-group"><label class="form-label">Priority</label><select class="form-select" id="np2-pri"><option>Standard</option><option>Rush</option></select></div>
-    </div>`,
-    `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-     <button class="btn btn-gold" onclick="saveProject()">Add Project</button>`
-  );
-}
-async function saveProject(id) {
-  const body = { client: document.getElementById('np2-client').value.trim(), type: document.getElementById('np2-type').value, deliverable: document.getElementById('np2-del').value, priority: document.getElementById('np2-pri').value, status: id ? document.getElementById('np2-status')?.value || 'Development' : 'Development' };
-  if (!body.client) return;
-  try {
-    if (id) await apiPut('/obscura/projects/' + id, body);
-    else await apiPost('/obscura/projects', body);
-    closeModal(); loadObscura(); showToast(id ? 'Project updated' : 'Project added');
-  } catch(e) { showToast('Error: ' + e.message); }
-}
-function openEditProject(p) {
-  openModal('Edit Project',
-    `<div class="form-row">
-      <div class="form-group"><label class="form-label">Client</label><input class="form-input" id="np2-client" value="${p.client}"></div>
-      <div class="form-group"><label class="form-label">Type</label><select class="form-select" id="np2-type"><option ${p.type==='Web Dev'?'selected':''}>Web Dev</option><option ${p.type==='4K Branding'?'selected':''}>4K Branding</option><option ${p.type==='Industrial'?'selected':''}>Industrial</option><option ${p.type==='Opiumcore'?'selected':''}>Opiumcore</option><option ${p.type==='Full Identity'?'selected':''}>Full Identity</option></select></div>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><label class="form-label">Deliverable</label><input class="form-input" id="np2-del" value="${p.deliverable||''}"></div>
-      <div class="form-group"><label class="form-label">Status</label><select class="form-select" id="np2-status"><option ${p.status==='Active'?'selected':''}>Active</option><option ${p.status==='Development'?'selected':''}>Development</option><option ${p.status==='Complete'?'selected':''}>Complete</option></select></div>
-    </div>`,
-    `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-     <button class="btn btn-danger btn-sm" onclick="deleteRecord('/obscura/projects/${p.id}',loadObscura)">Delete</button>
-     <button class="btn btn-gold" onclick="saveProject(${p.id})">Save</button>`
-  );
-}
-
-// ── OPERATIONS ──
 function openIncident() {
   openModal('Incident Report',
     `<div class="form-row">
-      <div class="form-group"><label class="form-label">Facility</label><input class="form-input" id="inc-fac" placeholder="GRO-08…"></div>
+      <div class="form-group"><label class="form-label">Facility ID</label><input class="form-input" id="inc-fac" placeholder="GRO-01…"></div>
       <div class="form-group"><label class="form-label">Severity</label><select class="form-select" id="inc-sev"><option>Low</option><option>Medium</option><option>High</option><option>Critical</option></select></div>
     </div>
     <div class="form-group"><label class="form-label">Type</label><select class="form-select" id="inc-type"><option>Routine Flag</option><option>Maintenance Issue</option><option>Safety Concern</option><option>Medical</option><option>Security Breach</option></select></div>
@@ -1412,29 +1372,11 @@ async function saveIncident() {
   if (!body.facility_id) return;
   try { await apiPost('/operations/incidents', body); closeModal(); showToast('Incident filed'); } catch(e) { showToast('Error: ' + e.message); }
 }
-function openIntake() {
-  openModal('Resident Intake',
-    `<div class="form-row">
-      <div class="form-group"><label class="form-label">Facility ID</label><input class="form-input" id="int-fac" placeholder="GRO-07…"></div>
-      <div class="form-group"><label class="form-label">Program Track</label><select class="form-select" id="int-track"><option>Academic</option><option>Life Skills</option><option>Vocational</option><option>Transitional</option></select></div>
-    </div>
-    <div class="form-group"><label class="form-label">Intake Date</label><input class="form-input" id="int-date" type="date" value="${new Date().toISOString().slice(0,10)}"></div>
-    <div class="form-group"><label class="form-label">Notes</label><input class="form-input" id="int-notes" placeholder="Background…"></div>`,
-    `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-     <button class="btn btn-gold" onclick="saveIntake()">Complete Intake</button>`
-  );
-}
-async function saveIntake() {
-  const body = { facility_id: document.getElementById('int-fac').value, program_track: document.getElementById('int-track').value, intake_date: document.getElementById('int-date').value, notes: document.getElementById('int-notes').value };
-  if (!body.facility_id) return;
-  try { await apiPost('/operations/residents', body); closeModal(); loadOperations(); showToast('Intake complete'); } catch(e) { showToast('Error: ' + e.message); }
-}
 
-// ── CUSTODIA ──
 function openRaiseAlert() {
   openModal('Raise Security Alert',
     `<div class="form-row">
-      <div class="form-group"><label class="form-label">Property</label><input class="form-input" id="al2-prop" placeholder="A3 — Commercial Hub…"></div>
+      <div class="form-group"><label class="form-label">Property</label><input class="form-input" id="al2-prop" placeholder="Property tag or name…"></div>
       <div class="form-group"><label class="form-label">Severity</label><select class="form-select" id="al2-sev"><option>Low</option><option>Medium</option><option>Critical</option></select></div>
     </div>
     <div class="form-group"><label class="form-label">Alert Type</label><select class="form-select" id="al2-type"><option>Intrusion</option><option>Equipment Failure</option><option>Access Breach</option><option>Routine Flag</option><option>Vandalism</option></select></div>
@@ -1448,10 +1390,11 @@ async function saveAlert() {
   if (!body.property) return;
   try { await apiPost('/custodia/alerts', body); closeModal(); loadCustodia(); showToast('Alert raised'); } catch(e) { showToast('Error: ' + e.message); }
 }
+
 function openAssignDriver() {
   openModal('Assign Driver',
     `<div class="form-row">
-      <div class="form-group"><label class="form-label">Vehicle Tag</label><input class="form-input" id="ad-veh" placeholder="B2…"></div>
+      <div class="form-group"><label class="form-label">Vehicle Tag</label><input class="form-input" id="ad-veh" placeholder="Vehicle tag…"></div>
       <div class="form-group"><label class="form-label">Driver Name</label><input class="form-input" id="ad-driver" placeholder="Last, First…"></div>
     </div>
     <div class="form-group"><label class="form-label">Route</label><input class="form-input" id="ad-route" placeholder="Origin → Destination"></div>`,
@@ -1460,17 +1403,16 @@ function openAssignDriver() {
   );
 }
 async function saveDriver() {
-  const body = { vehicle_tag: document.getElementById('ad-veh').value, driver: document.getElementById('ad-driver').value.trim(), route: document.getElementById('ad-route').value };
+  const body = { vehicle_tag: document.getElementById('ad-veh').value, driver: document.getElementById('ad-driver').value.trim(), route: document.getElementById('ad-route').value, status: 'Active' };
   if (!body.driver) return;
   try { await apiPost('/custodia/drivers', body); closeModal(); loadCustodia(); showToast('Driver assigned'); } catch(e) { showToast('Error: ' + e.message); }
 }
 
-// ── OUTREACH ──
 function openLogDonation() {
   openModal('Log Donation',
     `<div class="form-row">
       <div class="form-group"><label class="form-label">Donor (optional)</label><input class="form-input" id="dn-name" placeholder="Anonymous…"></div>
-      <div class="form-group"><label class="form-label">Amount</label><input class="form-input" id="dn-amt" placeholder="$0K"></div>
+      <div class="form-group"><label class="form-label">Amount</label><input class="form-input" id="dn-amt" placeholder="$0"></div>
     </div>
     <div class="form-row">
       <div class="form-group"><label class="form-label">Type</label><select class="form-select" id="dn-type"><option>Cash</option><option>In-Kind</option><option>Grant</option><option>Planned Giving</option></select></div>
@@ -1485,14 +1427,15 @@ async function saveDonation() {
   if (!body.amount) return;
   try { await apiPost('/outreach/donations', body); closeModal(); loadOutreach(); showToast('Donation logged'); } catch(e) { showToast('Error: ' + e.message); }
 }
+
 function openScholarship() {
   openModal('Award Scholarship',
     `<div class="form-row">
       <div class="form-group"><label class="form-label">Recipient</label><input class="form-input" id="sc-name" placeholder="Full name"></div>
-      <div class="form-group"><label class="form-label">Facility</label><input class="form-input" id="sc-fac" placeholder="GRO-07…"></div>
+      <div class="form-group"><label class="form-label">Facility</label><input class="form-input" id="sc-fac" placeholder="Facility ID…"></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Amount</label><input class="form-input" id="sc-amt" placeholder="$0K"></div>
+      <div class="form-group"><label class="form-label">Amount</label><input class="form-input" id="sc-amt" placeholder="$0"></div>
       <div class="form-group"><label class="form-label">Program</label><select class="form-select" id="sc-prog"><option>Academic</option><option>Life Skills</option><option>Vocational</option></select></div>
     </div>`,
     `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
@@ -1505,99 +1448,6 @@ async function saveScholarship() {
   try { await apiPost('/outreach/scholarships', body); closeModal(); loadOutreach(); showToast('Scholarship awarded'); } catch(e) { showToast('Error: ' + e.message); }
 }
 
-// ── ALATUS ──
-function openScheduleFlight() {
-  openModal('Schedule Flight',
-    `<div class="form-row">
-      <div class="form-group"><label class="form-label">Origin</label><input class="form-input" id="fl-orig" placeholder="City…"></div>
-      <div class="form-group"><label class="form-label">Destination</label><input class="form-input" id="fl-dest" placeholder="City…"></div>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><label class="form-label">Aircraft</label><select class="form-select" id="fl-aircraft"><option>Citation CJ4</option><option>King Air 350</option><option>Charter TBD</option></select></div>
-      <div class="form-group"><label class="form-label">Date</label><input class="form-input" id="fl-date" type="date"></div>
-    </div>`,
-    `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-     <button class="btn btn-gold" onclick="saveFlight()">Add Flight</button>`
-  );
-}
-async function saveFlight() {
-  const body = { origin: document.getElementById('fl-orig').value.trim(), destination: document.getElementById('fl-dest').value.trim(), aircraft: document.getElementById('fl-aircraft').value, date: document.getElementById('fl-date').value };
-  if (!body.origin || !body.destination) return;
-  try { await apiPost('/alatus/flights', body); closeModal(); loadAlatus(); showToast('Flight scheduled'); } catch(e) { showToast('Error: ' + e.message); }
-}
-function openDeployDrone() {
-  openModal('Deploy Drone',
-    `<div class="form-row">
-      <div class="form-group"><label class="form-label">Unit</label><input class="form-input" id="dr-unit" placeholder="D-05…"></div>
-      <div class="form-group"><label class="form-label">Mission Type</label><select class="form-select" id="dr-type"><option>Surveillance</option><option>Delivery</option><option>Mapping</option><option>Perimeter</option></select></div>
-    </div>
-    <div class="form-group"><label class="form-label">Assigned To</label><input class="form-input" id="dr-prop" placeholder="A1 — Haven House…"></div>`,
-    `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-     <button class="btn btn-gold" onclick="saveDrone()">Deploy</button>`
-  );
-}
-async function saveDrone() {
-  const body = { unit: document.getElementById('dr-unit').value.trim(), type: document.getElementById('dr-type').value, assigned_to: document.getElementById('dr-prop').value };
-  if (!body.unit) return;
-  try { await apiPost('/alatus/drones', body); closeModal(); loadAlatus(); showToast('Drone deployed'); } catch(e) { showToast('Error: ' + e.message); }
-}
-
-// ── PEDES ──
-async function completeRun(id) {
-  try { await apiPut('/pedes/runs/' + id, { status: 'Complete' }); loadPedes(); showToast('Run complete'); } catch(e) { showToast('Error: ' + e.message); }
-}
-function openNewRun() {
-  openModal('New Transport Run',
-    `<div class="form-row">
-      <div class="form-group"><label class="form-label">Vehicle</label><input class="form-input" id="nr-veh" placeholder="B1 — Escalade…"></div>
-      <div class="form-group"><label class="form-label">Driver</label><input class="form-input" id="nr-driver" placeholder="Last, First…"></div>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><label class="form-label">Route</label><input class="form-input" id="nr-route" placeholder="Origin → Destination"></div>
-      <div class="form-group"><label class="form-label">Priority</label><select class="form-select" id="nr-pri"><option>Standard</option><option>Priority</option><option>Emergency</option></select></div>
-    </div>`,
-    `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-     <button class="btn btn-gold" onclick="saveRun()">Add Run</button>`
-  );
-}
-async function saveRun() {
-  const body = { vehicle: document.getElementById('nr-veh').value.trim(), driver: document.getElementById('nr-driver').value.trim() || 'Unassigned', route: document.getElementById('nr-route').value, priority: document.getElementById('nr-pri').value };
-  if (!body.vehicle) return;
-  try { await apiPost('/pedes/runs', body); closeModal(); loadPedes(); showToast('Run added'); } catch(e) { showToast('Error: ' + e.message); }
-}
-
-// ── PETRA ──
-async function updateBuildProgress(id, input, existing) {
-  const val = Math.min(100, Math.max(0, parseInt(input.value) || 0));
-  document.getElementById('pf-' + id).style.width = val + '%';
-  document.getElementById('pp-' + id).textContent = val + '%';
-  const status = val === 100 ? 'Completed' : existing.status;
-  try {
-    await apiPut('/petra/builds/' + id, { ...existing, progress: val, status });
-    if (val === 100) { document.getElementById('ps-' + id).innerHTML = badge('Completed'); showToast('Build complete!'); }
-  } catch(e) { showToast('Error saving: ' + e.message); }
-}
-function openNewBuild() {
-  openModal('New Build',
-    `<div class="form-row">
-      <div class="form-group"><label class="form-label">Project Name</label><input class="form-input" id="nb-name" placeholder="Name…"></div>
-      <div class="form-group"><label class="form-label">Type</label><select class="form-select" id="nb-type"><option>GRO Facility</option><option>Commercial</option><option>Renovation</option><option>Infrastructure</option></select></div>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><label class="form-label">Division</label><select class="form-select" id="nb-div"><option>Operations</option><option>Vindex</option><option>Capital</option></select></div>
-      <div class="form-group"><label class="form-label">Budget</label><input class="form-input" id="nb-budget" placeholder="$0K"></div>
-    </div>`,
-    `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-     <button class="btn btn-gold" onclick="saveBuild()">Add Build</button>`
-  );
-}
-async function saveBuild() {
-  const body = { name: document.getElementById('nb-name').value.trim(), type: document.getElementById('nb-type').value, division: document.getElementById('nb-div').value, budget: document.getElementById('nb-budget').value, start_date: new Date().toISOString().slice(0,10) };
-  if (!body.name) return;
-  try { await apiPost('/petra/builds', body); closeModal(); loadPetra(); showToast('Build added'); } catch(e) { showToast('Error: ' + e.message); }
-}
-
-// ── OVERVIEW ──
 function openEmpireRequest() {
   openModal('Empire-Wide Request',
     `<div class="form-group"><label class="form-label">Target Division</label>
@@ -1619,25 +1469,17 @@ function submitEmpireReq() {
   showToast('Request submitted');
 }
 
-// ── GENERIC DELETE ──
-async function deleteRecord(path, reloader) {
-  if (!confirm('Delete this record? This cannot be undone.')) return;
-  try { await apiDel(path); closeModal(); reloader(); showToast('Deleted'); } catch(e) { showToast('Error: ' + e.message); }
-}
-
 /* ═══════════════════════════════════════════════════
    CLERK AUTH
 ═══════════════════════════════════════════════════ */
-const LOGIN_URL2 = 'https://login.lvo-cloud.cloud/';
-
 window.addEventListener('load', async () => {
   try { await Clerk.load(); } catch(e) {
     document.getElementById('auth-guard-text').textContent = 'Auth error — redirecting…';
-    setTimeout(() => window.location.href = LOGIN_URL2, 1500);
+    setTimeout(() => window.location.href = LOGIN_URL, 1500);
     return;
   }
 
-  if (!Clerk.user) { window.location.href = LOGIN_URL2; return; }
+  if (!Clerk.user) { window.location.href = LOGIN_URL; return; }
 
   const user = Clerk.user;
   const meta = user.publicMetadata || {};
@@ -1649,7 +1491,7 @@ window.addEventListener('load', async () => {
     uid: user.id,
     name: displayName,
     isAdmin: meta.role === 'admin',
-    token: null, // fetched fresh per request via Clerk.session.getToken()
+    token: null,
   };
 
   document.getElementById('sidebar-user-name').textContent = displayName;
@@ -1661,7 +1503,7 @@ window.addEventListener('load', async () => {
 
   initApp();
 
-  Clerk.addListener(({ user }) => { if (!user) window.location.href = LOGIN_URL2; });
+  Clerk.addListener(({ user }) => { if (!user) window.location.href = LOGIN_URL; });
 });
 </script>
 </body>
