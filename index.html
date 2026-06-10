@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- FIX #10: Content Security Policy -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://clerk.lvo-cloud.cloud https://fonts.googleapis.com 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' https://lvo-command-worker.lvoholdings00.workers.dev https://clerk.lvo-cloud.cloud https://*.clerk.accounts.dev; img-src 'self' data: https:; worker-src blob:;">
 <title>LVO Command Center</title>
 
 <script
@@ -67,6 +69,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .auth-status{display:flex;align-items:center;gap:8px;font-size:9px;letter-spacing:.18em;color:var(--text-muted);text-transform:uppercase}
 .auth-dot{width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0}
 
+/* FIX #11: semantic main landmark */
 #main{flex:1;height:100vh;overflow-y:auto;background:var(--black);min-width:0}
 .page{display:none;padding:36px 44px 60px;animation:pageIn .25s ease}
 .page.active{display:block}
@@ -86,7 +89,6 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .page-dba{font-size:9px;letter-spacing:.2em;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px}
 .page-desc{font-size:12px;color:var(--text-muted);line-height:1.65;max-width:640px}
 
-/* EDITABLE INLINE */
 .editable{cursor:text;border-bottom:1px dashed transparent;transition:border-color .2s,background .15s;padding:1px 3px;border-radius:2px;outline:none}
 .editable:hover{border-bottom-color:var(--gold-dim)}
 .editable:focus{border-bottom-color:var(--gold);background:var(--gold-glow)}
@@ -111,7 +113,6 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .section-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;color:var(--text);margin-bottom:18px;letter-spacing:.04em}
 .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
 
-/* INLINE-EDITABLE TABLE */
 .data-table{width:100%;border-collapse:collapse}
 .data-table th{font-size:8px;letter-spacing:.25em;color:var(--text-muted);text-transform:uppercase;padding:0 14px 10px 0;text-align:left;border-bottom:1px solid var(--border)}
 .data-table td{padding:10px 14px 10px 0;border-bottom:1px solid var(--border);color:var(--text-dim);font-size:11.5px;vertical-align:middle}
@@ -204,8 +205,9 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-row{padding:20px;text-align:center;color:var(--text-muted);font-size:10px;letter-spacing:.2em}
 
-.modal-overlay{position:fixed;inset:0;background:#0a0a0acc;z-index:500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal-overlay{position:fixed;inset:0;background:#0a0a0acc;z-index:500;display:none;align-items:center;justify-content:center}
 .modal-overlay.open{display:flex}
+/* FIX #14: removed backdrop-filter blur for performance; use solid overlay instead */
 .modal{background:var(--surface);border:1px solid var(--border-gold);width:520px;max-width:92vw;max-height:88vh;overflow-y:auto;padding:30px;animation:modalIn .22s ease}
 @keyframes modalIn{from{opacity:0;transform:scale(.97) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
 .modal-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px}
@@ -234,16 +236,13 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .admin-section{display:none}
 .admin-section.active{display:block;animation:pageIn .2s ease}
 
-/* ROW ADD TEMPLATE */
 .add-row-btn{display:flex;align-items:center;gap:8px;padding:10px 0;font-size:9px;letter-spacing:.2em;color:var(--text-muted);text-transform:uppercase;cursor:pointer;border-top:1px dashed var(--border);transition:color .2s;background:none;border-left:none;border-right:none;border-bottom:none;width:100%;font-family:'DM Mono',monospace;margin-top:4px}
 .add-row-btn:hover{color:var(--gold)}
 .add-row-btn::before{content:'＋';font-size:12px}
 
-/* STATUS INLINE SELECT */
 .status-select{background:transparent;border:1px solid var(--border);color:var(--text-muted);font-family:'DM Mono',monospace;font-size:8px;padding:3px 8px;cursor:pointer;outline:none;letter-spacing:.1em}
 .status-select option{background:var(--surface)}
 
-/* SAVE INDICATOR */
 .save-indicator{font-size:8px;letter-spacing:.18em;color:var(--text-muted);text-transform:uppercase;opacity:0;transition:opacity .3s}
 .save-indicator.show{opacity:1}
 
@@ -256,12 +255,12 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 </head>
 <body>
 
-<div id="auth-guard">
+<div id="auth-guard" role="status" aria-live="polite">
   <div id="auth-guard-text">Verifying access…</div>
 </div>
 
 <div id="app">
-  <nav id="sidebar">
+  <nav id="sidebar" aria-label="Division navigation">
     <div class="sidebar-logo">
       <div class="sidebar-logo-text">LVO</div>
       <div class="sidebar-logo-sub">Legion V. Omni-Operation<br>Holdings LLC</div>
@@ -269,47 +268,50 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     <div class="sidebar-nav" id="sidebar-nav"></div>
     <div class="sidebar-bottom">
       <div class="auth-status">
-        <span class="auth-dot"></span>
+        <span class="auth-dot" aria-hidden="true"></span>
         <span id="sidebar-user-name">Authenticated</span>
       </div>
       <div id="clerk-user-btn"></div>
     </div>
   </nav>
 
-  <div id="main">
+  <!-- FIX #11: Use semantic <main> instead of <div id="main"> -->
+  <main id="main">
     <div class="top-bar">
       <div class="top-bar-left" id="top-bar-label">LVO Command Center</div>
       <div class="top-bar-right">
-        <span class="save-indicator" id="save-indicator">Saved</span>
-        <button class="notif-btn" onclick="toggleNotifPanel()">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <span class="save-indicator" id="save-indicator" aria-live="polite">Saved</span>
+        <button class="notif-btn" id="notif-toggle-btn" aria-label="Open requests panel" aria-expanded="false" aria-controls="notif-panel">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
             <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
           </svg>
-          <span class="notif-count" id="notif-count">0</span>
+          <span class="notif-count" id="notif-count" aria-label="0 requests">0</span>
         </button>
         <div id="clerk-topbar-btn"></div>
       </div>
     </div>
     <div id="pages-container"></div>
-  </div>
+  </main>
 </div>
 
-<div class="notif-panel" id="notif-panel">
+<!-- FIX #11: aria attributes for notification panel -->
+<div class="notif-panel" id="notif-panel" role="complementary" aria-label="Submitted requests" aria-hidden="true">
   <div class="notif-panel-header">
     <div class="notif-panel-title">Requests</div>
-    <button class="modal-close" onclick="toggleNotifPanel()">✕</button>
+    <button class="modal-close" aria-label="Close requests panel" id="notif-close-btn">✕</button>
   </div>
   <div class="notif-panel-body" id="notif-panel-body">
     <div style="color:var(--text-muted);font-size:11px;padding-top:20px;text-align:center">No requests yet.</div>
   </div>
 </div>
 
-<div class="modal-overlay" id="modal-overlay" onclick="closeModalOnOverlay(event)">
+<!-- FIX #11: role="dialog" and aria attributes for modal -->
+<div class="modal-overlay" id="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
   <div class="modal" id="modal-box">
     <div class="modal-header">
       <div class="modal-title" id="modal-title">Request</div>
-      <button class="modal-close" onclick="closeModal()">✕</button>
+      <button class="modal-close" id="modal-close-btn" aria-label="Close dialog">✕</button>
     </div>
     <div id="modal-body"></div>
     <div class="modal-footer" id="modal-footer"></div>
@@ -317,6 +319,12 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 </div>
 
 <script>
+/* ═══════════════════════════════════════════════════
+   FIX #9: Wrap entire app in IIFE to avoid global namespace pollution
+═══════════════════════════════════════════════════ */
+(function() {
+'use strict';
+
 /* ═══════════════════════════════════════════════════
    CONFIG
 ═══════════════════════════════════════════════════ */
@@ -329,12 +337,24 @@ const CLERK_APPEARANCE = {
 };
 
 /* ═══════════════════════════════════════════════════
+   FIX #1: HTML escape helper — ALL dynamic text goes through esc()
+═══════════════════════════════════════════════════ */
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => (
+    {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]
+  ));
+}
+
+/* ═══════════════════════════════════════════════════
    STATE
 ═══════════════════════════════════════════════════ */
 let _user = null;
 let _requests = [];
 let notifOpen = false;
 let _editMode = {};
+
+// FIX #7: Track original cell values to skip unchanged saves
+const _cellOriginals = new WeakMap();
 
 const divisions = [
   {id:'overview',   label:'Overview',    sub:'',              icon:'grid',      section:'command'},
@@ -352,27 +372,28 @@ const divisions = [
 ];
 
 const ICONS = {
-  grid:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>`,
-  database:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>`,
-  settings:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`,
-  users:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
-  monitor:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8m-4-4v4"/></svg>`,
-  briefcase:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>`,
-  shield:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
-  heart:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`,
-  wind:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/></svg>`,
-  truck:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>`,
-  triangle:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>`,
+  grid:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>`,
+  database:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>`,
+  settings:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`,
+  users:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+  monitor:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8m-4-4v4"/></svg>`,
+  briefcase:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>`,
+  shield:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
+  heart:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`,
+  wind:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/></svg>`,
+  truck:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>`,
+  triangle:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>`,
 };
 
 /* ═══════════════════════════════════════════════════
    API HELPERS
+   FIX #2: Removed X-Clerk-Role header — admin must be enforced server-side
 ═══════════════════════════════════════════════════ */
 async function api(path, opts = {}) {
-  const token = await Clerk.session?.getToken();
+  const token = await window.Clerk?.session?.getToken();
   const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
   if (token) headers['Authorization'] = `Bearer ${token}`;
-  if (_user?.isAdmin) headers['X-Clerk-Role'] = 'admin';
+  // NOTE: Admin role MUST be verified server-side from the JWT; do NOT send client role headers.
   const res = await fetch(WORKER_URL + path, { ...opts, headers });
   if (!res.ok) {
     const e = await res.json().catch(() => ({ error: res.statusText }));
@@ -399,14 +420,19 @@ function badge(status) {
     'Open':'open','Closed':'complete',
   };
   const key = map[status] || 'pending';
-  return `<span class="badge badge-${key}">${status}</span>`;
+  // FIX #1: esc() applied to status string
+  return `<span class="badge badge-${esc(key)}">${esc(status)}</span>`;
 }
 
-function tierBadge(t) { return `<span class="badge badge-${(t||'bronze').toLowerCase()}">${t||'Bronze'}</span>`; }
+function tierBadge(t) {
+  const tier = t || 'Bronze';
+  return `<span class="badge badge-${esc(tier.toLowerCase())}">${esc(tier)}</span>`;
+}
 
 function showToast(msg) {
   const t = document.createElement('div');
-  t.className = 'toast'; t.textContent = msg;
+  t.className = 'toast';
+  t.textContent = msg; // textContent is XSS-safe
   document.body.appendChild(t);
   setTimeout(() => t.remove(), 2800);
 }
@@ -417,19 +443,54 @@ function showSaved() {
   setTimeout(() => el.classList.remove('show'), 1800);
 }
 
-function loading() { return `<div class="loading-row"><span class="spinner"></span></div>`; }
+// FIX #4: loading() returns a valid <tr> instead of a bare <div> inside <tbody>
+function loading() {
+  return `<tr><td colspan="99" class="loading-row"><span class="spinner" aria-label="Loading…"></span></td></tr>`;
+}
 
 function openModal(title, bodyHTML, footerHTML) {
-  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-title').textContent = title; // textContent = safe
   document.getElementById('modal-body').innerHTML = bodyHTML;
   document.getElementById('modal-footer').innerHTML = footerHTML;
-  document.getElementById('modal-overlay').classList.add('open');
+  const overlay = document.getElementById('modal-overlay');
+  overlay.classList.add('open');
+  overlay.removeAttribute('aria-hidden');
+  // FIX #11: Focus first focusable element inside modal
+  setTimeout(() => {
+    const first = overlay.querySelector('input,select,textarea,button');
+    if (first) first.focus();
+  }, 50);
 }
-function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
-function closeModalOnOverlay(e) { if (e.target === document.getElementById('modal-overlay')) closeModal(); }
+
+function closeModal() {
+  const overlay = document.getElementById('modal-overlay');
+  overlay.classList.remove('open');
+  overlay.setAttribute('aria-hidden', 'true');
+  // Return focus to the trigger element
+  if (_lastModalTrigger) { _lastModalTrigger.focus(); _lastModalTrigger = null; }
+}
+
+let _lastModalTrigger = null;
+function openModalFrom(triggerEl, title, bodyHTML, footerHTML) {
+  _lastModalTrigger = triggerEl;
+  openModal(title, bodyHTML, footerHTML);
+}
+
+function closeModalOnOverlay(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+}
+
 function toggleNotifPanel() {
   notifOpen = !notifOpen;
-  document.getElementById('notif-panel').classList.toggle('open', notifOpen);
+  const panel = document.getElementById('notif-panel');
+  const btn   = document.getElementById('notif-toggle-btn');
+  panel.classList.toggle('open', notifOpen);
+  panel.setAttribute('aria-hidden', notifOpen ? 'false' : 'true');
+  btn.setAttribute('aria-expanded', notifOpen ? 'true' : 'false');
+  if (notifOpen) {
+    const closeBtn = document.getElementById('notif-close-btn');
+    if (closeBtn) closeBtn.focus();
+  }
 }
 
 function switchTab(el, targetId, groupId) {
@@ -439,59 +500,92 @@ function switchTab(el, targetId, groupId) {
   document.getElementById(targetId).classList.add('active');
 }
 
+// FIX #5: submitRequest surfaces errors instead of silently swallowing them
 async function submitRequest(division, type, desc) {
-  try { await apiPost('/requests', { division, type, description: desc }); } catch(e) {}
-  const req = { division, type, desc, time: new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) };
+  try {
+    await apiPost('/requests', { division, type, description: desc });
+  } catch(e) {
+    showToast('Failed to submit request: ' + e.message);
+    return false;
+  }
+  const req = {
+    division,
+    type,
+    desc,
+    time: new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})
+  };
   _requests.unshift(req);
-  document.getElementById('notif-count').textContent = _requests.length;
+  const countEl = document.getElementById('notif-count');
+  countEl.textContent = _requests.length;
+  countEl.setAttribute('aria-label', _requests.length + ' requests');
   const body = document.getElementById('notif-panel-body');
   if (_requests.length === 1) body.innerHTML = '';
+  // FIX #1: esc() all dynamic data in notification panel
   body.innerHTML = _requests.map(r => `
     <div class="notif-entry">
-      <div class="notif-entry-header"><span class="notif-division">${r.division}</span><span class="notif-time">${r.time}</span></div>
-      <div class="notif-type">${r.type}</div>
-      <div class="notif-desc">${r.desc}</div>
+      <div class="notif-entry-header">
+        <span class="notif-division">${esc(r.division)}</span>
+        <span class="notif-time">${esc(r.time)}</span>
+      </div>
+      <div class="notif-type">${esc(r.type)}</div>
+      <div class="notif-desc">${esc(r.desc)}</div>
     </div>`).join('');
+  return true;
 }
 
 function doRequest(divId, divLabel) {
-  const type = document.getElementById('rtype-' + divId)?.value;
-  const desc = document.getElementById('rdesc-' + divId)?.value?.trim();
-  if (!desc) { document.getElementById('rdesc-' + divId).style.borderBottomColor = 'var(--red-light)'; return; }
-  document.getElementById('rdesc-' + divId).style.borderBottomColor = '';
-  submitRequest(divLabel, type, desc);
-  document.getElementById('rdesc-' + divId).value = '';
-  showToast('Request submitted — ' + divLabel);
+  const typeEl = document.getElementById('rtype-' + divId);
+  const descEl = document.getElementById('rdesc-' + divId);
+  const type = typeEl?.value;
+  const desc = descEl?.value?.trim();
+  if (!desc) {
+    descEl.style.borderBottomColor = 'var(--red-light)';
+    descEl.focus();
+    return;
+  }
+  descEl.style.borderBottomColor = '';
+  submitRequest(divLabel, type, desc).then(ok => {
+    if (ok) {
+      descEl.value = '';
+      showToast('Request submitted — ' + esc(divLabel));
+    }
+  });
 }
 
 function reqBar(divId, divLabel, types) {
+  // FIX #1: esc applied to all interpolated values
   return `<div class="request-bar">
-    <select id="rtype-${divId}">${types.map(t => `<option>${t}</option>`).join('')}</select>
-    <input type="text" id="rdesc-${divId}" placeholder="Describe your request…">
-    <button class="btn btn-gold btn-sm" onclick="doRequest('${divId}','${divLabel}')">Submit</button>
+    <select id="rtype-${esc(divId)}" aria-label="Request type">${types.map(t => `<option>${esc(t)}</option>`).join('')}</select>
+    <input type="text" id="rdesc-${esc(divId)}" placeholder="Describe your request…" aria-label="Request description">
+    <button class="btn btn-gold btn-sm" onclick="App.doRequest('${esc(divId)}','${esc(divLabel)}')">Submit</button>
   </div>`;
 }
 
 /* ═══════════════════════════════════════════════════
    INLINE EDIT SYSTEM
-   All data lives in backend. Edit mode turns cells into
-   contenteditable / selects and auto-saves on blur/change.
 ═══════════════════════════════════════════════════ */
 
 function editBtn(pageId) {
-  return `<button class="edit-hint" id="edit-btn-${pageId}" onclick="toggleEditMode('${pageId}')">
+  return `<button class="edit-hint" id="edit-btn-${esc(pageId)}" onclick="App.toggleEditMode('${esc(pageId)}')" aria-pressed="false">
     ✎ <span>Edit Mode</span>
   </button>`;
 }
 
 function toggleEditMode(pageId) {
   _editMode[pageId] = !_editMode[pageId];
-  const btn = document.getElementById('edit-btn-' + pageId);
+  const btn  = document.getElementById('edit-btn-' + pageId);
   const page = document.getElementById('page-' + pageId);
-  if (btn) btn.classList.toggle('active', _editMode[pageId]);
+  if (btn) {
+    btn.classList.toggle('active', _editMode[pageId]);
+    btn.setAttribute('aria-pressed', _editMode[pageId] ? 'true' : 'false');
+  }
   if (page) {
     page.querySelectorAll('[data-editable]').forEach(el => {
       el.contentEditable = _editMode[pageId] ? 'true' : 'false';
+      if (_editMode[pageId]) {
+        // FIX #7: store original value on focus for dirty-check on blur
+        el.addEventListener('focus', () => { _cellOriginals.set(el, el.textContent.trim()); }, { once: true });
+      }
     });
     page.querySelectorAll('.add-row-btn').forEach(el => {
       el.style.display = _editMode[pageId] ? 'flex' : 'none';
@@ -503,46 +597,83 @@ function toggleEditMode(pageId) {
   if (btn) btn.querySelector('span').textContent = _editMode[pageId] ? 'Done Editing' : 'Edit Mode';
 }
 
-// Make a cell editable — saves on blur to backend
-function ec(value, path, field, recordId, placeholder='—') {
+// FIX #1 + #7: esc all values; skip save if value unchanged
+function ec(value, path, field, recordId, placeholder) {
   const val = value || '';
-  return `<span class="editable" contenteditable="false" data-editable="1" data-path="${path}" data-field="${field}" data-id="${recordId}" data-placeholder="${placeholder}"
-    onblur="saveCell(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}">${val}</span>`;
+  const ph  = placeholder || '—';
+  // FIX #11: role="textbox" and aria-label for accessibility
+  return `<span class="editable" contenteditable="false" role="textbox" aria-label="${esc(field)}"
+    data-editable="1" data-path="${esc(path)}" data-field="${esc(field)}" data-id="${esc(String(recordId))}"
+    data-placeholder="${esc(ph)}" data-orig="${esc(val)}"
+    onblur="App.saveCell(this)"
+    onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}">${esc(val)}</span>`;
 }
 
+// FIX #7: Only save if value actually changed
 async function saveCell(el) {
-  const val = el.textContent.trim();
-  const path = el.dataset.path;
+  const val  = el.textContent.trim();
+  const orig = _cellOriginals.get(el) ?? el.dataset.orig ?? '';
+  if (val === orig) return; // no change — skip the request
+  const path  = el.dataset.path;
   const field = el.dataset.field;
-  const id = el.dataset.id;
+  const id    = el.dataset.id;
   if (!path || !id) return;
   try {
     await apiPut(`${path}/${id}`, { [field]: val });
+    el.dataset.orig = val;
+    _cellOriginals.set(el, val);
     showSaved();
-  } catch(e) { showToast('Save failed: ' + e.message); }
+  } catch(e) {
+    showToast('Save failed: ' + e.message);
+    el.textContent = orig; // revert on failure
+  }
 }
 
-// Status select that saves immediately on change
+// FIX #12: Normalize status strings before comparing
 function statusSelect(current, path, id, options) {
   const opts = options || STATUS_OPTIONS;
-  return `<select class="status-select" data-path="${path}" data-id="${id}"
-    onchange="saveStatus(this)">${opts.map(o => `<option ${o===current?'selected':''}>${o}</option>`).join('')}</select>`;
+  const normalize = s => String(s ?? '').trim().toLowerCase();
+  const currentNorm = normalize(current);
+  return `<select class="status-select" data-path="${esc(path)}" data-id="${esc(String(id))}"
+    onchange="App.saveStatus(this)" aria-label="Status">
+    ${opts.map(o => `<option value="${esc(o)}" ${normalize(o)===currentNorm?'selected':''}>${esc(o)}</option>`).join('')}
+  </select>`;
 }
 
 async function saveStatus(el) {
-  const val = el.value;
+  const val  = el.value;
   const path = el.dataset.path;
-  const id = el.dataset.id;
+  const id   = el.dataset.id;
   try {
     await apiPut(`${path}/${id}`, { status: val });
     showSaved();
   } catch(e) { showToast('Save failed: ' + e.message); }
 }
 
+// FIX #6: Defer delete slightly so any in-flight blur save can settle
 async function deleteRecord(path, id, reloader) {
   if (!confirm('Delete this record? This cannot be undone.')) return;
-  try { await apiDel(`${path}/${id}`); reloader(); showToast('Deleted'); } catch(e) { showToast('Error: ' + e.message); }
+  // Small delay to let any active blur/save complete
+  await new Promise(r => setTimeout(r, 80));
+  try {
+    await apiDel(`${path}/${id}`);
+    reloader();
+    showToast('Deleted');
+  } catch(e) {
+    showToast('Error: ' + e.message);
+  }
 }
+
+/* ═══════════════════════════════════════════════════
+   FIX #3: Force plain-text paste in all contenteditable cells
+═══════════════════════════════════════════════════ */
+document.addEventListener('paste', function(e) {
+  if (e.target.matches('[contenteditable="true"]')) {
+    e.preventDefault();
+    const text = e.clipboardData.getData('text/plain');
+    document.execCommand('insertText', false, text);
+  }
+});
 
 /* ═══════════════════════════════════════════════════
    NAVIGATION
@@ -555,14 +686,15 @@ function navigate(id) {
   if (navEl)  navEl.classList.add('active');
   if (pageEl) pageEl.classList.add('active');
   const d = divisions.find(x => x.id === id);
-  document.getElementById('top-bar-label').textContent = d ? d.label + (d.sub ? ' — ' + d.sub : '') : 'LVO';
+  document.getElementById('top-bar-label').textContent =
+    d ? d.label + (d.sub ? ' — ' + d.sub : '') : 'LVO';
   const loaders = {
-    overview:   loadOverview,   vindex:  loadVindex,
-    operations: loadOperations, alliance:loadAlliance,
-    obscura:    loadObscura,    capital: loadCapital,
-    custodia:   loadCustodia,   outreach:loadOutreach,
-    alatus:     loadAlatus,     pedes:   loadPedes,
-    petra:      loadPetra,      admin:   loadAdmin,
+    overview:   loadOverview,   vindex:   loadVindex,
+    operations: loadOperations, alliance: loadAlliance,
+    obscura:    loadObscura,    capital:  loadCapital,
+    custodia:   loadCustodia,   outreach: loadOutreach,
+    alatus:     loadAlatus,     pedes:    loadPedes,
+    petra:      loadPetra,      admin:    loadAdmin,
   };
   if (loaders[id]) loaders[id]();
 }
@@ -586,9 +718,15 @@ function buildSidebar() {
 }
 
 function navItem(d) {
-  return `<div class="nav-item" id="nav-${d.id}" onclick="navigate('${d.id}')">
+  return `<div class="nav-item" id="nav-${esc(d.id)}" role="button" tabindex="0"
+    onclick="App.navigate('${esc(d.id)}')"
+    onkeydown="if(event.key==='Enter'||event.key===' ')App.navigate('${esc(d.id)}')"
+    aria-label="${esc(d.label)}${d.sub?' — '+d.sub:''}">
     <div class="nav-icon">${ICONS[d.icon] || ''}</div>
-    <div><div class="nav-label">${d.label}</div>${d.sub ? `<div class="nav-sub">${d.sub}</div>` : ''}</div>
+    <div>
+      <div class="nav-label">${esc(d.label)}</div>
+      ${d.sub ? `<div class="nav-sub">${esc(d.sub)}</div>` : ''}
+    </div>
   </div>`;
 }
 
@@ -603,6 +741,7 @@ function buildAllPages() {
 
 /* ═══════════════════════════════════════════════════
    PAGE SHELLS
+   NOTE: static structural HTML — no dynamic data interpolated here
 ═══════════════════════════════════════════════════ */
 
 function buildOverviewShell() {
@@ -612,18 +751,19 @@ function buildOverviewShell() {
     <div class="page-dba">Legion V. Omni-Operation Holdings · Houston, TX</div>
     <div class="page-desc">Empire-wide oversight. Monitor all 10 divisions and submit cross-division requests.</div>
   </div>
-  <div class="kpi-grid kpi-grid-4" id="ov-kpis">${loading()}</div>
+  <div class="kpi-grid kpi-grid-4" id="ov-kpis"><table style="display:contents"><tbody>${loading()}</tbody></table></div>
   <div class="section">
     <div class="section-header">
       <div class="section-title">Division Health</div>
-      <button class="btn btn-gold btn-sm" onclick="openEmpireRequest()">+ Empire-Wide Request</button>
+      <button class="btn btn-gold btn-sm" onclick="App.openEmpireRequest(this)">+ Empire-Wide Request</button>
     </div>
-    <div class="division-grid" id="ov-divisions">${loading()}</div>
+    <div class="division-grid" id="ov-divisions"><span class="spinner" aria-label="Loading…"></span></div>
   </div>
 </div>`;
 }
 
 function buildVindexShell() {
+  const admin = _user?.isAdmin;
   return `<div class="page" id="page-vindex">
   <div class="page-header">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
@@ -631,30 +771,30 @@ function buildVindexShell() {
         <div class="page-title"><span class="page-title-main">Vindex</span><span class="page-title-tag">The Gasoline</span></div>
         <div class="page-dba">Physical Asset Management · A-Series: Real Estate · B-Series: Vehicles</div>
       </div>
-      ${_user?.isAdmin ? editBtn('vindex') : ''}
+      ${admin ? editBtn('vindex') : ''}
     </div>
   </div>
   ${reqBar('vindex','Vindex',['Add Property','Add Vehicle','Update Asset Status','Request Appraisal','Flag for Sale','Internal Transfer','Capital Request'])}
-  <div class="kpi-grid" id="vindex-kpis">${loading()}</div>
+  <div class="kpi-grid" id="vindex-kpis"></div>
   <div class="section">
     <div class="tabs">
-      <div class="tab active" onclick="switchTab(this,'vtab-a','vindex-tabs')">A-Series — Real Estate</div>
-      <div class="tab" onclick="switchTab(this,'vtab-b','vindex-tabs')">B-Series — Vehicles</div>
+      <div class="tab active" role="tab" tabindex="0" onclick="App.switchTab(this,'vtab-a','vindex-tabs')" onkeydown="if(event.key==='Enter')App.switchTab(this,'vtab-a','vindex-tabs')">A-Series — Real Estate</div>
+      <div class="tab" role="tab" tabindex="0" onclick="App.switchTab(this,'vtab-b','vindex-tabs')" onkeydown="if(event.key==='Enter')App.switchTab(this,'vtab-b','vindex-tabs')">B-Series — Vehicles</div>
     </div>
     <div id="vindex-tabs">
       <div class="tab-content active" id="vtab-a">
         <table class="data-table">
-          <thead><tr><th>Tag</th><th>Type</th><th>Address</th><th>City</th><th>Value</th><th>Status</th>${_user?.isAdmin?'<th></th>':''}</tr></thead>
+          <thead><tr><th scope="col">Tag</th><th scope="col">Type</th><th scope="col">Address</th><th scope="col">City</th><th scope="col">Value</th><th scope="col">Status</th>${admin?'<th scope="col"><span class="sr-only">Actions</span></th>':''}</tr></thead>
           <tbody id="vindex-a-tbody">${loading()}</tbody>
         </table>
-        ${_user?.isAdmin ? `<button class="add-row-btn" style="display:none" onclick="addPropertyRow()">Add Property</button>` : ''}
+        ${admin ? `<button class="add-row-btn" style="display:none" onclick="App.addPropertyRow()">Add Property</button>` : ''}
       </div>
       <div class="tab-content" id="vtab-b">
         <table class="data-table">
-          <thead><tr><th>Tag</th><th>Year / Make / Model</th><th>Assignment</th><th>Status</th>${_user?.isAdmin?'<th></th>':''}</tr></thead>
+          <thead><tr><th scope="col">Tag</th><th scope="col">Year / Make / Model</th><th scope="col">Assignment</th><th scope="col">Status</th>${admin?'<th scope="col"><span class="sr-only">Actions</span></th>':''}</tr></thead>
           <tbody id="vindex-b-tbody">${loading()}</tbody>
         </table>
-        ${_user?.isAdmin ? `<button class="add-row-btn" style="display:none" onclick="addVehicleRow()">Add Vehicle</button>` : ''}
+        ${admin ? `<button class="add-row-btn" style="display:none" onclick="App.addVehicleRow()">Add Vehicle</button>` : ''}
       </div>
     </div>
   </div>
@@ -662,6 +802,7 @@ function buildVindexShell() {
 }
 
 function buildOperationsShell() {
+  const admin = _user?.isAdmin;
   return `<div class="page" id="page-operations">
   <div class="page-header">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
@@ -669,29 +810,30 @@ function buildOperationsShell() {
         <div class="page-title"><span class="page-title-main">Operations</span><span class="page-title-tag">The Engine</span></div>
         <div class="page-dba">General Residential Operations · Safety, Academic, Life-Skills, Resident Care</div>
       </div>
-      ${_user?.isAdmin ? editBtn('operations') : ''}
+      ${admin ? editBtn('operations') : ''}
     </div>
   </div>
   ${reqBar('operations','Operations',['New GRO Facility Request','Resident Intake','Maintenance Request','Staff Request','Inspection Request','Incident Report','Curriculum Update'])}
-  <div class="kpi-grid" id="ops-kpis">${loading()}</div>
+  <div class="kpi-grid" id="ops-kpis"></div>
   <div class="section">
     <div class="section-header">
       <div class="section-title">GRO Facility Directory</div>
       <div style="display:flex;gap:8px">
-        <button class="btn btn-outline btn-sm" onclick="openIncident()">+ Incident</button>
-        ${_user?.isAdmin ? `<button class="btn btn-gold btn-sm" onclick="addFacilityRow()">+ Facility</button>` : ''}
+        <button class="btn btn-outline btn-sm" onclick="App.openIncident(this)">+ Incident</button>
+        ${admin ? `<button class="btn btn-gold btn-sm" onclick="App.addFacilityRow()">+ Facility</button>` : ''}
       </div>
     </div>
     <table class="data-table">
-      <thead><tr><th>ID</th><th>Name</th><th>Location</th><th>Occupied</th><th>Capacity</th><th>Status</th>${_user?.isAdmin?'<th></th>':''}</tr></thead>
+      <thead><tr><th scope="col">ID</th><th scope="col">Name</th><th scope="col">Location</th><th scope="col">Occupied</th><th scope="col">Capacity</th><th scope="col">Status</th>${admin?'<th scope="col"><span class="sr-only">Actions</span></th>':''}</tr></thead>
       <tbody id="ops-fac-tbody">${loading()}</tbody>
     </table>
-    ${_user?.isAdmin ? `<button class="add-row-btn" style="display:none" onclick="addFacilityRow()">Add Facility</button>` : ''}
+    ${admin ? `<button class="add-row-btn" style="display:none" onclick="App.addFacilityRow()">Add Facility</button>` : ''}
   </div>
 </div>`;
 }
 
 function buildAllianceShell() {
+  const admin = _user?.isAdmin;
   return `<div class="page" id="page-alliance">
   <div class="page-header">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
@@ -699,29 +841,29 @@ function buildAllianceShell() {
         <div class="page-title"><span class="page-title-main">Alliance</span><span class="page-title-tag">The Brain</span></div>
         <div class="page-dba">Venture Incubation · Strategic Partnerships · Coalition Hub</div>
       </div>
-      ${_user?.isAdmin ? editBtn('alliance') : ''}
+      ${admin ? editBtn('alliance') : ''}
     </div>
   </div>
   ${reqBar('alliance','Alliance',['New Partner Application','Partnership Proposal','Venture Submission','Meeting Request','Coalition Inquiry','Advisory Engagement'])}
-  <div class="kpi-grid kpi-grid-4" id="al-kpis">${loading()}</div>
+  <div class="kpi-grid kpi-grid-4" id="al-kpis"></div>
   <div class="section">
     <div class="section-header">
       <div class="section-title">Partner Directory</div>
-      ${_user?.isAdmin ? `<button class="btn btn-gold btn-sm" onclick="addPartnerRow()">+ Partner</button>` : ''}
+      ${admin ? `<button class="btn btn-gold btn-sm" onclick="App.addPartnerRow()">+ Partner</button>` : ''}
     </div>
     <table class="data-table">
-      <thead><tr><th>Name</th><th>Company</th><th>Tier</th><th>Joined</th><th>Status</th>${_user?.isAdmin?'<th></th>':''}</tr></thead>
+      <thead><tr><th scope="col">Name</th><th scope="col">Company</th><th scope="col">Tier</th><th scope="col">Joined</th><th scope="col">Status</th>${admin?'<th scope="col"><span class="sr-only">Actions</span></th>':''}</tr></thead>
       <tbody id="al-partners-tbody">${loading()}</tbody>
     </table>
-    ${_user?.isAdmin ? `<button class="add-row-btn" style="display:none" onclick="addPartnerRow()">Add Partner</button>` : ''}
+    ${admin ? `<button class="add-row-btn" style="display:none" onclick="App.addPartnerRow()">Add Partner</button>` : ''}
   </div>
   <div class="section">
     <div class="section-header">
       <div class="section-title">Proposals</div>
-      ${_user?.isAdmin ? `<button class="btn btn-outline btn-sm" onclick="addProposalRow()">+ Proposal</button>` : ''}
+      ${admin ? `<button class="btn btn-outline btn-sm" onclick="App.addProposalRow()">+ Proposal</button>` : ''}
     </div>
     <table class="data-table">
-      <thead><tr><th>Partner</th><th>Title</th><th>Type</th><th>Value</th><th>Status</th>${_user?.isAdmin?'<th></th>':''}</tr></thead>
+      <thead><tr><th scope="col">Partner</th><th scope="col">Title</th><th scope="col">Type</th><th scope="col">Value</th><th scope="col">Status</th>${admin?'<th scope="col"><span class="sr-only">Actions</span></th>':''}</tr></thead>
       <tbody id="al-proposals-tbody">${loading()}</tbody>
     </table>
   </div>
@@ -729,6 +871,7 @@ function buildAllianceShell() {
 }
 
 function buildObscuraShell() {
+  const admin = _user?.isAdmin;
   return `<div class="page" id="page-obscura">
   <div class="page-header">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
@@ -736,26 +879,27 @@ function buildObscuraShell() {
         <div class="page-title"><span class="page-title-main">Obscura</span><span class="page-title-tag">The Base</span></div>
         <div class="page-dba">Web Development · 4K Digital Branding · Visual Identity</div>
       </div>
-      ${_user?.isAdmin ? editBtn('obscura') : ''}
+      ${admin ? editBtn('obscura') : ''}
     </div>
   </div>
   ${reqBar('obscura','Obscura',['New Client Project','Brand Consultation','Web Dev Request','4K Shoot','Revision Request','Internal Division Project'])}
-  <div class="kpi-grid" id="ob-kpis">${loading()}</div>
+  <div class="kpi-grid" id="ob-kpis"></div>
   <div class="section">
     <div class="section-header">
       <div class="section-title">Client Projects</div>
-      ${_user?.isAdmin ? `<button class="btn btn-gold btn-sm" onclick="addProjectRow()">+ Project</button>` : ''}
+      ${admin ? `<button class="btn btn-gold btn-sm" onclick="App.addProjectRow()">+ Project</button>` : ''}
     </div>
     <table class="data-table">
-      <thead><tr><th>Client</th><th>Type</th><th>Deliverable</th><th>Priority</th><th>Status</th>${_user?.isAdmin?'<th></th>':''}</tr></thead>
+      <thead><tr><th scope="col">Client</th><th scope="col">Type</th><th scope="col">Deliverable</th><th scope="col">Priority</th><th scope="col">Status</th>${admin?'<th scope="col"><span class="sr-only">Actions</span></th>':''}</tr></thead>
       <tbody id="ob-tbody">${loading()}</tbody>
     </table>
-    ${_user?.isAdmin ? `<button class="add-row-btn" style="display:none" onclick="addProjectRow()">Add Project</button>` : ''}
+    ${admin ? `<button class="add-row-btn" style="display:none" onclick="App.addProjectRow()">Add Project</button>` : ''}
   </div>
 </div>`;
 }
 
 function buildCapitalShell() {
+  const admin = _user?.isAdmin;
   return `<div class="page" id="page-capital">
   <div class="page-header">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
@@ -763,26 +907,27 @@ function buildCapitalShell() {
         <div class="page-title"><span class="page-title-main">Capital</span><span class="page-title-tag">The Reservoir</span></div>
         <div class="page-dba">Internal Treasury · Empire Financing · Allocation & Liquidity</div>
       </div>
-      ${_user?.isAdmin ? editBtn('capital') : ''}
+      ${admin ? editBtn('capital') : ''}
     </div>
   </div>
   ${reqBar('capital','Capital',['Capital Injection Request','Internal Loan Request','Budget Approval','Capital Reallocation','Expense Report','Emergency Drawdown'])}
-  <div class="kpi-grid" id="cap-kpis">${loading()}</div>
+  <div class="kpi-grid" id="cap-kpis"></div>
   <div class="section">
     <div class="section-header">
       <div class="section-title">Capital Allocation Ledger</div>
-      ${_user?.isAdmin ? `<button class="btn btn-gold btn-sm" onclick="addAllocationRow()">+ Allocation</button>` : ''}
+      ${admin ? `<button class="btn btn-gold btn-sm" onclick="App.addAllocationRow()">+ Allocation</button>` : ''}
     </div>
     <table class="data-table">
-      <thead><tr><th>Division</th><th>Amount</th><th>Purpose</th><th>Urgency</th><th>Status</th>${_user?.isAdmin?'<th>Action</th>':''}</tr></thead>
+      <thead><tr><th scope="col">Division</th><th scope="col">Amount</th><th scope="col">Purpose</th><th scope="col">Urgency</th><th scope="col">Status</th>${admin?'<th scope="col">Action</th>':''}</tr></thead>
       <tbody id="cap-tbody">${loading()}</tbody>
     </table>
-    ${_user?.isAdmin ? `<button class="add-row-btn" style="display:none" onclick="addAllocationRow()">Add Allocation</button>` : ''}
+    ${admin ? `<button class="add-row-btn" style="display:none" onclick="App.addAllocationRow()">Add Allocation</button>` : ''}
   </div>
 </div>`;
 }
 
 function buildCustodiaShell() {
+  const admin = _user?.isAdmin;
   return `<div class="page" id="page-custodia">
   <div class="page-header">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
@@ -790,24 +935,24 @@ function buildCustodiaShell() {
         <div class="page-title"><span class="page-title-main">Custodia</span><span class="page-title-tag">The Guard</span></div>
         <div class="page-dba">Protection & Movement of Physical Assets · Security · Transport · Threat Response</div>
       </div>
-      ${_user?.isAdmin ? editBtn('custodia') : ''}
+      ${admin ? editBtn('custodia') : ''}
     </div>
   </div>
   ${reqBar('custodia','Custodia',['Security Audit','New Driver Assignment','Transport Route Request','Alert Escalation','Equipment Request'])}
-  <div class="kpi-grid" id="cust-kpis">${loading()}</div>
+  <div class="kpi-grid" id="cust-kpis"></div>
   <div class="tabs">
-    <div class="tab active" onclick="switchTab(this,'ctab-alerts','custodia-tabs')">Alerts</div>
-    <div class="tab" onclick="switchTab(this,'ctab-drivers','custodia-tabs')">Drivers</div>
+    <div class="tab active" role="tab" tabindex="0" onclick="App.switchTab(this,'ctab-alerts','custodia-tabs')" onkeydown="if(event.key==='Enter')App.switchTab(this,'ctab-alerts','custodia-tabs')">Alerts</div>
+    <div class="tab" role="tab" tabindex="0" onclick="App.switchTab(this,'ctab-drivers','custodia-tabs')" onkeydown="if(event.key==='Enter')App.switchTab(this,'ctab-drivers','custodia-tabs')">Drivers</div>
   </div>
   <div id="custodia-tabs">
     <div class="tab-content active" id="ctab-alerts">
       <div class="section">
         <div class="section-header">
           <div class="section-title">Security Alerts</div>
-          <button class="btn btn-danger btn-sm" onclick="openRaiseAlert()">⚠ Raise Alert</button>
+          <button class="btn btn-danger btn-sm" onclick="App.openRaiseAlert(this)">⚠ Raise Alert</button>
         </div>
         <table class="data-table">
-          <thead><tr><th>Property</th><th>Type</th><th>Severity</th><th>Status</th><th>Date</th>${_user?.isAdmin?'<th></th>':''}</tr></thead>
+          <thead><tr><th scope="col">Property</th><th scope="col">Type</th><th scope="col">Severity</th><th scope="col">Status</th><th scope="col">Date</th>${admin?'<th scope="col"><span class="sr-only">Actions</span></th>':''}</tr></thead>
           <tbody id="cust-alerts-tbody">${loading()}</tbody>
         </table>
       </div>
@@ -816,13 +961,13 @@ function buildCustodiaShell() {
       <div class="section">
         <div class="section-header">
           <div class="section-title">Driver Assignments</div>
-          ${_user?.isAdmin ? `<button class="btn btn-gold btn-sm" onclick="openAssignDriver()">+ Assign Driver</button>` : ''}
+          ${admin ? `<button class="btn btn-gold btn-sm" onclick="App.openAssignDriver(this)">+ Assign Driver</button>` : ''}
         </div>
         <table class="data-table">
-          <thead><tr><th>Vehicle Tag</th><th>Driver</th><th>Route</th><th>Status</th>${_user?.isAdmin?'<th></th>':''}</tr></thead>
+          <thead><tr><th scope="col">Vehicle Tag</th><th scope="col">Driver</th><th scope="col">Route</th><th scope="col">Status</th>${admin?'<th scope="col"><span class="sr-only">Actions</span></th>':''}</tr></thead>
           <tbody id="cust-drivers-tbody">${loading()}</tbody>
         </table>
-        ${_user?.isAdmin ? `<button class="add-row-btn" style="display:none" onclick="openAssignDriver()">Add Driver</button>` : ''}
+        ${admin ? `<button class="add-row-btn" style="display:none" onclick="App.openAssignDriver(this)">Add Driver</button>` : ''}
       </div>
     </div>
   </div>
@@ -830,6 +975,7 @@ function buildCustodiaShell() {
 }
 
 function buildOutreachShell() {
+  const admin = _user?.isAdmin;
   return `<div class="page" id="page-outreach">
   <div class="page-header">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
@@ -837,29 +983,29 @@ function buildOutreachShell() {
         <div class="page-title"><span class="page-title-main">Outreach</span><span class="page-title-tag">The Heart</span></div>
         <div class="page-dba">Tax-Deductible Donations · Youth Empowerment · Scholarships · Community Restoration</div>
       </div>
-      ${_user?.isAdmin ? editBtn('outreach') : ''}
+      ${admin ? editBtn('outreach') : ''}
     </div>
   </div>
   ${reqBar('outreach','Outreach',['Donation Log','Scholarship Application','Program Enrollment','Grant Submission','Volunteer Request'])}
-  <div class="kpi-grid" id="out-kpis">${loading()}</div>
+  <div class="kpi-grid" id="out-kpis"></div>
   <div class="two-col">
     <div class="section">
       <div class="section-header">
         <div class="section-title">Scholarships</div>
-        ${_user?.isAdmin ? `<button class="btn btn-gold btn-sm" onclick="openScholarship()">+ Award</button>` : ''}
+        ${admin ? `<button class="btn btn-gold btn-sm" onclick="App.openScholarship(this)">+ Award</button>` : ''}
       </div>
       <table class="data-table">
-        <thead><tr><th>Recipient</th><th>Facility</th><th>Amount</th><th>Program</th>${_user?.isAdmin?'<th></th>':''}</tr></thead>
+        <thead><tr><th scope="col">Recipient</th><th scope="col">Facility</th><th scope="col">Amount</th><th scope="col">Program</th>${admin?'<th scope="col"><span class="sr-only">Actions</span></th>':''}</tr></thead>
         <tbody id="out-scholarships-tbody">${loading()}</tbody>
       </table>
     </div>
     <div class="section">
       <div class="section-header">
         <div class="section-title">Donations</div>
-        ${_user?.isAdmin ? `<button class="btn btn-outline btn-sm" onclick="openLogDonation()">+ Log</button>` : ''}
+        ${admin ? `<button class="btn btn-outline btn-sm" onclick="App.openLogDonation(this)">+ Log</button>` : ''}
       </div>
       <table class="data-table">
-        <thead><tr><th>Donor</th><th>Amount</th><th>Type</th><th>Date</th>${_user?.isAdmin?'<th></th>':''}</tr></thead>
+        <thead><tr><th scope="col">Donor</th><th scope="col">Amount</th><th scope="col">Type</th><th scope="col">Date</th>${admin?'<th scope="col"><span class="sr-only">Actions</span></th>':''}</tr></thead>
         <tbody id="out-donations-tbody">${loading()}</tbody>
       </table>
     </div>
@@ -868,6 +1014,7 @@ function buildOutreachShell() {
 }
 
 function buildAlatusShell() {
+  const admin = _user?.isAdmin;
   return `<div class="page" id="page-alatus">
   <div class="page-header">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
@@ -875,40 +1022,40 @@ function buildAlatusShell() {
         <div class="page-title"><span class="page-title-main">Alatus</span><span class="page-title-tag">The Wing</span></div>
         <div class="page-dba">Private Aviation · Drone Operations · Aerospace Logistics</div>
       </div>
-      ${_user?.isAdmin ? editBtn('alatus') : ''}
+      ${admin ? editBtn('alatus') : ''}
     </div>
   </div>
   ${reqBar('alatus','Alatus',['Charter Flight Request','Drone Deployment','Surveillance Mission','Cargo Run','Maintenance Grounding','Fleet Acquisition'])}
-  <div class="kpi-grid" id="al2-kpis">${loading()}</div>
+  <div class="kpi-grid" id="al2-kpis"></div>
   <div class="tabs">
-    <div class="tab active" onclick="switchTab(this,'altab-fly','alatus-tabs')">Flight Log</div>
-    <div class="tab" onclick="switchTab(this,'altab-drone','alatus-tabs')">Drones</div>
+    <div class="tab active" role="tab" tabindex="0" onclick="App.switchTab(this,'altab-fly','alatus-tabs')" onkeydown="if(event.key==='Enter')App.switchTab(this,'altab-fly','alatus-tabs')">Flight Log</div>
+    <div class="tab" role="tab" tabindex="0" onclick="App.switchTab(this,'altab-drone','alatus-tabs')" onkeydown="if(event.key==='Enter')App.switchTab(this,'altab-drone','alatus-tabs')">Drones</div>
   </div>
   <div id="alatus-tabs">
     <div class="tab-content active" id="altab-fly">
       <div class="section">
         <div class="section-header">
           <div class="section-title">Charter Flights</div>
-          ${_user?.isAdmin ? `<button class="btn btn-gold btn-sm" onclick="addFlightRow()">+ Flight</button>` : ''}
+          ${admin ? `<button class="btn btn-gold btn-sm" onclick="App.addFlightRow()">+ Flight</button>` : ''}
         </div>
         <table class="data-table">
-          <thead><tr><th>Origin</th><th>Destination</th><th>Aircraft</th><th>Date</th><th>Status</th>${_user?.isAdmin?'<th></th>':''}</tr></thead>
+          <thead><tr><th scope="col">Origin</th><th scope="col">Destination</th><th scope="col">Aircraft</th><th scope="col">Date</th><th scope="col">Status</th>${admin?'<th scope="col"><span class="sr-only">Actions</span></th>':''}</tr></thead>
           <tbody id="al-flights-tbody">${loading()}</tbody>
         </table>
-        ${_user?.isAdmin ? `<button class="add-row-btn" style="display:none" onclick="addFlightRow()">Add Flight</button>` : ''}
+        ${admin ? `<button class="add-row-btn" style="display:none" onclick="App.addFlightRow()">Add Flight</button>` : ''}
       </div>
     </div>
     <div class="tab-content" id="altab-drone">
       <div class="section">
         <div class="section-header">
           <div class="section-title">Drone Operations</div>
-          ${_user?.isAdmin ? `<button class="btn btn-gold btn-sm" onclick="addDroneRow()">+ Deploy</button>` : ''}
+          ${admin ? `<button class="btn btn-gold btn-sm" onclick="App.addDroneRow()">+ Deploy</button>` : ''}
         </div>
         <table class="data-table">
-          <thead><tr><th>Unit</th><th>Mission Type</th><th>Assigned To</th><th>Status</th>${_user?.isAdmin?'<th></th>':''}</tr></thead>
+          <thead><tr><th scope="col">Unit</th><th scope="col">Mission Type</th><th scope="col">Assigned To</th><th scope="col">Status</th>${admin?'<th scope="col"><span class="sr-only">Actions</span></th>':''}</tr></thead>
           <tbody id="al-drones-tbody">${loading()}</tbody>
         </table>
-        ${_user?.isAdmin ? `<button class="add-row-btn" style="display:none" onclick="addDroneRow()">Add Drone</button>` : ''}
+        ${admin ? `<button class="add-row-btn" style="display:none" onclick="App.addDroneRow()">Add Drone</button>` : ''}
       </div>
     </div>
   </div>
@@ -916,6 +1063,7 @@ function buildAlatusShell() {
 }
 
 function buildPedesShell() {
+  const admin = _user?.isAdmin;
   return `<div class="page" id="page-pedes">
   <div class="page-header">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
@@ -923,26 +1071,27 @@ function buildPedesShell() {
         <div class="page-title"><span class="page-title-main">Pedes</span><span class="page-title-tag">The Legs</span></div>
         <div class="page-dba">Executive Ground Transport · Heavy Land Logistics · Final-Mile Movement</div>
       </div>
-      ${_user?.isAdmin ? editBtn('pedes') : ''}
+      ${admin ? editBtn('pedes') : ''}
     </div>
   </div>
   ${reqBar('pedes','Pedes',['Executive Transport Request','Heavy Logistics Run','Driver Assignment','Vehicle Maintenance','Route Change','Emergency Run'])}
-  <div class="kpi-grid" id="ped-kpis">${loading()}</div>
+  <div class="kpi-grid" id="ped-kpis"></div>
   <div class="section">
     <div class="section-header">
       <div class="section-title">Fleet Operations</div>
-      ${_user?.isAdmin ? `<button class="btn btn-gold btn-sm" onclick="addRunRow()">+ Run</button>` : ''}
+      ${admin ? `<button class="btn btn-gold btn-sm" onclick="App.addRunRow()">+ Run</button>` : ''}
     </div>
     <table class="data-table">
-      <thead><tr><th>Vehicle</th><th>Driver</th><th>Route</th><th>Priority</th><th>Status</th>${_user?.isAdmin?'<th></th>':''}</tr></thead>
+      <thead><tr><th scope="col">Vehicle</th><th scope="col">Driver</th><th scope="col">Route</th><th scope="col">Priority</th><th scope="col">Status</th>${admin?'<th scope="col"><span class="sr-only">Actions</span></th>':''}</tr></thead>
       <tbody id="ped-tbody">${loading()}</tbody>
     </table>
-    ${_user?.isAdmin ? `<button class="add-row-btn" style="display:none" onclick="addRunRow()">Add Run</button>` : ''}
+    ${admin ? `<button class="add-row-btn" style="display:none" onclick="App.addRunRow()">Add Run</button>` : ''}
   </div>
 </div>`;
 }
 
 function buildPetraShell() {
+  const admin = _user?.isAdmin;
   return `<div class="page" id="page-petra">
   <div class="page-header">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
@@ -950,21 +1099,21 @@ function buildPetraShell() {
         <div class="page-title"><span class="page-title-main">Petra</span><span class="page-title-tag">The Bedrock</span></div>
         <div class="page-dba">Physical Construction & Infrastructure · GRO Facilities · Commercial · Renovations</div>
       </div>
-      ${_user?.isAdmin ? editBtn('petra') : ''}
+      ${admin ? editBtn('petra') : ''}
     </div>
   </div>
   ${reqBar('petra','Petra',['New Build Request','Renovation Request','Inspection Request','Material Order','Project Update','Contractor Coordination'])}
-  <div class="kpi-grid" id="petra-kpis">${loading()}</div>
+  <div class="kpi-grid" id="petra-kpis"></div>
   <div class="section">
     <div class="section-header">
       <div class="section-title">Active Builds</div>
-      ${_user?.isAdmin ? `<button class="btn btn-gold btn-sm" onclick="addBuildRow()">+ Build</button>` : ''}
+      ${admin ? `<button class="btn btn-gold btn-sm" onclick="App.addBuildRow()">+ Build</button>` : ''}
     </div>
     <table class="data-table">
-      <thead><tr><th>Project</th><th>Type</th><th>Division</th><th>Progress</th><th>Budget</th><th>Status</th>${_user?.isAdmin?'<th></th>':''}</tr></thead>
+      <thead><tr><th scope="col">Project</th><th scope="col">Type</th><th scope="col">Division</th><th scope="col">Progress</th><th scope="col">Budget</th><th scope="col">Status</th>${admin?'<th scope="col"><span class="sr-only">Actions</span></th>':''}</tr></thead>
       <tbody id="petra-tbody">${loading()}</tbody>
     </table>
-    ${_user?.isAdmin ? `<button class="add-row-btn" style="display:none" onclick="addBuildRow()">Add Build</button>` : ''}
+    ${admin ? `<button class="add-row-btn" style="display:none" onclick="App.addBuildRow()">Add Build</button>` : ''}
   </div>
 </div>`;
 }
@@ -977,15 +1126,15 @@ function buildAdminShell() {
     <div class="page-desc">Full data management across all divisions.</div>
   </div>
   <div class="admin-tabs">
-    <button class="admin-tab active" onclick="switchAdminTab('requests',this)">Requests</button>
-    <button class="admin-tab" onclick="switchAdminTab('activity',this)">Activity Log</button>
+    <button class="admin-tab active" onclick="App.switchAdminTab('requests',this)">Requests</button>
+    <button class="admin-tab" onclick="App.switchAdminTab('activity',this)">Activity Log</button>
   </div>
   <div class="admin-section active" id="adm-requests">
     <div class="section">
       <div class="section-header"><div class="section-title">Submitted Requests</div>
-      <button class="btn btn-outline btn-sm" onclick="loadAdminRequests()">↺ Refresh</button></div>
+      <button class="btn btn-outline btn-sm" onclick="App.loadAdminRequests()">↺ Refresh</button></div>
       <table class="data-table">
-        <thead><tr><th>Division</th><th>Type</th><th>Description</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
+        <thead><tr><th scope="col">Division</th><th scope="col">Type</th><th scope="col">Description</th><th scope="col">Status</th><th scope="col">Date</th><th scope="col">Action</th></tr></thead>
         <tbody id="adm-requests-tbody"><tr><td colspan="6" class="loading-row">Click Refresh to load</td></tr></tbody>
       </table>
     </div>
@@ -993,7 +1142,7 @@ function buildAdminShell() {
   <div class="admin-section" id="adm-activity">
     <div class="section">
       <div class="section-header"><div class="section-title">Activity Log</div>
-      <button class="btn btn-outline btn-sm" onclick="loadAdminActivity()">↺ Refresh</button></div>
+      <button class="btn btn-outline btn-sm" onclick="App.loadAdminActivity()">↺ Refresh</button></div>
       <div id="adm-activity-feed"><div class="loading-row">Click Refresh to load</div></div>
     </div>
   </div>
@@ -1010,7 +1159,8 @@ function switchAdminTab(name, btn) {
 }
 
 /* ═══════════════════════════════════════════════════
-   DATA LOADERS  — render rows with inline-editable cells
+   DATA LOADERS
+   FIX #1: All dynamic values go through esc() before innerHTML insertion
 ═══════════════════════════════════════════════════ */
 
 async function loadOverview() {
@@ -1022,10 +1172,10 @@ async function loadOverview() {
       apiGet('/petra/builds')
     ]);
     document.getElementById('ov-kpis').innerHTML = `
-      <div class="kpi-card"><div class="kpi-label">Properties</div><div class="kpi-value">${props.length}</div><div class="kpi-sub">A-Series</div></div>
-      <div class="kpi-card"><div class="kpi-label">Vehicles</div><div class="kpi-value">${vehs.length}</div><div class="kpi-sub">B-Series fleet</div></div>
-      <div class="kpi-card"><div class="kpi-label">Active Facilities</div><div class="kpi-value">${facs.filter(f=>f.status==='Active').length}</div><div class="kpi-sub">GRO operations</div></div>
-      <div class="kpi-card"><div class="kpi-label">Alliance Partners</div><div class="kpi-value">${partners.length}</div><div class="kpi-sub gold">Active network</div></div>`;
+      <div class="kpi-card"><div class="kpi-label">Properties</div><div class="kpi-value">${esc(String(props.length))}</div><div class="kpi-sub">A-Series</div></div>
+      <div class="kpi-card"><div class="kpi-label">Vehicles</div><div class="kpi-value">${esc(String(vehs.length))}</div><div class="kpi-sub">B-Series fleet</div></div>
+      <div class="kpi-card"><div class="kpi-label">Active Facilities</div><div class="kpi-value">${esc(String(facs.filter(f=>f.status==='Active').length))}</div><div class="kpi-sub">GRO operations</div></div>
+      <div class="kpi-card"><div class="kpi-label">Alliance Partners</div><div class="kpi-value">${esc(String(partners.length))}</div><div class="kpi-sub gold">Active network</div></div>`;
     const divCards = [
       {id:'vindex',    name:'Vindex',     nick:'The Gasoline', note:`${props.length} properties · ${vehs.length} vehicles`},
       {id:'operations',name:'Operations', nick:'The Engine',   note:`${facs.filter(f=>f.status==='Active').length} active facilities`},
@@ -1039,24 +1189,31 @@ async function loadOverview() {
       {id:'petra',     name:'Petra',      nick:'The Bedrock',  note:`${builds.filter(b=>b.status==='Active').length} active builds`},
     ];
     document.getElementById('ov-divisions').innerHTML = divCards.map(d => `
-      <div class="division-card" onclick="navigate('${d.id}')">
-        <div class="division-card-header"><div class="division-card-name">${d.name}</div><div class="division-card-dot dot-active"></div></div>
-        <div class="division-card-nick">${d.nick}</div>
-        <div class="division-card-note">${d.note}</div>
+      <div class="division-card" role="button" tabindex="0"
+        onclick="App.navigate('${esc(d.id)}')"
+        onkeydown="if(event.key==='Enter'||event.key===' ')App.navigate('${esc(d.id)}')"
+        aria-label="Navigate to ${esc(d.name)}">
+        <div class="division-card-header">
+          <div class="division-card-name">${esc(d.name)}</div>
+          <div class="division-card-dot dot-active" aria-hidden="true"></div>
+        </div>
+        <div class="division-card-nick">${esc(d.nick)}</div>
+        <div class="division-card-note">${esc(d.note)}</div>
       </div>`).join('');
   } catch(e) {
-    document.getElementById('ov-kpis').innerHTML = `<div style="color:var(--red-light);font-size:10px;padding:10px;grid-column:1/-1">Could not load stats: ${e.message}</div>`;
+    document.getElementById('ov-kpis').innerHTML =
+      `<div style="color:var(--red-light);font-size:10px;padding:10px;grid-column:1/-1">Could not load stats: ${esc(e.message)}</div>`;
   }
 }
 
 async function loadVindex() {
   try {
     const [props, vehs] = await Promise.all([apiGet('/vindex/properties'), apiGet('/vindex/vehicles')]);
-    document.getElementById('vindex-kpis').innerHTML = `
-      <div class="kpi-card"><div class="kpi-label">Properties</div><div class="kpi-value">${props.length}</div><div class="kpi-sub">A-Series</div></div>
-      <div class="kpi-card"><div class="kpi-label">Vehicles</div><div class="kpi-value">${vehs.length}</div><div class="kpi-sub">B-Series</div></div>
-      <div class="kpi-card"><div class="kpi-label">Portfolio</div><div class="kpi-value">${props.length + vehs.length}</div><div class="kpi-sub gold">Total assets</div></div>`;
     const admin = _user?.isAdmin;
+    document.getElementById('vindex-kpis').innerHTML = `
+      <div class="kpi-card"><div class="kpi-label">Properties</div><div class="kpi-value">${esc(String(props.length))}</div><div class="kpi-sub">A-Series</div></div>
+      <div class="kpi-card"><div class="kpi-label">Vehicles</div><div class="kpi-value">${esc(String(vehs.length))}</div><div class="kpi-sub">B-Series</div></div>
+      <div class="kpi-card"><div class="kpi-label">Portfolio</div><div class="kpi-value">${esc(String(props.length + vehs.length))}</div><div class="kpi-sub gold">Total assets</div></div>`;
     document.getElementById('vindex-a-tbody').innerHTML = props.length ? props.map(p => `<tr>
       <td>${ec(p.tag,'/vindex/properties','tag',p.id,'Tag')}</td>
       <td>${ec(p.type,'/vindex/properties','type',p.id,'Type')}</td>
@@ -1064,14 +1221,14 @@ async function loadVindex() {
       <td>${ec(p.city,'/vindex/properties','city',p.id,'City')}</td>
       <td>${ec(p.value,'/vindex/properties','value',p.id,'Value')}</td>
       <td>${statusSelect(p.status,'/vindex/properties',p.id)}</td>
-      ${admin ? `<td><button class="btn-icon delete-row-btn" style="display:none" onclick="deleteRecord('/vindex/properties',${p.id},loadVindex)">✕</button></td>` : ''}</tr>`).join('')
+      ${admin ? `<td><button class="btn-icon delete-row-btn" style="display:none" aria-label="Delete property ${esc(p.tag||p.id)}" onclick="App.deleteRecord('/vindex/properties',${esc(String(p.id))},App.loadVindex)">✕</button></td>` : ''}</tr>`).join('')
       : `<tr><td colspan="${admin?7:6}" class="loading-row">No properties yet — click Edit Mode to add</td></tr>`;
     document.getElementById('vindex-b-tbody').innerHTML = vehs.length ? vehs.map(v => `<tr>
       <td>${ec(v.tag,'/vindex/vehicles','tag',v.id,'Tag')}</td>
       <td>${ec(v.vehicle,'/vindex/vehicles','vehicle',v.id,'Year / Make / Model')}</td>
       <td>${ec(v.assignment,'/vindex/vehicles','assignment',v.id,'Assignment')}</td>
       <td>${statusSelect(v.status,'/vindex/vehicles',v.id)}</td>
-      ${admin ? `<td><button class="btn-icon delete-row-btn" style="display:none" onclick="deleteRecord('/vindex/vehicles',${v.id},loadVindex)">✕</button></td>` : ''}</tr>`).join('')
+      ${admin ? `<td><button class="btn-icon delete-row-btn" style="display:none" aria-label="Delete vehicle ${esc(v.tag||v.id)}" onclick="App.deleteRecord('/vindex/vehicles',${esc(String(v.id))},App.loadVindex)">✕</button></td>` : ''}</tr>`).join('')
       : `<tr><td colspan="${admin?5:4}" class="loading-row">No vehicles yet — click Edit Mode to add</td></tr>`;
   } catch(e) { showToast('Vindex load error: ' + e.message); }
 }
@@ -1081,9 +1238,9 @@ async function loadOperations() {
     const facs = await apiGet('/operations/facilities');
     const admin = _user?.isAdmin;
     document.getElementById('ops-kpis').innerHTML = `
-      <div class="kpi-card"><div class="kpi-label">Active Facilities</div><div class="kpi-value">${facs.filter(f=>f.status==='Active').length}</div></div>
-      <div class="kpi-card"><div class="kpi-label">Residents</div><div class="kpi-value">${facs.reduce((s,f)=>s+(f.occupied||0),0)}</div></div>
-      <div class="kpi-card"><div class="kpi-label">Total Capacity</div><div class="kpi-value">${facs.reduce((s,f)=>s+(f.capacity||0),0)}</div></div>`;
+      <div class="kpi-card"><div class="kpi-label">Active Facilities</div><div class="kpi-value">${esc(String(facs.filter(f=>f.status==='Active').length))}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Residents</div><div class="kpi-value">${esc(String(facs.reduce((s,f)=>s+(f.occupied||0),0)))}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Total Capacity</div><div class="kpi-value">${esc(String(facs.reduce((s,f)=>s+(f.capacity||0),0)))}</div></div>`;
     document.getElementById('ops-fac-tbody').innerHTML = facs.length ? facs.map(f => `<tr>
       <td>${ec(f.facility_id,'/operations/facilities','facility_id',f.id,'ID')}</td>
       <td>${ec(f.name,'/operations/facilities','name',f.id,'Name')}</td>
@@ -1091,7 +1248,7 @@ async function loadOperations() {
       <td>${ec(String(f.occupied||0),'/operations/facilities','occupied',f.id,'0')}</td>
       <td>${ec(String(f.capacity||0),'/operations/facilities','capacity',f.id,'0')}</td>
       <td>${statusSelect(f.status,'/operations/facilities',f.id)}</td>
-      ${admin ? `<td><button class="btn-icon delete-row-btn" style="display:none" onclick="deleteRecord('/operations/facilities',${f.id},loadOperations)">✕</button></td>` : ''}</tr>`).join('')
+      ${admin ? `<td><button class="btn-icon delete-row-btn" style="display:none" aria-label="Delete facility ${esc(f.name||f.id)}" onclick="App.deleteRecord('/operations/facilities',${esc(String(f.id))},App.loadOperations)">✕</button></td>` : ''}</tr>`).join('')
       : `<tr><td colspan="${admin?7:6}" class="loading-row">No facilities yet — click Edit Mode to add</td></tr>`;
   } catch(e) { showToast('Operations load error: ' + e.message); }
 }
@@ -1101,18 +1258,21 @@ async function loadAlliance() {
     const [partners, proposals] = await Promise.all([apiGet('/alliance/partners'), apiGet('/alliance/proposals')]);
     const admin = _user?.isAdmin;
     document.getElementById('al-kpis').innerHTML = `
-      <div class="kpi-card"><div class="kpi-label">Total Partners</div><div class="kpi-value">${partners.length}</div></div>
-      <div class="kpi-card"><div class="kpi-label">Gold Tier</div><div class="kpi-value">${partners.filter(p=>p.tier==='Gold').length}</div></div>
-      <div class="kpi-card"><div class="kpi-label">Proposals</div><div class="kpi-value">${proposals.length}</div></div>
-      <div class="kpi-card"><div class="kpi-label">Active</div><div class="kpi-value">${partners.filter(p=>p.status==='Active').length}</div></div>`;
+      <div class="kpi-card"><div class="kpi-label">Total Partners</div><div class="kpi-value">${esc(String(partners.length))}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Gold Tier</div><div class="kpi-value">${esc(String(partners.filter(p=>p.tier==='Gold').length))}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Proposals</div><div class="kpi-value">${esc(String(proposals.length))}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Active</div><div class="kpi-value">${esc(String(partners.filter(p=>p.status==='Active').length))}</div></div>`;
     const tierOpts = ['Gold','Silver','Bronze'];
+    const normTier = s => String(s ?? '').trim().toLowerCase();
     document.getElementById('al-partners-tbody').innerHTML = partners.length ? partners.map(p => `<tr>
       <td>${ec(p.name,'/alliance/partners','name',p.id,'Name')}</td>
       <td>${ec(p.company,'/alliance/partners','company',p.id,'Company')}</td>
-      <td><select class="status-select" data-path="/alliance/partners" data-id="${p.id}" onchange="saveTier(this)">${tierOpts.map(t=>`<option ${t===p.tier?'selected':''}>${t}</option>`).join('')}</select></td>
+      <td><select class="status-select" data-path="/alliance/partners" data-id="${esc(String(p.id))}" onchange="App.saveTier(this)" aria-label="Tier">
+        ${tierOpts.map(t=>`<option value="${esc(t)}" ${normTier(t)===normTier(p.tier)?'selected':''}>${esc(t)}</option>`).join('')}
+      </select></td>
       <td>${ec(p.joined,'/alliance/partners','joined',p.id,'e.g. Jan 2025')}</td>
       <td>${statusSelect(p.status,'/alliance/partners',p.id,['Active','Pending','Blocked'])}</td>
-      ${admin ? `<td><button class="btn-icon delete-row-btn" style="display:none" onclick="deleteRecord('/alliance/partners',${p.id},loadAlliance)">✕</button></td>` : ''}</tr>`).join('')
+      ${admin ? `<td><button class="btn-icon delete-row-btn" style="display:none" aria-label="Delete partner ${esc(p.name||p.id)}" onclick="App.deleteRecord('/alliance/partners',${esc(String(p.id))},App.loadAlliance)">✕</button></td>` : ''}</tr>`).join('')
       : `<tr><td colspan="${admin?6:5}" class="loading-row">No partners yet — click + Partner</td></tr>`;
     document.getElementById('al-proposals-tbody').innerHTML = proposals.length ? proposals.map(p => `<tr>
       <td>${ec(p.partner,'/alliance/proposals','partner',p.id,'Partner name')}</td>
@@ -1120,7 +1280,7 @@ async function loadAlliance() {
       <td>${ec(p.deal_type,'/alliance/proposals','deal_type',p.id,'Type')}</td>
       <td>${ec(p.value,'/alliance/proposals','value',p.id,'Value')}</td>
       <td>${statusSelect(p.status,'/alliance/proposals',p.id)}</td>
-      ${admin ? `<td><button class="btn-icon delete-row-btn" style="display:none" onclick="deleteRecord('/alliance/proposals',${p.id},loadAlliance)">✕</button></td>` : ''}</tr>`).join('')
+      ${admin ? `<td><button class="btn-icon delete-row-btn" style="display:none" aria-label="Delete proposal ${esc(p.title||p.id)}" onclick="App.deleteRecord('/alliance/proposals',${esc(String(p.id))},App.loadAlliance)">✕</button></td>` : ''}</tr>`).join('')
       : `<tr><td colspan="${admin?6:5}" class="loading-row">No proposals yet — click + Proposal</td></tr>`;
   } catch(e) { showToast('Alliance load error: ' + e.message); }
 }
@@ -1137,16 +1297,16 @@ async function loadObscura() {
     const projects = await apiGet('/obscura/projects');
     const admin = _user?.isAdmin;
     document.getElementById('ob-kpis').innerHTML = `
-      <div class="kpi-card"><div class="kpi-label">Total Projects</div><div class="kpi-value">${projects.length}</div></div>
-      <div class="kpi-card"><div class="kpi-label">In Development</div><div class="kpi-value">${projects.filter(p=>p.status==='Development').length}</div></div>
-      <div class="kpi-card"><div class="kpi-label">Active</div><div class="kpi-value">${projects.filter(p=>p.status==='Active').length}</div></div>`;
+      <div class="kpi-card"><div class="kpi-label">Total Projects</div><div class="kpi-value">${esc(String(projects.length))}</div></div>
+      <div class="kpi-card"><div class="kpi-label">In Development</div><div class="kpi-value">${esc(String(projects.filter(p=>p.status==='Development').length))}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Active</div><div class="kpi-value">${esc(String(projects.filter(p=>p.status==='Active').length))}</div></div>`;
     document.getElementById('ob-tbody').innerHTML = projects.length ? projects.map(p => `<tr>
       <td>${ec(p.client,'/obscura/projects','client',p.id,'Client name')}</td>
       <td>${ec(p.type,'/obscura/projects','type',p.id,'Type')}</td>
       <td>${ec(p.deliverable,'/obscura/projects','deliverable',p.id,'Deliverable')}</td>
       <td>${ec(p.priority,'/obscura/projects','priority',p.id,'Standard')}</td>
       <td>${statusSelect(p.status,'/obscura/projects',p.id)}</td>
-      ${admin ? `<td><button class="btn-icon delete-row-btn" style="display:none" onclick="deleteRecord('/obscura/projects',${p.id},loadObscura)">✕</button></td>` : ''}</tr>`).join('')
+      ${admin ? `<td><button class="btn-icon delete-row-btn" style="display:none" aria-label="Delete project ${esc(p.client||p.id)}" onclick="App.deleteRecord('/obscura/projects',${esc(String(p.id))},App.loadObscura)">✕</button></td>` : ''}</tr>`).join('')
       : `<tr><td colspan="${admin?6:5}" class="loading-row">No projects yet — click + Project</td></tr>`;
   } catch(e) { showToast('Obscura load error: ' + e.message); }
 }
@@ -1156,16 +1316,16 @@ async function loadCapital() {
     const allocs = await apiGet('/capital/allocations');
     const admin = _user?.isAdmin;
     document.getElementById('cap-kpis').innerHTML = `
-      <div class="kpi-card"><div class="kpi-label">Total Allocations</div><div class="kpi-value">${allocs.length}</div></div>
-      <div class="kpi-card"><div class="kpi-label">Active</div><div class="kpi-value">${allocs.filter(a=>a.status==='Active').length}</div></div>
-      <div class="kpi-card"><div class="kpi-label">Pending Approval</div><div class="kpi-value">${allocs.filter(a=>a.status==='Pending').length}</div><div class="kpi-sub red">Needs review</div></div>`;
+      <div class="kpi-card"><div class="kpi-label">Total Allocations</div><div class="kpi-value">${esc(String(allocs.length))}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Active</div><div class="kpi-value">${esc(String(allocs.filter(a=>a.status==='Active').length))}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Pending Approval</div><div class="kpi-value">${esc(String(allocs.filter(a=>a.status==='Pending').length))}</div><div class="kpi-sub red">Needs review</div></div>`;
     document.getElementById('cap-tbody').innerHTML = allocs.length ? allocs.map(a => `<tr>
       <td>${ec(a.division,'/capital/allocations','division',a.id,'Division')}</td>
       <td style="color:var(--gold)">${ec(a.amount,'/capital/allocations','amount',a.id,'$0K')}</td>
       <td>${ec(a.purpose,'/capital/allocations','purpose',a.id,'Purpose')}</td>
       <td>${ec(a.urgency,'/capital/allocations','urgency',a.id,'Standard')}</td>
       <td>${statusSelect(a.status,'/capital/allocations',a.id,['Active','Pending','Blocked','Complete'])}</td>
-      ${admin ? `<td><button class="btn-icon delete-row-btn" style="display:none" onclick="deleteRecord('/capital/allocations',${a.id},loadCapital)">✕</button></td>` : ''}</tr>`).join('')
+      ${admin ? `<td><button class="btn-icon delete-row-btn" style="display:none" aria-label="Delete allocation" onclick="App.deleteRecord('/capital/allocations',${esc(String(a.id))},App.loadCapital)">✕</button></td>` : ''}</tr>`).join('')
       : `<tr><td colspan="${admin?6:5}" class="loading-row">No allocations yet — click + Allocation</td></tr>`;
   } catch(e) { showToast('Capital load error: ' + e.message); }
 }
@@ -1176,23 +1336,23 @@ async function loadCustodia() {
     const admin = _user?.isAdmin;
     const open = alerts.filter(a => a.status === 'Open').length;
     document.getElementById('cust-kpis').innerHTML = `
-      <div class="kpi-card"><div class="kpi-label">Open Alerts</div><div class="kpi-value">${open}</div>${open?`<div class="kpi-sub red">Requires review</div>`:''}</div>
-      <div class="kpi-card"><div class="kpi-label">Active Drivers</div><div class="kpi-value">${drivers.filter(d=>d.status==='Active').length}</div></div>
-      <div class="kpi-card"><div class="kpi-label">Total Alerts</div><div class="kpi-value">${alerts.length}</div></div>`;
+      <div class="kpi-card"><div class="kpi-label">Open Alerts</div><div class="kpi-value">${esc(String(open))}</div>${open?`<div class="kpi-sub red">Requires review</div>`:''}</div>
+      <div class="kpi-card"><div class="kpi-label">Active Drivers</div><div class="kpi-value">${esc(String(drivers.filter(d=>d.status==='Active').length))}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Total Alerts</div><div class="kpi-value">${esc(String(alerts.length))}</div></div>`;
     document.getElementById('cust-alerts-tbody').innerHTML = alerts.length ? alerts.map(a => `<tr>
       <td>${ec(a.property,'/custodia/alerts','property',a.id,'Property')}</td>
       <td>${ec(a.type,'/custodia/alerts','type',a.id,'Type')}</td>
       <td>${ec(a.severity,'/custodia/alerts','severity',a.id,'Low')}</td>
       <td>${statusSelect(a.status,'/custodia/alerts',a.id,['Open','In Review','Closed'])}</td>
-      <td style="color:var(--text-muted);font-size:10px">${new Date(a.created_at).toLocaleDateString()}</td>
-      ${admin ? `<td><button class="btn-icon delete-row-btn" style="display:none" onclick="deleteRecord('/custodia/alerts',${a.id},loadCustodia)">✕</button></td>` : ''}</tr>`).join('')
+      <td style="color:var(--text-muted);font-size:10px">${esc(new Date(a.created_at).toLocaleDateString())}</td>
+      ${admin ? `<td><button class="btn-icon delete-row-btn" style="display:none" aria-label="Delete alert" onclick="App.deleteRecord('/custodia/alerts',${esc(String(a.id))},App.loadCustodia)">✕</button></td>` : ''}</tr>`).join('')
       : `<tr><td colspan="${admin?6:5}" class="loading-row">No alerts</td></tr>`;
     document.getElementById('cust-drivers-tbody').innerHTML = drivers.length ? drivers.map(d => `<tr>
       <td>${ec(d.vehicle_tag,'/custodia/drivers','vehicle_tag',d.id,'Vehicle tag')}</td>
       <td>${ec(d.driver,'/custodia/drivers','driver',d.id,'Driver name')}</td>
       <td>${ec(d.route,'/custodia/drivers','route',d.id,'Route')}</td>
       <td>${statusSelect(d.status,'/custodia/drivers',d.id,['Active','Inactive','On Leave'])}</td>
-      ${admin ? `<td><button class="btn-icon delete-row-btn" style="display:none" onclick="deleteRecord('/custodia/drivers',${d.id},loadCustodia)">✕</button></td>` : ''}</tr>`).join('')
+      ${admin ? `<td><button class="btn-icon delete-row-btn" style="display:none" aria-label="Delete driver ${esc(d.driver||d.id)}" onclick="App.deleteRecord('/custodia/drivers',${esc(String(d.id))},App.loadCustodia)">✕</button></td>` : ''}</tr>`).join('')
       : `<tr><td colspan="${admin?5:4}" class="loading-row">No drivers assigned</td></tr>`;
   } catch(e) { showToast('Custodia load error: ' + e.message); }
 }
@@ -1202,22 +1362,22 @@ async function loadOutreach() {
     const [donations, scholarships] = await Promise.all([apiGet('/outreach/donations'), apiGet('/outreach/scholarships')]);
     const admin = _user?.isAdmin;
     document.getElementById('out-kpis').innerHTML = `
-      <div class="kpi-card"><div class="kpi-label">Donations Logged</div><div class="kpi-value">${donations.length}</div><div class="kpi-sub gold">Tax-deductible</div></div>
-      <div class="kpi-card"><div class="kpi-label">Scholarships</div><div class="kpi-value">${scholarships.length}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Donations Logged</div><div class="kpi-value">${esc(String(donations.length))}</div><div class="kpi-sub gold">Tax-deductible</div></div>
+      <div class="kpi-card"><div class="kpi-label">Scholarships</div><div class="kpi-value">${esc(String(scholarships.length))}</div></div>
       <div class="kpi-card"><div class="kpi-label">Active Programs</div><div class="kpi-value">—</div><div class="kpi-sub">Edit to set</div></div>`;
     document.getElementById('out-scholarships-tbody').innerHTML = scholarships.length ? scholarships.map(s => `<tr>
       <td>${ec(s.recipient,'/outreach/scholarships','recipient',s.id,'Recipient name')}</td>
       <td>${ec(s.facility_id,'/outreach/scholarships','facility_id',s.id,'Facility')}</td>
       <td>${ec(s.amount,'/outreach/scholarships','amount',s.id,'Amount')}</td>
       <td>${ec(s.program,'/outreach/scholarships','program',s.id,'Program')}</td>
-      ${admin ? `<td><button class="btn-icon delete-row-btn" style="display:none" onclick="deleteRecord('/outreach/scholarships',${s.id},loadOutreach)">✕</button></td>` : ''}</tr>`).join('')
+      ${admin ? `<td><button class="btn-icon delete-row-btn" style="display:none" aria-label="Delete scholarship for ${esc(s.recipient||s.id)}" onclick="App.deleteRecord('/outreach/scholarships',${esc(String(s.id))},App.loadOutreach)">✕</button></td>` : ''}</tr>`).join('')
       : `<tr><td colspan="${admin?5:4}" class="loading-row">No scholarships yet — click + Award</td></tr>`;
     document.getElementById('out-donations-tbody').innerHTML = donations.length ? donations.map(d => `<tr>
       <td>${ec(d.donor,'/outreach/donations','donor',d.id,'Donor or Anonymous')}</td>
       <td style="color:var(--gold)">${ec(d.amount,'/outreach/donations','amount',d.id,'Amount')}</td>
       <td>${ec(d.type,'/outreach/donations','type',d.id,'Type')}</td>
       <td>${ec(d.date,'/outreach/donations','date',d.id,'Date')}</td>
-      ${admin ? `<td><button class="btn-icon delete-row-btn" style="display:none" onclick="deleteRecord('/outreach/donations',${d.id},loadOutreach)">✕</button></td>` : ''}</tr>`).join('')
+      ${admin ? `<td><button class="btn-icon delete-row-btn" style="display:none" aria-label="Delete donation" onclick="App.deleteRecord('/outreach/donations',${esc(String(d.id))},App.loadOutreach)">✕</button></td>` : ''}</tr>`).join('')
       : `<tr><td colspan="${admin?5:4}" class="loading-row">No donations logged yet — click + Log</td></tr>`;
   } catch(e) { showToast('Outreach load error: ' + e.message); }
 }
@@ -1227,23 +1387,23 @@ async function loadAlatus() {
     const [flights, drones] = await Promise.all([apiGet('/alatus/flights'), apiGet('/alatus/drones')]);
     const admin = _user?.isAdmin;
     document.getElementById('al2-kpis').innerHTML = `
-      <div class="kpi-card"><div class="kpi-label">Total Flights</div><div class="kpi-value">${flights.length}</div></div>
-      <div class="kpi-card"><div class="kpi-label">Active Drones</div><div class="kpi-value">${drones.filter(d=>d.status==='Active').length}</div></div>
-      <div class="kpi-card"><div class="kpi-label">Drone Units</div><div class="kpi-value">${drones.length}</div></div>`;
+      <div class="kpi-card"><div class="kpi-label">Total Flights</div><div class="kpi-value">${esc(String(flights.length))}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Active Drones</div><div class="kpi-value">${esc(String(drones.filter(d=>d.status==='Active').length))}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Drone Units</div><div class="kpi-value">${esc(String(drones.length))}</div></div>`;
     document.getElementById('al-flights-tbody').innerHTML = flights.length ? flights.map(f => `<tr>
       <td>${ec(f.origin,'/alatus/flights','origin',f.id,'Origin')}</td>
       <td>${ec(f.destination,'/alatus/flights','destination',f.id,'Destination')}</td>
       <td>${ec(f.aircraft,'/alatus/flights','aircraft',f.id,'Aircraft')}</td>
       <td>${ec(f.date,'/alatus/flights','date',f.id,'Date')}</td>
       <td>${statusSelect(f.status,'/alatus/flights',f.id,['Scheduled','Active','Complete','Cancelled'])}</td>
-      ${admin ? `<td><button class="btn-icon delete-row-btn" style="display:none" onclick="deleteRecord('/alatus/flights',${f.id},loadAlatus)">✕</button></td>` : ''}</tr>`).join('')
+      ${admin ? `<td><button class="btn-icon delete-row-btn" style="display:none" aria-label="Delete flight" onclick="App.deleteRecord('/alatus/flights',${esc(String(f.id))},App.loadAlatus)">✕</button></td>` : ''}</tr>`).join('')
       : `<tr><td colspan="${admin?6:5}" class="loading-row">No flights yet — click Edit Mode to add</td></tr>`;
     document.getElementById('al-drones-tbody').innerHTML = drones.length ? drones.map(d => `<tr>
       <td>${ec(d.unit,'/alatus/drones','unit',d.id,'Unit ID')}</td>
       <td>${ec(d.type,'/alatus/drones','type',d.id,'Mission type')}</td>
       <td>${ec(d.assigned_to,'/alatus/drones','assigned_to',d.id,'Assigned to')}</td>
       <td>${statusSelect(d.status,'/alatus/drones',d.id,['Active','Standby','Maintenance','Retired'])}</td>
-      ${admin ? `<td><button class="btn-icon delete-row-btn" style="display:none" onclick="deleteRecord('/alatus/drones',${d.id},loadAlatus)">✕</button></td>` : ''}</tr>`).join('')
+      ${admin ? `<td><button class="btn-icon delete-row-btn" style="display:none" aria-label="Delete drone ${esc(d.unit||d.id)}" onclick="App.deleteRecord('/alatus/drones',${esc(String(d.id))},App.loadAlatus)">✕</button></td>` : ''}</tr>`).join('')
       : `<tr><td colspan="${admin?5:4}" class="loading-row">No drones yet — click Edit Mode to add</td></tr>`;
   } catch(e) { showToast('Alatus load error: ' + e.message); }
 }
@@ -1253,16 +1413,16 @@ async function loadPedes() {
     const runs = await apiGet('/pedes/runs');
     const admin = _user?.isAdmin;
     document.getElementById('ped-kpis').innerHTML = `
-      <div class="kpi-card"><div class="kpi-label">Active Runs</div><div class="kpi-value">${runs.filter(r=>r.status==='Active').length}</div></div>
-      <div class="kpi-card"><div class="kpi-label">Completed</div><div class="kpi-value">${runs.filter(r=>r.status==='Complete').length}</div></div>
-      <div class="kpi-card"><div class="kpi-label">Total Runs</div><div class="kpi-value">${runs.length}</div><div class="kpi-sub gold">All time</div></div>`;
+      <div class="kpi-card"><div class="kpi-label">Active Runs</div><div class="kpi-value">${esc(String(runs.filter(r=>r.status==='Active').length))}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Completed</div><div class="kpi-value">${esc(String(runs.filter(r=>r.status==='Complete').length))}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Total Runs</div><div class="kpi-value">${esc(String(runs.length))}</div><div class="kpi-sub gold">All time</div></div>`;
     document.getElementById('ped-tbody').innerHTML = runs.length ? runs.map(r => `<tr>
       <td>${ec(r.vehicle,'/pedes/runs','vehicle',r.id,'Vehicle')}</td>
       <td>${ec(r.driver,'/pedes/runs','driver',r.id,'Driver')}</td>
       <td>${ec(r.route,'/pedes/runs','route',r.id,'Origin → Destination')}</td>
       <td>${ec(r.priority,'/pedes/runs','priority',r.id,'Standard')}</td>
       <td>${statusSelect(r.status,'/pedes/runs',r.id,['Active','Complete','Cancelled'])}</td>
-      ${admin ? `<td><button class="btn-icon delete-row-btn" style="display:none" onclick="deleteRecord('/pedes/runs',${r.id},loadPedes)">✕</button></td>` : ''}</tr>`).join('')
+      ${admin ? `<td><button class="btn-icon delete-row-btn" style="display:none" aria-label="Delete run" onclick="App.deleteRecord('/pedes/runs',${esc(String(r.id))},App.loadPedes)">✕</button></td>` : ''}</tr>`).join('')
       : `<tr><td colspan="${admin?6:5}" class="loading-row">No runs yet — click Edit Mode to add</td></tr>`;
   } catch(e) { showToast('Pedes load error: ' + e.message); }
 }
@@ -1272,23 +1432,23 @@ async function loadPetra() {
     const builds = await apiGet('/petra/builds');
     const admin = _user?.isAdmin;
     document.getElementById('petra-kpis').innerHTML = `
-      <div class="kpi-card"><div class="kpi-label">Active Builds</div><div class="kpi-value">${builds.filter(b=>b.status==='Active').length}</div></div>
-      <div class="kpi-card"><div class="kpi-label">Completed</div><div class="kpi-value">${builds.filter(b=>b.status==='Completed').length}</div><div class="kpi-sub gold">All time</div></div>
-      <div class="kpi-card"><div class="kpi-label">Total Projects</div><div class="kpi-value">${builds.length}</div></div>`;
+      <div class="kpi-card"><div class="kpi-label">Active Builds</div><div class="kpi-value">${esc(String(builds.filter(b=>b.status==='Active').length))}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Completed</div><div class="kpi-value">${esc(String(builds.filter(b=>b.status==='Completed').length))}</div><div class="kpi-sub gold">All time</div></div>
+      <div class="kpi-card"><div class="kpi-label">Total Projects</div><div class="kpi-value">${esc(String(builds.length))}</div></div>`;
     document.getElementById('petra-tbody').innerHTML = builds.length ? builds.map(b => `<tr>
       <td>${ec(b.name,'/petra/builds','name',b.id,'Project name')}</td>
       <td>${ec(b.type,'/petra/builds','type',b.id,'Type')}</td>
       <td>${ec(b.division,'/petra/builds','division',b.id,'Division')}</td>
       <td>
         <div class="progress-wrap">
-          <div class="progress-bar" style="width:80px"><div class="progress-fill" id="pf-${b.id}" style="width:${b.progress||0}%"></div></div>
-          <span class="progress-label">${b.progress||0}%</span>
-          ${admin ? `<input type="number" style="width:42px;background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--text-muted);font-family:'DM Mono',monospace;font-size:10px;padding:1px 3px;outline:none;" min="0" max="100" value="${b.progress||0}" onchange="updateProgress('${b.id}',this)">` : ''}
+          <div class="progress-bar" style="width:80px" aria-hidden="true"><div class="progress-fill" id="pf-${esc(String(b.id))}" style="width:${esc(String(b.progress||0))}%"></div></div>
+          <span class="progress-label" role="status" aria-label="${esc(String(b.progress||0))} percent complete">${esc(String(b.progress||0))}%</span>
+          ${admin ? `<input type="number" aria-label="Set progress percentage" style="width:42px;background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--text-muted);font-family:'DM Mono',monospace;font-size:10px;padding:1px 3px;outline:none;" min="0" max="100" value="${esc(String(b.progress||0))}" onchange="App.updateProgress('${esc(String(b.id))}',this)">` : ''}
         </div>
       </td>
       <td>${ec(b.budget,'/petra/builds','budget',b.id,'Budget')}</td>
-      <td id="ps-${b.id}">${statusSelect(b.status,'/petra/builds',b.id,['Active','Pending','Completed','Blocked'])}</td>
-      ${admin ? `<td><button class="btn-icon delete-row-btn" style="display:none" onclick="deleteRecord('/petra/builds',${b.id},loadPetra)">✕</button></td>` : ''}</tr>`).join('')
+      <td id="ps-${esc(String(b.id))}">${statusSelect(b.status,'/petra/builds',b.id,['Active','Pending','Completed','Blocked'])}</td>
+      ${admin ? `<td><button class="btn-icon delete-row-btn" style="display:none" aria-label="Delete build ${esc(b.name||b.id)}" onclick="App.deleteRecord('/petra/builds',${esc(String(b.id))},App.loadPetra)">✕</button></td>` : ''}</tr>`).join('')
       : `<tr><td colspan="${admin?7:6}" class="loading-row">No builds yet — click Edit Mode to add</td></tr>`;
   } catch(e) { showToast('Petra load error: ' + e.message); }
 }
@@ -1306,11 +1466,14 @@ async function loadAdminRequests() {
   try {
     const reqs = await apiGet('/requests');
     document.getElementById('adm-requests-tbody').innerHTML = reqs.length ? reqs.map(r => `<tr>
-      <td>${r.division}</td><td>${r.type}</td><td style="max-width:240px;word-break:break-word">${r.description}</td>
-      <td>${badge(r.status)}</td><td style="color:var(--text-muted);font-size:10px">${new Date(r.created_at).toLocaleDateString()}</td>
+      <td>${esc(r.division)}</td>
+      <td>${esc(r.type)}</td>
+      <td style="max-width:240px;word-break:break-word">${esc(r.description)}</td>
+      <td>${badge(r.status)}</td>
+      <td style="color:var(--text-muted);font-size:10px">${esc(new Date(r.created_at).toLocaleDateString())}</td>
       <td style="display:flex;gap:6px">
-        <button class="btn btn-gold btn-sm" onclick="updateReqStatus(${r.id},'Complete')">Complete</button>
-        <button class="btn btn-outline btn-sm" onclick="updateReqStatus(${r.id},'In Review')">Review</button>
+        <button class="btn btn-gold btn-sm" onclick="App.updateReqStatus(${esc(String(r.id))},'Complete')">Complete</button>
+        <button class="btn btn-outline btn-sm" onclick="App.updateReqStatus(${esc(String(r.id))},'In Review')">Review</button>
       </td></tr>`).join('')
       : '<tr><td colspan="6" class="loading-row">No requests yet</td></tr>';
   } catch(e) { showToast('Error: ' + e.message); }
@@ -1325,137 +1488,177 @@ async function loadAdminActivity() {
     const log = await apiGet('/activity');
     const el = document.getElementById('adm-activity-feed');
     if (!log.length) { el.innerHTML = '<div class="loading-row">No activity logged yet</div>'; return; }
+    // FIX #1: esc() all dynamic values
     el.innerHTML = `<div class="activity-feed">${log.map(a => `
-      <div class="activity-item"><div class="activity-dot"></div>
-      <div><div class="activity-time">${new Date(a.created_at).toLocaleString()}</div>
-      <div class="activity-text">[${a.division||'System'}] ${a.action}${a.actor?' · '+a.actor:''}</div></div></div>`).join('')}</div>`;
+      <div class="activity-item">
+        <div class="activity-dot" aria-hidden="true"></div>
+        <div>
+          <div class="activity-time">${esc(new Date(a.created_at).toLocaleString())}</div>
+          <div class="activity-text">[${esc(a.division||'System')}] ${esc(a.action)}${a.actor?' · '+esc(a.actor):''}</div>
+        </div>
+      </div>`).join('')}</div>`;
   } catch(e) { showToast('Error: ' + e.message); }
 }
 
 /* ═══════════════════════════════════════════════════
-   ADD ROW HELPERS — create blank record via API then reload
+   ADD ROW HELPERS
 ═══════════════════════════════════════════════════ */
 async function addRow(path, defaults, reloader) {
   try { await apiPost(path, defaults); reloader(); } catch(e) { showToast('Error: ' + e.message); }
 }
 
-function addPropertyRow()   { addRow('/vindex/properties',   {tag:'',type:'Group Home',address:'',city:'Houston, TX',value:'',status:'Pending'}, loadVindex); }
-function addVehicleRow()    { addRow('/vindex/vehicles',     {tag:'',vehicle:'',assignment:'',status:'Pending'}, loadVindex); }
+function addPropertyRow()   { addRow('/vindex/properties',    {tag:'',type:'Group Home',address:'',city:'Houston, TX',value:'',status:'Pending'}, loadVindex); }
+function addVehicleRow()    { addRow('/vindex/vehicles',      {tag:'',vehicle:'',assignment:'',status:'Pending'}, loadVindex); }
 function addFacilityRow()   { addRow('/operations/facilities',{facility_id:'',name:'',location:'Houston, TX',occupied:0,capacity:8,status:'Pending'}, loadOperations); }
-function addPartnerRow()    { addRow('/alliance/partners',   {name:'',company:'',tier:'Bronze',joined:'',status:'Pending'}, loadAlliance); }
-function addProposalRow()   { addRow('/alliance/proposals',  {partner:'',title:'',deal_type:'Joint Venture',value:'',status:'Submitted'}, loadAlliance); }
-function addProjectRow()    { addRow('/obscura/projects',    {client:'',type:'Web Dev',deliverable:'',priority:'Standard',status:'Development'}, loadObscura); }
-function addAllocationRow() { addRow('/capital/allocations', {division:'',amount:'',purpose:'',urgency:'Standard',status:'Pending'}, loadCapital); }
-function addFlightRow()     { addRow('/alatus/flights',      {origin:'',destination:'',aircraft:'',date:'',status:'Scheduled'}, loadAlatus); }
-function addDroneRow()      { addRow('/alatus/drones',       {unit:'',type:'Surveillance',assigned_to:'',status:'Standby'}, loadAlatus); }
-function addRunRow()        { addRow('/pedes/runs',           {vehicle:'',driver:'',route:'',priority:'Standard',status:'Active'}, loadPedes); }
-function addBuildRow()      { addRow('/petra/builds',         {name:'',type:'GRO Facility',division:'Operations',budget:'',progress:0,status:'Active'}, loadPetra); }
+function addPartnerRow()    { addRow('/alliance/partners',    {name:'',company:'',tier:'Bronze',joined:'',status:'Pending'}, loadAlliance); }
+function addProposalRow()   { addRow('/alliance/proposals',   {partner:'',title:'',deal_type:'Joint Venture',value:'',status:'Submitted'}, loadAlliance); }
+function addProjectRow()    { addRow('/obscura/projects',     {client:'',type:'Web Dev',deliverable:'',priority:'Standard',status:'Development'}, loadObscura); }
+function addAllocationRow() { addRow('/capital/allocations',  {division:'',amount:'',purpose:'',urgency:'Standard',status:'Pending'}, loadCapital); }
+function addFlightRow()     { addRow('/alatus/flights',       {origin:'',destination:'',aircraft:'',date:'',status:'Scheduled'}, loadAlatus); }
+function addDroneRow()      { addRow('/alatus/drones',        {unit:'',type:'Surveillance',assigned_to:'',status:'Standby'}, loadAlatus); }
+function addRunRow()        { addRow('/pedes/runs',            {vehicle:'',driver:'',route:'',priority:'Standard',status:'Active'}, loadPedes); }
+function addBuildRow()      { addRow('/petra/builds',          {name:'',type:'GRO Facility',division:'Operations',budget:'',progress:0,status:'Active'}, loadPetra); }
 
 /* ═══════════════════════════════════════════════════
-   MODAL ACTIONS  — quick-entry forms for non-admin actions
+   MODAL ACTIONS
 ═══════════════════════════════════════════════════ */
 
-function openIncident() {
-  openModal('Incident Report',
+function openIncident(triggerEl) {
+  openModalFrom(triggerEl, 'Incident Report',
     `<div class="form-row">
-      <div class="form-group"><label class="form-label">Facility ID</label><input class="form-input" id="inc-fac" placeholder="GRO-01…"></div>
-      <div class="form-group"><label class="form-label">Severity</label><select class="form-select" id="inc-sev"><option>Low</option><option>Medium</option><option>High</option><option>Critical</option></select></div>
+      <div class="form-group"><label class="form-label" for="inc-fac">Facility ID</label><input class="form-input" id="inc-fac" placeholder="GRO-01…" autocomplete="off"></div>
+      <div class="form-group"><label class="form-label" for="inc-sev">Severity</label><select class="form-select" id="inc-sev"><option>Low</option><option>Medium</option><option>High</option><option>Critical</option></select></div>
     </div>
-    <div class="form-group"><label class="form-label">Type</label><select class="form-select" id="inc-type"><option>Routine Flag</option><option>Maintenance Issue</option><option>Safety Concern</option><option>Medical</option><option>Security Breach</option></select></div>
-    <div class="form-group"><label class="form-label">Description</label><textarea class="form-textarea" id="inc-desc" placeholder="Describe the incident…"></textarea></div>`,
-    `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-     <button class="btn btn-danger" onclick="saveIncident()">File Report</button>`
+    <div class="form-group"><label class="form-label" for="inc-type">Type</label><select class="form-select" id="inc-type"><option>Routine Flag</option><option>Maintenance Issue</option><option>Safety Concern</option><option>Medical</option><option>Security Breach</option></select></div>
+    <div class="form-group"><label class="form-label" for="inc-desc">Description</label><textarea class="form-textarea" id="inc-desc" placeholder="Describe the incident…"></textarea></div>`,
+    `<button class="btn btn-outline" onclick="App.closeModal()">Cancel</button>
+     <button class="btn btn-danger" onclick="App.saveIncident()">File Report</button>`
   );
 }
 async function saveIncident() {
-  const body = { facility_id: document.getElementById('inc-fac').value, type: document.getElementById('inc-type').value, severity: document.getElementById('inc-sev').value, description: document.getElementById('inc-desc').value };
-  if (!body.facility_id) return;
+  const facEl = document.getElementById('inc-fac');
+  const body = {
+    facility_id: facEl.value.trim(),
+    type:        document.getElementById('inc-type').value,
+    severity:    document.getElementById('inc-sev').value,
+    description: document.getElementById('inc-desc').value.trim()
+  };
+  if (!body.facility_id) { facEl.focus(); return; }
   try { await apiPost('/operations/incidents', body); closeModal(); showToast('Incident filed'); } catch(e) { showToast('Error: ' + e.message); }
 }
 
-function openRaiseAlert() {
-  openModal('Raise Security Alert',
+function openRaiseAlert(triggerEl) {
+  openModalFrom(triggerEl, 'Raise Security Alert',
     `<div class="form-row">
-      <div class="form-group"><label class="form-label">Property</label><input class="form-input" id="al2-prop" placeholder="Property tag or name…"></div>
-      <div class="form-group"><label class="form-label">Severity</label><select class="form-select" id="al2-sev"><option>Low</option><option>Medium</option><option>Critical</option></select></div>
+      <div class="form-group"><label class="form-label" for="al2-prop">Property</label><input class="form-input" id="al2-prop" placeholder="Property tag or name…" autocomplete="off"></div>
+      <div class="form-group"><label class="form-label" for="al2-sev">Severity</label><select class="form-select" id="al2-sev"><option>Low</option><option>Medium</option><option>Critical</option></select></div>
     </div>
-    <div class="form-group"><label class="form-label">Alert Type</label><select class="form-select" id="al2-type"><option>Intrusion</option><option>Equipment Failure</option><option>Access Breach</option><option>Routine Flag</option><option>Vandalism</option></select></div>
-    <div class="form-group"><label class="form-label">Notes</label><textarea class="form-textarea" id="al2-notes" placeholder="Describe…"></textarea></div>`,
-    `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-     <button class="btn btn-danger" onclick="saveAlert()">Raise Alert</button>`
+    <div class="form-group"><label class="form-label" for="al2-type">Alert Type</label><select class="form-select" id="al2-type"><option>Intrusion</option><option>Equipment Failure</option><option>Access Breach</option><option>Routine Flag</option><option>Vandalism</option></select></div>
+    <div class="form-group"><label class="form-label" for="al2-notes">Notes</label><textarea class="form-textarea" id="al2-notes" placeholder="Describe…"></textarea></div>`,
+    `<button class="btn btn-outline" onclick="App.closeModal()">Cancel</button>
+     <button class="btn btn-danger" onclick="App.saveAlert()">Raise Alert</button>`
   );
 }
 async function saveAlert() {
-  const body = { property: document.getElementById('al2-prop').value, type: document.getElementById('al2-type').value, severity: document.getElementById('al2-sev').value, notes: document.getElementById('al2-notes').value };
-  if (!body.property) return;
+  const propEl = document.getElementById('al2-prop');
+  const body = {
+    property: propEl.value.trim(),
+    type:     document.getElementById('al2-type').value,
+    severity: document.getElementById('al2-sev').value,
+    notes:    document.getElementById('al2-notes').value.trim()
+  };
+  if (!body.property) { propEl.focus(); return; }
   try { await apiPost('/custodia/alerts', body); closeModal(); loadCustodia(); showToast('Alert raised'); } catch(e) { showToast('Error: ' + e.message); }
 }
 
-function openAssignDriver() {
-  openModal('Assign Driver',
+function openAssignDriver(triggerEl) {
+  openModalFrom(triggerEl, 'Assign Driver',
     `<div class="form-row">
-      <div class="form-group"><label class="form-label">Vehicle Tag</label><input class="form-input" id="ad-veh" placeholder="Vehicle tag…"></div>
-      <div class="form-group"><label class="form-label">Driver Name</label><input class="form-input" id="ad-driver" placeholder="Last, First…"></div>
+      <div class="form-group"><label class="form-label" for="ad-veh">Vehicle Tag</label><input class="form-input" id="ad-veh" placeholder="Vehicle tag…" autocomplete="off"></div>
+      <div class="form-group"><label class="form-label" for="ad-driver">Driver Name</label><input class="form-input" id="ad-driver" placeholder="Last, First…" autocomplete="off"></div>
     </div>
-    <div class="form-group"><label class="form-label">Route</label><input class="form-input" id="ad-route" placeholder="Origin → Destination"></div>`,
-    `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-     <button class="btn btn-gold" onclick="saveDriver()">Assign</button>`
+    <div class="form-group"><label class="form-label" for="ad-route">Route</label><input class="form-input" id="ad-route" placeholder="Origin → Destination" autocomplete="off"></div>`,
+    `<button class="btn btn-outline" onclick="App.closeModal()">Cancel</button>
+     <button class="btn btn-gold" onclick="App.saveDriver()">Assign</button>`
   );
 }
 async function saveDriver() {
-  const body = { vehicle_tag: document.getElementById('ad-veh').value, driver: document.getElementById('ad-driver').value.trim(), route: document.getElementById('ad-route').value, status: 'Active' };
-  if (!body.driver) return;
+  const driverEl = document.getElementById('ad-driver');
+  const body = {
+    vehicle_tag: document.getElementById('ad-veh').value.trim(),
+    driver:      driverEl.value.trim(),
+    route:       document.getElementById('ad-route').value.trim(),
+    status:      'Active'
+  };
+  if (!body.driver) { driverEl.focus(); return; }
   try { await apiPost('/custodia/drivers', body); closeModal(); loadCustodia(); showToast('Driver assigned'); } catch(e) { showToast('Error: ' + e.message); }
 }
 
-function openLogDonation() {
-  openModal('Log Donation',
+function openLogDonation(triggerEl) {
+  // FIX #13: Use local date string instead of toISOString() which gives UTC date
+  const today = new Date();
+  const localDate = today.getFullYear() + '-' +
+    String(today.getMonth()+1).padStart(2,'0') + '-' +
+    String(today.getDate()).padStart(2,'0');
+  openModalFrom(triggerEl, 'Log Donation',
     `<div class="form-row">
-      <div class="form-group"><label class="form-label">Donor (optional)</label><input class="form-input" id="dn-name" placeholder="Anonymous…"></div>
-      <div class="form-group"><label class="form-label">Amount</label><input class="form-input" id="dn-amt" placeholder="$0"></div>
+      <div class="form-group"><label class="form-label" for="dn-name">Donor (optional)</label><input class="form-input" id="dn-name" placeholder="Anonymous…" autocomplete="off"></div>
+      <div class="form-group"><label class="form-label" for="dn-amt">Amount</label><input class="form-input" id="dn-amt" placeholder="$0" autocomplete="off"></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Type</label><select class="form-select" id="dn-type"><option>Cash</option><option>In-Kind</option><option>Grant</option><option>Planned Giving</option></select></div>
-      <div class="form-group"><label class="form-label">Date</label><input class="form-input" id="dn-date" type="date" value="${new Date().toISOString().slice(0,10)}"></div>
+      <div class="form-group"><label class="form-label" for="dn-type">Type</label><select class="form-select" id="dn-type"><option>Cash</option><option>In-Kind</option><option>Grant</option><option>Planned Giving</option></select></div>
+      <div class="form-group"><label class="form-label" for="dn-date">Date</label><input class="form-input" id="dn-date" type="date" value="${esc(localDate)}"></div>
     </div>`,
-    `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-     <button class="btn btn-gold" onclick="saveDonation()">Log</button>`
+    `<button class="btn btn-outline" onclick="App.closeModal()">Cancel</button>
+     <button class="btn btn-gold" onclick="App.saveDonation()">Log</button>`
   );
 }
 async function saveDonation() {
-  const body = { donor: document.getElementById('dn-name').value || 'Anonymous', amount: document.getElementById('dn-amt').value, type: document.getElementById('dn-type').value, date: document.getElementById('dn-date').value };
-  if (!body.amount) return;
+  const amtEl = document.getElementById('dn-amt');
+  const body = {
+    donor:  document.getElementById('dn-name').value.trim() || 'Anonymous',
+    amount: amtEl.value.trim(),
+    type:   document.getElementById('dn-type').value,
+    date:   document.getElementById('dn-date').value
+  };
+  if (!body.amount) { amtEl.focus(); return; }
   try { await apiPost('/outreach/donations', body); closeModal(); loadOutreach(); showToast('Donation logged'); } catch(e) { showToast('Error: ' + e.message); }
 }
 
-function openScholarship() {
-  openModal('Award Scholarship',
+function openScholarship(triggerEl) {
+  openModalFrom(triggerEl, 'Award Scholarship',
     `<div class="form-row">
-      <div class="form-group"><label class="form-label">Recipient</label><input class="form-input" id="sc-name" placeholder="Full name"></div>
-      <div class="form-group"><label class="form-label">Facility</label><input class="form-input" id="sc-fac" placeholder="Facility ID…"></div>
+      <div class="form-group"><label class="form-label" for="sc-name">Recipient</label><input class="form-input" id="sc-name" placeholder="Full name" autocomplete="off"></div>
+      <div class="form-group"><label class="form-label" for="sc-fac">Facility</label><input class="form-input" id="sc-fac" placeholder="Facility ID…" autocomplete="off"></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Amount</label><input class="form-input" id="sc-amt" placeholder="$0"></div>
-      <div class="form-group"><label class="form-label">Program</label><select class="form-select" id="sc-prog"><option>Academic</option><option>Life Skills</option><option>Vocational</option></select></div>
+      <div class="form-group"><label class="form-label" for="sc-amt">Amount</label><input class="form-input" id="sc-amt" placeholder="$0" autocomplete="off"></div>
+      <div class="form-group"><label class="form-label" for="sc-prog">Program</label><select class="form-select" id="sc-prog"><option>Academic</option><option>Life Skills</option><option>Vocational</option></select></div>
     </div>`,
-    `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-     <button class="btn btn-gold" onclick="saveScholarship()">Award</button>`
+    `<button class="btn btn-outline" onclick="App.closeModal()">Cancel</button>
+     <button class="btn btn-gold" onclick="App.saveScholarship()">Award</button>`
   );
 }
 async function saveScholarship() {
-  const body = { recipient: document.getElementById('sc-name').value.trim(), facility_id: document.getElementById('sc-fac').value, amount: document.getElementById('sc-amt').value, program: document.getElementById('sc-prog').value };
-  if (!body.recipient) return;
+  const nameEl = document.getElementById('sc-name');
+  const body = {
+    recipient:   nameEl.value.trim(),
+    facility_id: document.getElementById('sc-fac').value.trim(),
+    amount:      document.getElementById('sc-amt').value.trim(),
+    program:     document.getElementById('sc-prog').value
+  };
+  if (!body.recipient) { nameEl.focus(); return; }
   try { await apiPost('/outreach/scholarships', body); closeModal(); loadOutreach(); showToast('Scholarship awarded'); } catch(e) { showToast('Error: ' + e.message); }
 }
 
-function openEmpireRequest() {
-  openModal('Empire-Wide Request',
-    `<div class="form-group"><label class="form-label">Target Division</label>
-    <select class="form-select" id="emp-div">${divisions.filter(d=>d.section==='divisions').map(d=>`<option value="${d.id}">${d.label}</option>`).join('')}</select></div>
-    <div class="form-group"><label class="form-label">Request Type</label><input class="form-input" id="emp-type" placeholder="Capital Injection, Audit…"></div>
-    <div class="form-group"><label class="form-label">Description</label><textarea class="form-textarea" id="emp-desc" placeholder="Describe the request…"></textarea></div>`,
-    `<button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-     <button class="btn btn-gold" onclick="submitEmpireReq()">Submit</button>`
+function openEmpireRequest(triggerEl) {
+  openModalFrom(triggerEl, 'Empire-Wide Request',
+    `<div class="form-group"><label class="form-label" for="emp-div">Target Division</label>
+    <select class="form-select" id="emp-div">${divisions.filter(d=>d.section==='divisions').map(d=>`<option value="${esc(d.id)}">${esc(d.label)}</option>`).join('')}</select></div>
+    <div class="form-group"><label class="form-label" for="emp-type">Request Type</label><input class="form-input" id="emp-type" placeholder="Capital Injection, Audit…" autocomplete="off"></div>
+    <div class="form-group"><label class="form-label" for="emp-desc">Description</label><textarea class="form-textarea" id="emp-desc" placeholder="Describe the request…"></textarea></div>`,
+    `<button class="btn btn-outline" onclick="App.closeModal()">Cancel</button>
+     <button class="btn btn-gold" onclick="App.submitEmpireReq()">Submit</button>`
   );
 }
 function submitEmpireReq() {
@@ -1464,47 +1667,85 @@ function submitEmpireReq() {
   const desc  = document.getElementById('emp-desc').value.trim();
   if (!type || !desc) return;
   const d = divisions.find(x => x.id === divId);
-  submitRequest(d ? d.label : divId, type, desc);
-  closeModal();
-  showToast('Request submitted');
+  submitRequest(d ? d.label : divId, type, desc).then(ok => {
+    if (ok) { closeModal(); showToast('Request submitted'); }
+  });
 }
 
 /* ═══════════════════════════════════════════════════
    CLERK AUTH
 ═══════════════════════════════════════════════════ */
 window.addEventListener('load', async () => {
-  try { await Clerk.load(); } catch(e) {
+  try { await window.Clerk.load(); } catch(e) {
     document.getElementById('auth-guard-text').textContent = 'Auth error — redirecting…';
     setTimeout(() => window.location.href = LOGIN_URL, 1500);
     return;
   }
 
-  if (!Clerk.user) { window.location.href = LOGIN_URL; return; }
+  if (!window.Clerk.user) { window.location.href = LOGIN_URL; return; }
 
-  const user = Clerk.user;
+  const user = window.Clerk.user;
   const meta = user.publicMetadata || {};
   const displayName = user.firstName
     ? user.firstName + (user.lastName ? ' ' + user.lastName[0] + '.' : '')
     : (user.primaryEmailAddress?.emailAddress || 'User');
 
   _user = {
-    uid: user.id,
-    name: displayName,
+    uid:     user.id,
+    name:    displayName,
+    // FIX #2: isAdmin determined from Clerk public metadata (set server-side only)
+    // The Worker must also independently verify this from the JWT — never trust a request header
     isAdmin: meta.role === 'admin',
-    token: null,
+    token:   null,
   };
 
   document.getElementById('sidebar-user-name').textContent = displayName;
   document.getElementById('auth-guard').style.display = 'none';
   document.getElementById('app').classList.add('visible');
 
-  Clerk.mountUserButton(document.getElementById('clerk-topbar-btn'), { appearance: CLERK_APPEARANCE });
-  Clerk.mountUserButton(document.getElementById('clerk-user-btn'),   { appearance: CLERK_APPEARANCE });
+  window.Clerk.mountUserButton(document.getElementById('clerk-topbar-btn'), { appearance: CLERK_APPEARANCE });
+  window.Clerk.mountUserButton(document.getElementById('clerk-user-btn'),   { appearance: CLERK_APPEARANCE });
+
+  // Wire modal overlay click-to-close and button click handlers (event-based, avoids inline onclick for these)
+  document.getElementById('modal-overlay').addEventListener('click', closeModalOnOverlay);
+  document.getElementById('modal-close-btn').addEventListener('click', closeModal);
+  document.getElementById('notif-close-btn').addEventListener('click', toggleNotifPanel);
+  document.getElementById('notif-toggle-btn').addEventListener('click', toggleNotifPanel);
+
+  // Close modal on Escape key; FIX #11: keyboard trap
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      const overlay = document.getElementById('modal-overlay');
+      if (overlay.classList.contains('open')) closeModal();
+      if (notifOpen) toggleNotifPanel();
+    }
+  });
 
   initApp();
 
-  Clerk.addListener(({ user }) => { if (!user) window.location.href = LOGIN_URL; });
+  window.Clerk.addListener(({ user }) => { if (!user) window.location.href = LOGIN_URL; });
 });
+
+/* ═══════════════════════════════════════════════════
+   FIX #9: Expose only what inline onclick handlers need on App namespace
+   (onclick attributes still work since they run in global scope,
+    but we keep logic encapsulated and only expose what's needed)
+═══════════════════════════════════════════════════ */
+window.App = {
+  navigate, switchTab, toggleEditMode, saveCell, saveStatus, saveTier,
+  deleteRecord, doRequest, openEmpireRequest, submitEmpireReq,
+  openIncident, saveIncident, openRaiseAlert, saveAlert,
+  openAssignDriver, saveDriver, openLogDonation, saveDonation,
+  openScholarship, saveScholarship, closeModal, toggleNotifPanel,
+  updateProgress, switchAdminTab, loadAdminRequests, loadAdminActivity,
+  loadVindex, loadOperations, loadAlliance, loadObscura,
+  loadCapital, loadCustodia, loadOutreach, loadAlatus, loadPedes, loadPetra,
+  addPropertyRow, addVehicleRow, addFacilityRow, addPartnerRow,
+  addProposalRow, addProjectRow, addAllocationRow, addFlightRow,
+  addDroneRow, addRunRow, addBuildRow,
+};
+
+})(); // end IIFE
 </script>
 </body>
 </html>
