@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alliance — LVO Holdings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --bg:#0a0a0c; --bg-raised:#111114; --line:#242327; --line-soft:#1a1a1d;
+    --ink:#eae7e0; --ink-dim:#8b8a86; --ink-faint:#5c5b58;
+    --brass:#c8a24a; --brass-dim:#8a7238; --red:#b3564a; --green:#7a9a6f; --radius:2px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--bg);color:var(--ink);font-family:'Inter',system-ui,sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-dim);}
+  h1,h2,h3{font-family:'Fraunces',serif;font-weight:500;margin:0;}
+  a{color:inherit;text-decoration:none;}
+  button,input,select,textarea{font-family:inherit;color:inherit;}
+  ::selection{background:var(--brass-dim);color:#000;}
+  #app{display:flex;min-height:100vh;}
+  .sidebar{width:280px;flex-shrink:0;background:var(--bg);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:36px 32px 24px;position:sticky;top:0;height:100vh;overflow-y:auto;}
+  .brand-seal{width:34px;height:34px;border:1px solid var(--brass-dim);display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-size:16px;color:var(--brass);margin-bottom:14px;flex-shrink:0;}
+  .brand h1{font-size:22px;letter-spacing:-.01em;color:var(--ink);}
+  .brand .eyebrow{margin-top:4px;}
+  .side-divider{height:1px;background:var(--line);margin:28px 0 22px;}
+  .side-links{display:flex;flex-direction:column;gap:2px;margin-bottom:26px;}
+  .side-link{padding:9px 10px;border-radius:var(--radius);font-size:14.5px;color:var(--ink-dim);display:flex;align-items:center;gap:10px;cursor:pointer;border:1px solid transparent;transition:background .12s,color .12s,border-color .12s;}
+  .side-link:hover{color:var(--ink);background:var(--bg-raised);}
+  .side-link.active{color:var(--ink);background:var(--bg-raised);border-color:var(--line);}
+  .sidebar-footer{margin-top:auto;padding-top:22px;border-top:1px solid var(--line);}
+  .sidebar-footer .who{font-size:13px;color:var(--ink-dim);margin-bottom:2px;}
+  .sidebar-footer .who .name{color:var(--ink);font-weight:500;}
+  .role-tag{display:inline-block;margin-top:8px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--brass);border:1px solid var(--brass-dim);padding:3px 7px;}
+  .signout{margin-top:14px;font-size:13px;color:var(--ink-dim);cursor:pointer;}
+  .signout:hover{color:var(--red);}
+  .main{flex:1;padding:56px 64px;min-width:0;}
+  .main-narrow{max-width:1180px;}
+  .page-head{margin-bottom:8px;}
+  .page-head h2{font-size:38px;letter-spacing:-.01em;}
+  .page-head p{margin-top:14px;max-width:640px;color:var(--ink-dim);font-size:15px;line-height:1.6;}
+  .division-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+  .division-head .tagline{color:var(--ink-dim);margin-top:6px;font-size:15px;}
+  .division-head .meta{text-align:right;font-size:13px;}
+  .division-head .meta .eyebrow{margin-bottom:6px;}
+  .division-head .meta div.line{color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:12.5px;margin-top:2px;}
+  .tabs{display:flex;gap:28px;border-bottom:1px solid var(--line);margin:30px 0 30px;flex-wrap:wrap;}
+  .tab{padding:10px 2px 14px;font-size:15px;color:var(--ink-dim);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;}
+  .tab.active{color:var(--ink);border-bottom-color:var(--brass);}
+  .stat-row,.metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:22px;}
+  .card{background:var(--bg-raised);border:1px solid var(--line);padding:22px 24px;position:relative;}
+  .metric-card .val{display:flex;align-items:baseline;gap:4px;}
+  .metric-card .val .num{font-family:'Fraunces',serif;font-size:36px;}
+  .metric-card .val .unit{color:var(--ink-dim);font-size:14px;}
+  .metric-card .delta{font-size:12.5px;color:var(--ink-faint);margin-top:10px;font-family:'IBM Plex Mono',monospace;}
+  .remove-btn{position:absolute;top:20px;right:22px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.05em;color:var(--ink-faint);cursor:pointer;background:none;border:none;padding:0;}
+  .remove-btn:hover{color:var(--red);}
+  .num-edit{background:none;border:none;border-bottom:1px dashed transparent;font-family:'Fraunces',serif;font-size:36px;color:var(--ink);width:100%;padding:0;}
+  .num-edit:focus{outline:none;border-bottom-color:var(--brass);}
+  .form-card .form-title{margin-bottom:18px;}
+  .form-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
+  .form-row>*{flex:1;min-width:140px;}
+  input[type=text],input[type=email],input[type=url],input[type=password],select,textarea{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);padding:11px 13px;font-size:14px;border-radius:var(--radius);}
+  textarea{min-height:96px;resize:vertical;font-family:inherit;}
+  input::placeholder,textarea::placeholder{color:var(--ink-faint);}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brass-dim);}
+  select{appearance:none;-webkit-appearance:none;cursor:pointer;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M0 0l5 6 5-6z' fill='%238b8a86'/></svg>");background-repeat:no-repeat;background-position:right 13px center;padding-right:32px;}
+  .btn{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.06em;text-transform:uppercase;background:var(--ink);color:#0a0a0c;border:none;padding:12px 20px;cursor:pointer;transition:background .15s,opacity .15s;}
+  .btn:hover{background:var(--brass);}
+  .btn:disabled{opacity:.35;cursor:not-allowed;}
+  .form-hint{color:var(--ink-faint);font-size:12.5px;margin-top:12px;line-height:1.6;}
+  .list-panel{margin-bottom:22px;}
+  .empty-row{color:var(--ink-faint);font-size:14px;padding:6px 0;}
+  .row-item{display:flex;justify-content:space-between;align-items:center;padding:16px 0;border-bottom:1px solid var(--line-soft);gap:16px;flex-wrap:wrap;}
+  .row-item:last-child{border-bottom:none;}
+  .row-item .title{font-weight:500;font-size:15px;}
+  .row-item .sub{color:var(--ink-dim);font-size:13px;margin-top:3px;}
+  .row-item .sub a{color:var(--brass);}
+  .row-actions{display:flex;align-items:center;gap:14px;flex-shrink:0;}
+  .role-select{font-family:'IBM Plex Mono',monospace;font-size:12px;background:var(--bg);border:1px solid var(--line);color:var(--ink);padding:8px 12px;border-radius:var(--radius);}
+  .mail-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:20px;}
+  .mail-activity-item{padding:12px 0;border-bottom:1px solid var(--line-soft);font-size:13.5px;}
+  .mail-activity-item:last-child{border-bottom:none;}
+  .mail-activity-item .subj{color:var(--ink-dim);margin-top:2px;}
+  .mail-activity-item .ts{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-faint);margin-top:6px;}
+  .badge{font-family:'IBM Plex Mono',monospace;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;border:1px solid var(--brass-dim);color:var(--brass);padding:5px 10px;}
+  .badge.pending{color:var(--ink-faint);border-color:var(--line);}
+  .auth-wrap{display:flex;min-height:100vh;width:100%;}
+  .auth-left{flex:1.2;padding:80px 64px;border-right:1px solid var(--line);display:flex;flex-direction:column;justify-content:center;
+    background:linear-gradient(var(--line-soft) 1px,transparent 1px) 0 0/64px 64px, linear-gradient(90deg,var(--line-soft) 1px,transparent 1px) 0 0/64px 64px;}
+  .auth-left h1{font-size:52px;line-height:1.1;max-width:520px;letter-spacing:-.015em;}
+  .auth-left p{margin-top:22px;max-width:440px;color:var(--ink-dim);font-size:16px;line-height:1.65;}
+  .auth-left .domain{margin-top:56px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-faint);}
+  .auth-right{flex:1;padding:80px 64px;display:flex;flex-direction:column;justify-content:center;max-width:520px;}
+  .auth-right h2{font-size:30px;margin-bottom:14px;}
+  .auth-right .note{color:var(--ink-dim);font-size:14px;margin-bottom:28px;line-height:1.6;}
+  .field-label{font-size:13px;font-weight:500;margin-bottom:8px;display:block;}
+  .auth-right .field{margin-bottom:18px;}
+  .auth-error{color:var(--red);font-size:13px;margin-bottom:16px;}
+  .auth-toggle{margin-top:20px;font-size:13.5px;color:var(--ink-dim);}
+  .auth-toggle a{color:var(--brass);cursor:pointer;border-bottom:1px solid var(--brass-dim);}
+  .pending-wrap{max-width:520px;margin:120px auto;text-align:center;}
+  .pending-wrap h2{font-size:30px;margin:18px 0 16px;}
+  .pending-wrap p{color:var(--ink-dim);font-size:15px;line-height:1.6;}
+  .loading{padding:80px;color:var(--ink-dim);font-family:'IBM Plex Mono',monospace;font-size:13px;}
+  @media (max-width:900px){
+    #app{flex-direction:column;} .sidebar{width:100%;height:auto;position:relative;} .main{padding:32px 24px;}
+    .auth-wrap{flex-direction:column;} .auth-left{border-right:none;border-bottom:1px solid var(--line);padding:48px 28px;}
+    .auth-right{padding:48px 28px;max-width:none;} .division-head{flex-direction:column;gap:16px;}
+    .division-head .meta{text-align:left;} .mail-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<div id="app"><div class="loading">Loading dashboard…</div></div>
+
+<script>
+/* =========================================================
+   Division config — the only thing that differs between
+   the three dashboard repos.
+========================================================= */
+window.LVO_CONFIG = {
+  supabaseUrl: "https://YOUR-PROJECT-REF.supabase.co",
+  supabaseAnonKey: "YOUR-SUPABASE-ANON-KEY",
+  divisionKey: "alliance",
+  divisionName: "Alliance"
+};
+</script>
+<script>
+(function(){
+  var cfg = window.LVO_CONFIG;
+  var sb = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
+  var DK = cfg.divisionKey;
+
+  var appEl = document.getElementById('app');
+  var state = { session:null, profile:null, myRole:null, division:null, metrics:[], team:[], records:[], mail:[], accounts:[] };
+  var route = { tab:'metrics' };
+  var authMode = 'signin';
+  var authError = '';
+
+  function el(tag, attrs, children){
+    var e = document.createElement(tag);
+    attrs = attrs || {};
+    Object.keys(attrs).forEach(function(k){
+      if(k==='class') e.className = attrs[k];
+      else if(k==='html') e.innerHTML = attrs[k];
+      else if(k.indexOf('on')===0) e.addEventListener(k.slice(2), attrs[k]);
+      else if(attrs[k]!==null && attrs[k]!==undefined) e.setAttribute(k, attrs[k]);
+    });
+    (children||[]).forEach(function(c){
+      if(c===null||c===undefined) return;
+      if(typeof c==='string') e.appendChild(document.createTextNode(c));
+      else e.appendChild(c);
+    });
+    return e;
+  }
+
+  function canEdit(){ return ['owner','admin','manager'].indexOf(state.myRole) !== -1; }
+  function isAdmin(){ return ['owner','admin'].indexOf(state.myRole) !== -1; }
+
+  async function loadEverything(){
+    var divRes = await sb.from('divisions').select('*').eq('key', DK).maybeSingle();
+    state.division = divRes.data || { key:DK, name:cfg.divisionName, tagline:'', domain:'', desk_email:'' };
+
+    var roleRes = await sb.from('division_roles').select('role').eq('division_key', DK).eq('user_id', state.session.user.id).maybeSingle();
+    state.myRole = roleRes.data ? roleRes.data.role : null;
+
+    if(!state.myRole || state.myRole === 'pending'){
+      state.metrics=[]; state.team=[]; state.records=[]; state.mail=[]; state.accounts=[];
+      return;
+    }
+
+    var [m,t,r,ml] = await Promise.all([
+      sb.from('metrics').select('*').eq('division_key', DK).order('created_at'),
+      sb.from('team_members').select('*').eq('division_key', DK).order('created_at'),
+      sb.from('records').select('*').eq('division_key', DK).order('created_at', {ascending:false}),
+      sb.from('mail_log').select('*').eq('division_key', DK).order('created_at', {ascending:false})
+    ]);
+    state.metrics = m.data || [];
+    state.team = t.data || [];
+    state.records = r.data || [];
+    state.mail = ml.data || [];
+
+    if(isAdmin()){
+      var acc = await sb.rpc('list_division_accounts', { div_key: DK });
+      state.accounts = acc.data || [];
+    }
+  }
+
+  /* ---------------- Auth screens ---------------- */
+  function renderAuth(){
+    var wrap = el('div', {class:'auth-wrap'});
+    var left = el('div', {class:'auth-left'}, [
+      el('div', {class:'eyebrow'}, ['LVO Holdings']),
+      el('h1', {}, [cfg.divisionName]),
+      el('p', {}, ['Secured dashboard for the ' + cfg.divisionName + ' division. Metrics, mailbox, personnel and records, access-controlled per account.']),
+      el('div', {class:'domain'}, [(state.division && state.division.domain ? state.division.domain : '').toUpperCase()])
+    ]);
+    var right = el('div', {class:'auth-right'});
+    right.appendChild(el('div', {class:'eyebrow'}, ['Restricted access']));
+    right.appendChild(el('h2', {}, [authMode==='signin' ? 'Sign in' : 'Create account']));
+    right.appendChild(el('div', {class:'note'}, ['The first account to sign in here becomes this division\'s owner with full control. Everyone after that starts pending until an owner or admin grants access.']));
+    if(authError) right.appendChild(el('div', {class:'auth-error'}, [authError]));
+
+    var nameField = null;
+    if(authMode==='signup'){
+      nameField = el('div', {class:'field'}, [el('label', {class:'field-label'}, ['Full name']), el('input', {type:'text', id:'auth-name', placeholder:'Jordan Reyes'})]);
+      right.appendChild(nameField);
+    }
+    right.appendChild(el('div', {class:'field'}, [el('label', {class:'field-label'}, ['Email']), el('input', {type:'email', id:'auth-email', placeholder:'you@company.com'})]));
+    right.appendChild(el('div', {class:'field'}, [el('label', {class:'field-label'}, ['Password']), el('input', {type:'password', id:'auth-pass', placeholder:'••••••••'})]));
+
+    right.appendChild(el('button', {class:'btn', style:'width:100%;padding:14px;margin-top:6px;', onclick: handleAuthSubmit}, [authMode==='signin' ? 'Sign in' : 'Create account']));
+
+    right.appendChild(el('div', {class:'auth-toggle'}, [
+      authMode==='signin' ? "Don't have an account? " : 'Already have an account? ',
+      el('a', {onclick:function(){ authMode = authMode==='signin' ? 'signup' : 'signin'; authError=''; render(); }}, [authMode==='signin' ? 'Sign up' : 'Sign in'])
+    ]));
+
+    wrap.appendChild(left); wrap.appendChild(right);
+    return wrap;
+  }
+
+  async function handleAuthSubmit(){
+    var email = document.getElementById('auth-email').value.trim();
+    var pass = document.getElementById('auth-pass').value;
+    if(!email || !pass){ authError = 'Enter an email and password.'; render(); return; }
+    var result;
+    if(authMode === 'signup'){
+      var name = document.getElementById('auth-name') ? document.getElementById('auth-name').value.trim() : '';
+      result = await sb.auth.signUp({ email:email, password:pass, options:{ data:{ full_name:name } } });
+    } else {
+      result = await sb.auth.signInWithPassword({ email:email, password:pass });
+    }
+    if(result.error){ authError = result.error.message; render(); return; }
+    authError = '';
+    await boot();
+  }
+
+  function renderPending(){
+    var wrap = el('div', {class:'pending-wrap'});
+    wrap.appendChild(el('div', {class:'eyebrow'}, ['Restricted access']));
+    wrap.appendChild(el('h2', {}, ['Access pending']));
+    wrap.appendChild(el('p', {}, ['You\'re signed in as ' + state.session.user.email + ' but no role has been granted for ' + cfg.divisionName + ' yet. Ask an owner or admin to grant access from the Access tab.']));
+    wrap.appendChild(el('div', {style:'margin-top:26px;'}, [
+      el('span', {class:'signout', style:'display:inline-block;', onclick: signOut}, ['Sign out'])
+    ]));
+    return wrap;
+  }
+
+  async function signOut(){
+    await sb.auth.signOut();
+    state.session = null;
+    render();
+  }
+
+  /* ---------------- Shell ---------------- */
+  function renderShell(){
+    var wrap = el('div', {style:'display:flex;width:100%;'});
+    wrap.appendChild(renderSidebar());
+    wrap.appendChild(renderMain());
+    return wrap;
+  }
+
+  function renderSidebar(){
+    var side = el('div', {class:'sidebar'});
+    side.appendChild(el('div', {class:'brand'}, [
+      el('div', {class:'brand-seal'}, [cfg.divisionName[0]]),
+      el('h1', {}, [cfg.divisionName]),
+      el('div', {class:'eyebrow'}, ['LVO Holdings'])
+    ]));
+    side.appendChild(el('div', {class:'side-divider'}));
+    var tabs = [
+      {id:'metrics', label:'Metrics'}, {id:'mailbox', label:'Mailbox'},
+      {id:'team', label:'Team'}, {id:'records', label:'Records'}
+    ];
+    if(isAdmin()) tabs.push({id:'access', label:'Access'});
+    var links = el('div', {class:'side-links'});
+    tabs.forEach(function(t){
+      links.appendChild(el('div', {class:'side-link' + (route.tab===t.id?' active':''), onclick:function(){ route.tab=t.id; render(); }}, [t.label]));
+    });
+    side.appendChild(links);
+
+    var footer = el('div', {class:'sidebar-footer'});
+    footer.appendChild(el('div', {class:'who'}, [el('span', {class:'name'}, [state.profile ? state.profile.full_name : state.session.user.email])]));
+    footer.appendChild(el('div', {class:'who', style:'font-size:12px;'}, [state.session.user.email]));
+    footer.appendChild(el('span', {class:'role-tag'}, [state.myRole]));
+    footer.appendChild(el('div', {class:'signout', onclick:signOut}, ['Sign out']));
+    side.appendChild(footer);
+    return side;
+  }
+
+  function renderMain(){
+    var main = el('div', {class:'main main-narrow'});
+    var d = state.division;
+    main.appendChild(el('div', {class:'division-head'}, [
+      el('div', {}, [
+        el('div', {class:'eyebrow'}, [d.name.toUpperCase()]),
+        el('h3', {}, [d.name]),
+        el('div', {class:'tagline'}, [d.tagline])
+      ]),
+      el('div', {class:'meta'}, [
+        el('div', {class:'eyebrow'}, ['Mail domain']),
+        el('div', {class:'line'}, [d.domain]),
+        el('div', {class:'line'}, [d.desk_email])
+      ])
+    ]));
+
+    if(route.tab==='metrics') main.appendChild(renderMetrics());
+    if(route.tab==='mailbox') main.appendChild(renderMailbox());
+    if(route.tab==='team') main.appendChild(renderTeam());
+    if(route.tab==='records') main.appendChild(renderRecords());
+    if(route.tab==='access' && isAdmin()) main.appendChild(renderAccess());
+    return main;
+  }
+
+  /* ---------------- Metrics ---------------- */
+  function renderMetrics(){
+    var wrap = el('div');
+    var grid = el('div', {class:'metrics-grid'});
+    state.metrics.forEach(function(m){
+      var numInput = el('input', {class:'num-edit', type:'text', value:m.value, disabled: canEdit() ? null : 'disabled'});
+      numInput.addEventListener('change', async function(){
+        await sb.from('metrics').update({ value:numInput.value }).eq('id', m.id);
+      });
+      var card = el('div', {class:'card metric-card'}, [
+        el('div', {class:'eyebrow'}, [m.label]),
+        el('div', {class:'val'}, [numInput, m.unit ? el('span', {class:'unit'}, [m.unit]) : null]),
+        m.delta ? el('div', {class:'delta'}, [m.delta]) : null,
+        canEdit() ? el('button', {class:'remove-btn', onclick:async function(){ await sb.from('metrics').delete().eq('id', m.id); await refresh(); }}, ['Remove']) : null
+      ]);
+      grid.appendChild(card);
+    });
+    wrap.appendChild(grid);
+
+    if(canEdit()){
+      var labelI=el('input',{type:'text',placeholder:'Label'}), valueI=el('input',{type:'text',placeholder:'Value'}), unitI=el('input',{type:'text',placeholder:'Unit (optional)'});
+      wrap.appendChild(el('div', {class:'card form-card'}, [
+        el('div', {class:'eyebrow form-title'}, ['Add metric']),
+        el('div', {class:'form-row'}, [labelI, valueI, unitI, el('button', {class:'btn', style:'flex:0 0 auto;', onclick:async function(){
+          if(!labelI.value.trim() || !valueI.value.trim()) return;
+          await sb.from('metrics').insert({ division_key:DK, label:labelI.value.trim(), value:valueI.value.trim(), unit:unitI.value.trim() });
+          await refresh();
+        }}, ['Add metric'])]),
+        el('div', {class:'form-hint'}, ['Values are editable inline — click a number, change it, then click away to save.'])
+      ]));
+    }
+    return wrap;
+  }
+
+  /* ---------------- Mailbox ---------------- */
+  function renderMailbox(){
+    var wrap = el('div', {class:'mail-grid'});
+    var toI=el('input',{type:'text',placeholder:'name@company.com'}), subjI=el('input',{type:'text'}), msgI=el('textarea',{});
+    var compose = el('div', {class:'card form-card'}, [
+      el('div', {class:'eyebrow form-title'}, ['Compose from ' + (state.division.desk_email||'').toUpperCase()]),
+      el('div', {style:'margin-bottom:16px;'}, [el('label', {class:'field-label'}, ['To']), toI]),
+      el('div', {style:'margin-bottom:16px;'}, [el('label', {class:'field-label'}, ['Subject']), subjI]),
+      el('div', {style:'margin-bottom:20px;'}, [el('label', {class:'field-label'}, ['Message']), msgI]),
+      el('button', {class:'btn', disabled: canEdit()?null:'disabled', onclick: canEdit() ? async function(){
+        if(!toI.value.trim()) return;
+        await sb.from('mail_log').insert({ division_key:DK, to_addr:toI.value.trim(), subject:subjI.value.trim()||'(no subject)', body:msgI.value.trim() });
+        await refresh();
+      } : null}, ['Queue message'])
+    ]);
+    var activity = el('div');
+    activity.appendChild(el('div', {class:'eyebrow', style:'margin-bottom:16px;'}, ['Mailbox activity']));
+    var panel = el('div', {class:'card'});
+    if(state.mail.length===0) panel.appendChild(el('div', {class:'empty-row'}, ['No mail on file yet.']));
+    state.mail.forEach(function(mm){
+      panel.appendChild(el('div', {class:'mail-activity-item'}, [
+        el('div', {}, ['To: ' + mm.to_addr]),
+        el('div', {class:'subj'}, [mm.subject]),
+        el('div', {class:'ts'}, [new Date(mm.created_at).toLocaleString()])
+      ]));
+    });
+    activity.appendChild(panel);
+    wrap.appendChild(compose); wrap.appendChild(activity);
+    return wrap;
+  }
+
+  /* ---------------- Team ---------------- */
+  function renderTeam(){
+    var wrap = el('div');
+    var panel = el('div', {class:'card list-panel'});
+    if(state.team.length===0) panel.appendChild(el('div', {class:'empty-row'}, ['No personnel yet.']));
+    state.team.forEach(function(t){
+      var sel = el('select', {class:'role-select', disabled: canEdit()?null:'disabled'}, [
+        el('option', {value:'Viewer'}, ['Viewer']), el('option', {value:'Manager'}, ['Manager']), el('option', {value:'Admin'}, ['Admin'])
+      ]);
+      sel.value = t.access_role;
+      sel.addEventListener('change', async function(){ await sb.from('team_members').update({access_role:sel.value}).eq('id', t.id); });
+      panel.appendChild(el('div', {class:'row-item'}, [
+        el('div', {}, [el('div', {class:'title'}, [t.name]), el('div', {class:'sub'}, [t.email + ' · ' + t.title])]),
+        el('div', {class:'row-actions'}, [sel, canEdit() ? el('button', {class:'remove-btn', onclick:async function(){ await sb.from('team_members').delete().eq('id', t.id); await refresh(); }}, ['Remove']) : null])
+      ]));
+    });
+    wrap.appendChild(panel);
+
+    if(canEdit()){
+      var nameI=el('input',{type:'text',placeholder:'Full name'}), emailI=el('input',{type:'text',placeholder:'name@'+(state.division.domain||'company.com')}), titleI=el('input',{type:'text',placeholder:'Title'});
+      var roleI = el('select', {}, [el('option', {value:'Viewer'}, ['Viewer']), el('option', {value:'Manager'}, ['Manager']), el('option', {value:'Admin'}, ['Admin'])]);
+      wrap.appendChild(el('div', {class:'card form-card'}, [
+        el('div', {class:'eyebrow form-title'}, ['Add personnel']),
+        el('div', {class:'form-row'}, [nameI, emailI, titleI, roleI, el('button', {class:'btn', style:'flex:0 0 auto;', onclick:async function(){
+          if(!nameI.value.trim()) return;
+          await sb.from('team_members').insert({ division_key:DK, name:nameI.value.trim(), email:emailI.value.trim()||('unassigned@'+state.division.domain), title:titleI.value.trim()||'Team member', access_role:roleI.value });
+          await refresh();
+        }}, ['Add'])])
+      ]));
+    }
+    return wrap;
+  }
+
+  /* ---------------- Records ---------------- */
+  function renderRecords(){
+    var wrap = el('div');
+    var panel = el('div', {class:'card list-panel', style:'margin-bottom:22px;'});
+    if(state.records.length===0) panel.appendChild(el('div', {class:'empty-row'}, ['No records yet.']));
+    state.records.forEach(function(r){
+      panel.appendChild(el('div', {class:'row-item'}, [
+        el('div', {}, [
+          el('div', {class:'title'}, [r.title + '  ·  ' + r.type]),
+          el('div', {class:'sub'}, [r.notes || '', r.link ? el('div', {}, [el('a', {href:r.link, target:'_blank'}, [r.link])]) : null])
+        ]),
+        canEdit() ? el('div', {class:'row-actions'}, [el('button', {class:'remove-btn', onclick:async function(){ await sb.from('records').delete().eq('id', r.id); await refresh(); }}, ['Remove'])]) : null
+      ]));
+    });
+    wrap.appendChild(panel);
+
+    if(canEdit()){
+      var titleI=el('input',{type:'text',placeholder:'Title'});
+      var typeI=el('select',{},[el('option',{value:'Note'},['Note']),el('option',{value:'Contract'},['Contract']),el('option',{value:'Report'},['Report']),el('option',{value:'Filing'},['Filing'])]);
+      var linkI=el('input',{type:'text',placeholder:'https://link (optional)'});
+      var notesI=el('textarea',{placeholder:'Notes'});
+      wrap.appendChild(el('div', {class:'card form-card'}, [
+        el('div', {class:'eyebrow form-title'}, ['Add record']),
+        el('div', {class:'form-row'}, [titleI, typeI, linkI]),
+        el('div', {style:'margin-bottom:18px;'}, [notesI]),
+        el('button', {class:'btn', onclick:async function(){
+          if(!titleI.value.trim()) return;
+          await sb.from('records').insert({ division_key:DK, title:titleI.value.trim(), type:typeI.value, link:linkI.value.trim(), notes:notesI.value.trim() });
+          await refresh();
+        }}, ['Save record'])
+      ]));
+    }
+    return wrap;
+  }
+
+  /* ---------------- Access ---------------- */
+  function renderAccess(){
+    var wrap = el('div');
+    var panel = el('div', {class:'card list-panel'});
+    panel.appendChild(el('div', {class:'eyebrow', style:'margin-bottom:6px;'}, ['Accounts with access']));
+    if(state.accounts.length===0) panel.appendChild(el('div', {class:'empty-row'}, ['No accounts yet.']));
+    state.accounts.forEach(function(a){
+      panel.appendChild(el('div', {class:'row-item'}, [
+        el('div', {}, [el('div', {class:'title'}, [a.full_name || a.email]), el('div', {class:'sub'}, [a.email])]),
+        el('span', {class:'badge' + (a.role==='pending' ? ' pending' : '')}, [a.role])
+      ]));
+    });
+    wrap.appendChild(panel);
+
+    var emailI = el('input', {type:'text', placeholder:'person@company.com'});
+    var roleI = el('select', {}, [
+      el('option', {value:'viewer'}, ['Viewer']), el('option', {value:'manager'}, ['Manager']),
+      el('option', {value:'admin'}, ['Admin']), el('option', {value:'pending'}, ['Pending / revoke'])
+    ]);
+    var msg = el('div', {class:'form-hint'}, ['Grant access to an email that has already signed up (via Sign up on this dashboard). They\'ll see the change on next reload.']);
+    wrap.appendChild(el('div', {class:'card form-card'}, [
+      el('div', {class:'eyebrow form-title'}, ['Grant access']),
+      el('div', {class:'form-row'}, [emailI, roleI, el('button', {class:'btn', style:'flex:0 0 auto;', onclick:async function(){
+        if(!emailI.value.trim()) return;
+        var res = await sb.rpc('grant_division_access', { div_key:DK, target_email:emailI.value.trim(), new_role:roleI.value });
+        if(res.error){ msg.textContent = res.error.message; msg.style.color = 'var(--red)'; }
+        else { await refresh(); }
+      }}, ['Grant'])]),
+      msg
+    ]));
+    return wrap;
+  }
+
+  /* ---------------- Render + refresh ---------------- */
+  async function refresh(){
+    await loadEverything();
+    render();
+  }
+
+  function render(){
+    appEl.innerHTML = '';
+    if(!state.session){ appEl.appendChild(renderAuth()); return; }
+    if(!state.myRole || state.myRole === 'pending'){ appEl.appendChild(renderPending()); return; }
+    appEl.appendChild(renderShell());
+  }
+
+  async function boot(){
+    appEl.innerHTML = '<div class="loading">Loading dashboard…</div>';
+    var sess = await sb.auth.getSession();
+    state.session = sess.data.session;
+    if(state.session){
+      await sb.rpc('claim_division', { div_key: DK }); // idempotent bootstrap / pending row
+      var profRes = await sb.from('profiles').select('*').eq('id', state.session.user.id).maybeSingle();
+      state.profile = profRes.data;
+      await loadEverything();
+    }
+    render();
+  }
+
+  sb.auth.onAuthStateChange(function(){ boot(); });
+  boot();
+})();
+</script>
+</body>
+</html>
