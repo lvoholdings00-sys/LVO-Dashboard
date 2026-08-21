@@ -3,16 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!-- FIX #10: Content Security Policy -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://clerk.lvo-cloud.cloud https://fonts.googleapis.com 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' https://lvo-command-worker.lvoholdings00.workers.dev https://clerk.lvo-cloud.cloud https://*.clerk.accounts.dev; img-src 'self' data: https:; worker-src blob:;">
+<!-- CSP moved out of a <meta> tag — see the Cloudflare Transform Rule note
+     at the bottom of this file / in DEPLOY notes. Meta-tag CSP behaves
+     inconsistently in sandboxed/opaque-origin contexts (like preview
+     iframes) and can't set frame-ancestors, so it belongs at the HTTP
+     header level instead, in front of the real deployed domain. -->
 <title>LVO Command Center</title>
-
-<script
-  async crossorigin="anonymous"
-  data-clerk-publishable-key="pk_live_Y2xlcmsubHZvLWNsb3VkLmNsb3VkJA"
-  src="https://clerk.lvo-cloud.cloud/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"
-  type="text/javascript"
-></script>
 
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 
@@ -68,8 +64,10 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .sidebar-bottom{padding:18px 22px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:10px}
 .auth-status{display:flex;align-items:center;gap:8px;font-size:9px;letter-spacing:.18em;color:var(--text-muted);text-transform:uppercase}
 .auth-dot{width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0}
+.session-countdown{font-size:8px;letter-spacing:.14em;color:var(--text-muted);text-transform:uppercase}
+.signout-link{font-size:9px;letter-spacing:.2em;color:var(--text-muted);text-transform:uppercase;cursor:pointer;background:none;border:none;font-family:'DM Mono',monospace;padding:0;text-align:left;transition:color .2s}
+.signout-link:hover{color:var(--red-light)}
 
-/* FIX #11: semantic main landmark */
 #main{flex:1;height:100vh;overflow-y:auto;background:var(--black);min-width:0}
 .page{display:none;padding:36px 44px 60px;animation:pageIn .25s ease}
 .page.active{display:block}
@@ -207,7 +205,6 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 
 .modal-overlay{position:fixed;inset:0;background:#0a0a0acc;z-index:500;display:none;align-items:center;justify-content:center}
 .modal-overlay.open{display:flex}
-/* FIX #14: removed backdrop-filter blur for performance; use solid overlay instead */
 .modal{background:var(--surface);border:1px solid var(--border-gold);width:520px;max-width:92vw;max-height:88vh;overflow-y:auto;padding:30px;animation:modalIn .22s ease}
 @keyframes modalIn{from{opacity:0;transform:scale(.97) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
 .modal-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px}
@@ -245,12 +242,6 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 
 .save-indicator{font-size:8px;letter-spacing:.18em;color:var(--text-muted);text-transform:uppercase;opacity:0;transition:opacity .3s}
 .save-indicator.show{opacity:1}
-
-.cl-avatarBox{border-radius:0!important;border:1px solid var(--border-gold)!important}
-.cl-userButtonPopoverCard{background:var(--surface)!important;border:1px solid var(--border-gold)!important;border-radius:0!important}
-.cl-userButtonPopoverActionButton{border-radius:0!important;color:var(--text-dim)!important}
-.cl-userButtonPopoverActionButton:hover{background:var(--gold-glow)!important;color:var(--gold)!important}
-.cl-userButtonPopoverActionButtonText{font-family:'DM Mono',monospace!important;font-size:11px!important}
 </style>
 </head>
 <body>
@@ -271,11 +262,11 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
         <span class="auth-dot" aria-hidden="true"></span>
         <span id="sidebar-user-name">Authenticated</span>
       </div>
-      <div id="clerk-user-btn"></div>
+      <div class="session-countdown" id="session-countdown"></div>
+      <button class="signout-link" id="signout-link">Sign out</button>
     </div>
   </nav>
 
-  <!-- FIX #11: Use semantic <main> instead of <div id="main"> -->
   <main id="main">
     <div class="top-bar">
       <div class="top-bar-left" id="top-bar-label">LVO Command Center</div>
@@ -288,14 +279,12 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
           </svg>
           <span class="notif-count" id="notif-count" aria-label="0 requests">0</span>
         </button>
-        <div id="clerk-topbar-btn"></div>
       </div>
     </div>
     <div id="pages-container"></div>
   </main>
 </div>
 
-<!-- FIX #11: aria attributes for notification panel -->
 <div class="notif-panel" id="notif-panel" role="complementary" aria-label="Submitted requests" aria-hidden="true">
   <div class="notif-panel-header">
     <div class="notif-panel-title">Requests</div>
@@ -306,7 +295,6 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   </div>
 </div>
 
-<!-- FIX #11: role="dialog" and aria attributes for modal -->
 <div class="modal-overlay" id="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
   <div class="modal" id="modal-box">
     <div class="modal-header">
@@ -319,30 +307,71 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 </div>
 
 <script>
-/* ═══════════════════════════════════════════════════
-   FIX #9: Wrap entire app in IIFE to avoid global namespace pollution
-═══════════════════════════════════════════════════ */
 (function() {
 'use strict';
 
 /* ═══════════════════════════════════════════════════
    CONFIG
 ═══════════════════════════════════════════════════ */
-const WORKER_URL = 'https://lvo-command-worker.lvoholdings00.workers.dev';
-const LOGIN_URL  = 'https://login.lvo-cloud.cloud/';
+const WORKER_URL  = 'https://lvo-command-worker.lvoholdings00.workers.dev';
+const COOKIE_DOMAIN = '.lvo-cloud.cloud';
+// Where anyone without a valid MFA session gets sent — no dwelling on this
+// site, no bounce back to a login form here. The MFA gate page owns login.
+const KICK_URL = 'https://www.google.com';
+// Re-check the session cookie this often so a session that expires
+// mid-use kicks the person out immediately rather than on next click.
+const SESSION_POLL_MS = 15000;
 
-const CLERK_APPEARANCE = {
-  variables:{colorBackground:'#0a0a0a',colorText:'#e8e6e0',colorPrimary:'#b8953f',colorInputBackground:'#161616',colorInputText:'#e8e6e0',borderRadius:'0px',fontFamily:"'DM Mono',monospace",fontSize:'13px'},
-  elements:{avatarBox:{borderRadius:'0',border:'1px solid #b8953f44'},userButtonPopoverCard:{background:'#111111',border:'1px solid #b8953f44',borderRadius:'0'}}
-};
-
-/* ═══════════════════════════════════════════════════
-   FIX #1: HTML escape helper — ALL dynamic text goes through esc()
-═══════════════════════════════════════════════════ */
 function esc(s) {
   return String(s ?? '').replace(/[&<>"']/g, c => (
     {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]
   ));
+}
+
+/* ═══════════════════════════════════════════════════
+   COOKIE / SESSION HELPERS
+   The MFA gate page (login.lvo-cloud.cloud) sets lvo_token + lvo_expiry
+   on .lvo-cloud.cloud after a successful TOTP check. This dashboard only
+   ever trusts those two cookies — there is no independent login flow here.
+═══════════════════════════════════════════════════ */
+function getCookie(name) {
+  const esc_re = name.replace(/([.$?*|{}()\[\]\\/+^])/g, '\\$1');
+  const match = document.cookie.match(new RegExp('(?:^|; )' + esc_re + '=([^;]*)'));
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+function clearAuthCookies() {
+  const expired = 'expires=Thu, 01 Jan 1970 00:00:00 GMT';
+  document.cookie = `lvo_token=; ${expired}; domain=${COOKIE_DOMAIN}; path=/`;
+  document.cookie = `lvo_expiry=; ${expired}; domain=${COOKIE_DOMAIN}; path=/`;
+}
+
+function kickOut() {
+  clearAuthCookies();
+  window.location.replace(KICK_URL);
+}
+
+// Best-effort, non-verifying decode — used only to populate the UI
+// (name / role badge). The Worker must independently verify this token
+// on every request; nothing here is trusted for authorization decisions.
+function parseJwt(token) {
+  try {
+    const part = token.split('.')[1];
+    if (!part) return null;
+    const b64 = part.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = b64 + '=='.slice(0, (4 - b64.length % 4) % 4);
+    const json = decodeURIComponent(
+      atob(padded).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')
+    );
+    return JSON.parse(json);
+  } catch (e) { return null; }
+}
+
+function currentSession() {
+  const token = getCookie('lvo_token');
+  const expiry = parseInt(getCookie('lvo_expiry') || '0', 10);
+  if (!token || !expiry || Date.now() > expiry) return null;
+  return { token, expiry };
 }
 
 /* ═══════════════════════════════════════════════════
@@ -352,8 +381,6 @@ let _user = null;
 let _requests = [];
 let notifOpen = false;
 let _editMode = {};
-
-// FIX #7: Track original cell values to skip unchanged saves
 const _cellOriginals = new WeakMap();
 
 const divisions = [
@@ -387,14 +414,18 @@ const ICONS = {
 
 /* ═══════════════════════════════════════════════════
    API HELPERS
-   FIX #2: Removed X-Clerk-Role header — admin must be enforced server-side
+   Token comes straight from the lvo_token cookie on every call — no
+   client-stored session object. A 401/403 from the Worker means the
+   Worker itself considers the session invalid, so we kick out immediately
+   even if the local cookie clock hasn't caught up yet.
 ═══════════════════════════════════════════════════ */
 async function api(path, opts = {}) {
-  const token = await window.Clerk?.session?.getToken();
+  const sess = currentSession();
+  if (!sess) { kickOut(); throw new Error('Session expired'); }
   const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
-  if (token) headers['Authorization'] = `Bearer ${token}`;
-  // NOTE: Admin role MUST be verified server-side from the JWT; do NOT send client role headers.
+  headers['Authorization'] = `Bearer ${sess.token}`;
   const res = await fetch(WORKER_URL + path, { ...opts, headers });
+  if (res.status === 401 || res.status === 403) { kickOut(); throw new Error('Session rejected'); }
   if (!res.ok) {
     const e = await res.json().catch(() => ({ error: res.statusText }));
     throw new Error(e.error || res.statusText);
@@ -420,7 +451,6 @@ function badge(status) {
     'Open':'open','Closed':'complete',
   };
   const key = map[status] || 'pending';
-  // FIX #1: esc() applied to status string
   return `<span class="badge badge-${esc(key)}">${esc(status)}</span>`;
 }
 
@@ -432,7 +462,7 @@ function tierBadge(t) {
 function showToast(msg) {
   const t = document.createElement('div');
   t.className = 'toast';
-  t.textContent = msg; // textContent is XSS-safe
+  t.textContent = msg;
   document.body.appendChild(t);
   setTimeout(() => t.remove(), 2800);
 }
@@ -443,19 +473,17 @@ function showSaved() {
   setTimeout(() => el.classList.remove('show'), 1800);
 }
 
-// FIX #4: loading() returns a valid <tr> instead of a bare <div> inside <tbody>
 function loading() {
   return `<tr><td colspan="99" class="loading-row"><span class="spinner" aria-label="Loading…"></span></td></tr>`;
 }
 
 function openModal(title, bodyHTML, footerHTML) {
-  document.getElementById('modal-title').textContent = title; // textContent = safe
+  document.getElementById('modal-title').textContent = title;
   document.getElementById('modal-body').innerHTML = bodyHTML;
   document.getElementById('modal-footer').innerHTML = footerHTML;
   const overlay = document.getElementById('modal-overlay');
   overlay.classList.add('open');
   overlay.removeAttribute('aria-hidden');
-  // FIX #11: Focus first focusable element inside modal
   setTimeout(() => {
     const first = overlay.querySelector('input,select,textarea,button');
     if (first) first.focus();
@@ -466,7 +494,6 @@ function closeModal() {
   const overlay = document.getElementById('modal-overlay');
   overlay.classList.remove('open');
   overlay.setAttribute('aria-hidden', 'true');
-  // Return focus to the trigger element
   if (_lastModalTrigger) { _lastModalTrigger.focus(); _lastModalTrigger = null; }
 }
 
@@ -500,7 +527,6 @@ function switchTab(el, targetId, groupId) {
   document.getElementById(targetId).classList.add('active');
 }
 
-// FIX #5: submitRequest surfaces errors instead of silently swallowing them
 async function submitRequest(division, type, desc) {
   try {
     await apiPost('/requests', { division, type, description: desc });
@@ -509,9 +535,7 @@ async function submitRequest(division, type, desc) {
     return false;
   }
   const req = {
-    division,
-    type,
-    desc,
+    division, type, desc,
     time: new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})
   };
   _requests.unshift(req);
@@ -520,7 +544,6 @@ async function submitRequest(division, type, desc) {
   countEl.setAttribute('aria-label', _requests.length + ' requests');
   const body = document.getElementById('notif-panel-body');
   if (_requests.length === 1) body.innerHTML = '';
-  // FIX #1: esc() all dynamic data in notification panel
   body.innerHTML = _requests.map(r => `
     <div class="notif-entry">
       <div class="notif-entry-header">
@@ -553,7 +576,6 @@ function doRequest(divId, divLabel) {
 }
 
 function reqBar(divId, divLabel, types) {
-  // FIX #1: esc applied to all interpolated values
   return `<div class="request-bar">
     <select id="rtype-${esc(divId)}" aria-label="Request type">${types.map(t => `<option>${esc(t)}</option>`).join('')}</select>
     <input type="text" id="rdesc-${esc(divId)}" placeholder="Describe your request…" aria-label="Request description">
@@ -583,7 +605,6 @@ function toggleEditMode(pageId) {
     page.querySelectorAll('[data-editable]').forEach(el => {
       el.contentEditable = _editMode[pageId] ? 'true' : 'false';
       if (_editMode[pageId]) {
-        // FIX #7: store original value on focus for dirty-check on blur
         el.addEventListener('focus', () => { _cellOriginals.set(el, el.textContent.trim()); }, { once: true });
       }
     });
@@ -597,11 +618,9 @@ function toggleEditMode(pageId) {
   if (btn) btn.querySelector('span').textContent = _editMode[pageId] ? 'Done Editing' : 'Edit Mode';
 }
 
-// FIX #1 + #7: esc all values; skip save if value unchanged
 function ec(value, path, field, recordId, placeholder) {
   const val = value || '';
   const ph  = placeholder || '—';
-  // FIX #11: role="textbox" and aria-label for accessibility
   return `<span class="editable" contenteditable="false" role="textbox" aria-label="${esc(field)}"
     data-editable="1" data-path="${esc(path)}" data-field="${esc(field)}" data-id="${esc(String(recordId))}"
     data-placeholder="${esc(ph)}" data-orig="${esc(val)}"
@@ -609,11 +628,10 @@ function ec(value, path, field, recordId, placeholder) {
     onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}">${esc(val)}</span>`;
 }
 
-// FIX #7: Only save if value actually changed
 async function saveCell(el) {
   const val  = el.textContent.trim();
   const orig = _cellOriginals.get(el) ?? el.dataset.orig ?? '';
-  if (val === orig) return; // no change — skip the request
+  if (val === orig) return;
   const path  = el.dataset.path;
   const field = el.dataset.field;
   const id    = el.dataset.id;
@@ -625,11 +643,10 @@ async function saveCell(el) {
     showSaved();
   } catch(e) {
     showToast('Save failed: ' + e.message);
-    el.textContent = orig; // revert on failure
+    el.textContent = orig;
   }
 }
 
-// FIX #12: Normalize status strings before comparing
 function statusSelect(current, path, id, options) {
   const opts = options || STATUS_OPTIONS;
   const normalize = s => String(s ?? '').trim().toLowerCase();
@@ -650,10 +667,8 @@ async function saveStatus(el) {
   } catch(e) { showToast('Save failed: ' + e.message); }
 }
 
-// FIX #6: Defer delete slightly so any in-flight blur save can settle
 async function deleteRecord(path, id, reloader) {
   if (!confirm('Delete this record? This cannot be undone.')) return;
-  // Small delay to let any active blur/save complete
   await new Promise(r => setTimeout(r, 80));
   try {
     await apiDel(`${path}/${id}`);
@@ -664,9 +679,6 @@ async function deleteRecord(path, id, reloader) {
   }
 }
 
-/* ═══════════════════════════════════════════════════
-   FIX #3: Force plain-text paste in all contenteditable cells
-═══════════════════════════════════════════════════ */
 document.addEventListener('paste', function(e) {
   if (e.target.matches('[contenteditable="true"]')) {
     e.preventDefault();
@@ -741,7 +753,6 @@ function buildAllPages() {
 
 /* ═══════════════════════════════════════════════════
    PAGE SHELLS
-   NOTE: static structural HTML — no dynamic data interpolated here
 ═══════════════════════════════════════════════════ */
 
 function buildOverviewShell() {
@@ -1160,7 +1171,6 @@ function switchAdminTab(name, btn) {
 
 /* ═══════════════════════════════════════════════════
    DATA LOADERS
-   FIX #1: All dynamic values go through esc() before innerHTML insertion
 ═══════════════════════════════════════════════════ */
 
 async function loadOverview() {
@@ -1488,7 +1498,6 @@ async function loadAdminActivity() {
     const log = await apiGet('/activity');
     const el = document.getElementById('adm-activity-feed');
     if (!log.length) { el.innerHTML = '<div class="loading-row">No activity logged yet</div>'; return; }
-    // FIX #1: esc() all dynamic values
     el.innerHTML = `<div class="activity-feed">${log.map(a => `
       <div class="activity-item">
         <div class="activity-dot" aria-hidden="true"></div>
@@ -1595,7 +1604,6 @@ async function saveDriver() {
 }
 
 function openLogDonation(triggerEl) {
-  // FIX #13: Use local date string instead of toISOString() which gives UTC date
   const today = new Date();
   const localDate = today.getFullYear() + '-' +
     String(today.getMonth()+1).padStart(2,'0') + '-' +
@@ -1673,46 +1681,55 @@ function submitEmpireReq() {
 }
 
 /* ═══════════════════════════════════════════════════
-   CLERK AUTH
+   SESSION GATE — replaces the old Clerk boot block.
+   No valid lvo_token/lvo_expiry cookie pair → straight out to Google.
+   No login form lives on this page; that's the MFA gate's job.
 ═══════════════════════════════════════════════════ */
-window.addEventListener('load', async () => {
-  try { await window.Clerk.load(); } catch(e) {
-    document.getElementById('auth-guard-text').textContent = 'Auth error — redirecting…';
-    setTimeout(() => window.location.href = LOGIN_URL, 1500);
-    return;
-  }
+function updateSessionCountdown(expiry) {
+  const el = document.getElementById('session-countdown');
+  if (!el) return;
+  const secsLeft = Math.max(0, Math.floor((expiry - Date.now()) / 1000));
+  const m = Math.floor(secsLeft / 60);
+  const s = String(secsLeft % 60).padStart(2, '0');
+  el.textContent = 'Session ' + m + ':' + s;
+}
 
-  if (!window.Clerk.user) { window.location.href = LOGIN_URL; return; }
+function startSessionWatchdog(expiry) {
+  updateSessionCountdown(expiry);
+  setInterval(() => {
+    const sess = currentSession();
+    if (!sess) { kickOut(); return; }
+    updateSessionCountdown(sess.expiry);
+  }, SESSION_POLL_MS);
+}
 
-  const user = window.Clerk.user;
-  const meta = user.publicMetadata || {};
-  const displayName = user.firstName
-    ? user.firstName + (user.lastName ? ' ' + user.lastName[0] + '.' : '')
-    : (user.primaryEmailAddress?.emailAddress || 'User');
+function boot() {
+  const sess = currentSession();
+  if (!sess) { kickOut(); return; }
+
+  const claims = parseJwt(sess.token) || {};
+  const displayName = claims.name || claims.email || 'Authenticated';
 
   _user = {
-    uid:     user.id,
+    uid:     claims.sub || claims.uid || null,
     name:    displayName,
-    // FIX #2: isAdmin determined from Clerk public metadata (set server-side only)
-    // The Worker must also independently verify this from the JWT — never trust a request header
-    isAdmin: meta.role === 'admin',
-    token:   null,
+    // UI-only convenience flag from the (unverified) token payload.
+    // The Worker independently checks admin status server-side on every
+    // write — this flag only controls which buttons render client-side.
+    isAdmin: claims.role === 'admin' || claims.admin === true,
+    token:   sess.token,
   };
 
   document.getElementById('sidebar-user-name').textContent = displayName;
   document.getElementById('auth-guard').style.display = 'none';
   document.getElementById('app').classList.add('visible');
 
-  window.Clerk.mountUserButton(document.getElementById('clerk-topbar-btn'), { appearance: CLERK_APPEARANCE });
-  window.Clerk.mountUserButton(document.getElementById('clerk-user-btn'),   { appearance: CLERK_APPEARANCE });
-
-  // Wire modal overlay click-to-close and button click handlers (event-based, avoids inline onclick for these)
   document.getElementById('modal-overlay').addEventListener('click', closeModalOnOverlay);
   document.getElementById('modal-close-btn').addEventListener('click', closeModal);
   document.getElementById('notif-close-btn').addEventListener('click', toggleNotifPanel);
   document.getElementById('notif-toggle-btn').addEventListener('click', toggleNotifPanel);
+  document.getElementById('signout-link').addEventListener('click', kickOut);
 
-  // Close modal on Escape key; FIX #11: keyboard trap
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
       const overlay = document.getElementById('modal-overlay');
@@ -1722,15 +1739,11 @@ window.addEventListener('load', async () => {
   });
 
   initApp();
+  startSessionWatchdog(sess.expiry);
+}
 
-  window.Clerk.addListener(({ user }) => { if (!user) window.location.href = LOGIN_URL; });
-});
+window.addEventListener('load', boot);
 
-/* ═══════════════════════════════════════════════════
-   FIX #9: Expose only what inline onclick handlers need on App namespace
-   (onclick attributes still work since they run in global scope,
-    but we keep logic encapsulated and only expose what's needed)
-═══════════════════════════════════════════════════ */
 window.App = {
   navigate, switchTab, toggleEditMode, saveCell, saveStatus, saveTier,
   deleteRecord, doRequest, openEmpireRequest, submitEmpireReq,
@@ -1745,7 +1758,7 @@ window.App = {
   addDroneRow, addRunRow, addBuildRow,
 };
 
-})(); // end IIFE
+})();
 </script>
 </body>
 </html>
