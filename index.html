@@ -6,7 +6,6 @@
 <title>LVO Holdings — Command Center</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
     --bg:#0a0a0c; --bg-raised:#111114; --line:#242327; --line-soft:#1a1a1d;
@@ -28,8 +27,6 @@
   .brand h1{font-size:22px;letter-spacing:-.01em;color:var(--ink);}
   .brand .eyebrow{margin-top:4px;}
   .side-divider{height:1px;background:var(--line);margin:28px 0 22px;}
-
-  /* Division switcher */
   .division-switch{display:flex;flex-direction:column;gap:4px;margin-bottom:26px;}
   .division-switch .label{margin-bottom:8px;}
   .division-pill{padding:11px 12px;border:1px solid var(--line);background:var(--bg);color:var(--ink-dim);font-size:14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:background .12s,color .12s,border-color .12s;}
@@ -37,7 +34,8 @@
   .division-pill.active{color:var(--ink);background:var(--bg-raised);border-color:var(--brass-dim);}
   .division-pill .dot{width:6px;height:6px;border-radius:50%;background:var(--ink-faint);flex-shrink:0;}
   .division-pill.active .dot{background:var(--brass);}
-
+  .division-pill .tag{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--ink-faint);}
+  .division-pill.linked .tag{color:var(--green);}
   .side-links{display:flex;flex-direction:column;gap:2px;margin-bottom:26px;}
   .side-link{padding:9px 10px;border-radius:var(--radius);font-size:14.5px;color:var(--ink-dim);display:flex;align-items:center;gap:10px;cursor:pointer;border:1px solid transparent;transition:background .12s,color .12s,border-color .12s;}
   .side-link:hover{color:var(--ink);background:var(--bg-raised);}
@@ -50,27 +48,19 @@
   .signout:hover{color:var(--red);}
   .main{flex:1;padding:56px 64px;min-width:0;}
   .main-narrow{max-width:1180px;}
-  .division-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+  .division-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;flex-wrap:wrap;gap:16px;}
   .division-head .tagline{color:var(--ink-dim);margin-top:6px;font-size:15px;}
-  .division-head .meta{text-align:right;font-size:13px;}
-  .division-head .meta .eyebrow{margin-bottom:6px;}
-  .division-head .meta div.line{color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:12.5px;margin-top:2px;}
   .tabs{display:flex;gap:28px;border-bottom:1px solid var(--line);margin:30px 0 30px;flex-wrap:wrap;}
   .tab{padding:10px 2px 14px;font-size:15px;color:var(--ink-dim);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;}
   .tab.active{color:var(--ink);border-bottom-color:var(--brass);}
   .stat-row,.metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:22px;}
   .card{background:var(--bg-raised);border:1px solid var(--line);padding:22px 24px;position:relative;}
-  .metric-card .val{display:flex;align-items:baseline;gap:4px;}
-  .metric-card .val .num{font-family:'Fraunces',serif;font-size:36px;}
-  .metric-card .val .unit{color:var(--ink-dim);font-size:14px;}
-  .metric-card .delta{font-size:12.5px;color:var(--ink-faint);margin-top:10px;font-family:'IBM Plex Mono',monospace;}
   .remove-btn{position:absolute;top:20px;right:22px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.05em;color:var(--ink-faint);cursor:pointer;background:none;border:none;padding:0;}
   .remove-btn:hover{color:var(--red);}
-  .num-edit{background:none;border:none;border-bottom:1px dashed transparent;font-family:'Fraunces',serif;font-size:36px;color:var(--ink);width:100%;padding:0;}
-  .num-edit:focus{outline:none;border-bottom-color:var(--brass);}
   .form-card .form-title{margin-bottom:18px;}
   .form-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
   .form-row>*{flex:1;min-width:140px;}
+  .field-label{display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:7px;}
   input[type=text],input[type=email],input[type=url],input[type=password],select,textarea{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);padding:11px 13px;font-size:14px;border-radius:var(--radius);}
   textarea{min-height:96px;resize:vertical;font-family:inherit;}
   input::placeholder,textarea::placeholder{color:var(--ink-faint);}
@@ -80,13 +70,13 @@
   .btn:hover{background:var(--brass);}
   .btn:disabled{opacity:.35;cursor:not-allowed;}
   .form-hint{color:var(--ink-faint);font-size:12.5px;margin-top:12px;line-height:1.6;}
+  .form-err{color:var(--red);font-size:12.5px;margin-top:12px;line-height:1.6;}
   .list-panel{margin-bottom:22px;}
   .empty-row{color:var(--ink-faint);font-size:14px;padding:6px 0;}
   .row-item{display:flex;justify-content:space-between;align-items:center;padding:16px 0;border-bottom:1px solid var(--line-soft);gap:16px;flex-wrap:wrap;}
   .row-item:last-child{border-bottom:none;}
   .row-item .title{font-weight:500;font-size:15px;}
   .row-item .sub{color:var(--ink-dim);font-size:13px;margin-top:3px;}
-  .row-item .sub a{color:var(--brass);}
   .row-actions{display:flex;align-items:center;gap:14px;flex-shrink:0;}
   .role-select{font-family:'IBM Plex Mono',monospace;font-size:12px;background:var(--bg);border:1px solid var(--line);color:var(--ink);padding:8px 12px;border-radius:var(--radius);}
   .mail-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:20px;}
@@ -95,87 +85,109 @@
   .mail-activity-item .subj{color:var(--ink-dim);margin-top:2px;}
   .mail-activity-item .ts{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-faint);margin-top:6px;}
   .badge{font-family:'IBM Plex Mono',monospace;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;border:1px solid var(--brass-dim);color:var(--brass);padding:5px 10px;}
-  .badge.pending{color:var(--ink-faint);border-color:var(--line);}
+  .badge.gold{border-color:var(--brass-dim);color:var(--brass);}
+  .badge.in{border-color:var(--green);color:var(--green);}
   .loading{padding:80px;color:var(--ink-dim);font-family:'IBM Plex Mono',monospace;font-size:13px;}
   .fatal{max-width:560px;margin:120px auto;text-align:center;padding:0 24px;}
   .fatal h2{font-size:26px;margin-bottom:14px;}
   .fatal p{color:var(--ink-dim);font-size:14.5px;line-height:1.6;}
-  .fatal .mono{color:var(--ink-faint);font-size:12px;margin-top:18px;}
+  .login-wrap{max-width:420px;margin:100px auto;padding:0 24px;}
+  .login-wrap .brand-seal{margin:0 auto 18px;}
+  .login-wrap .brand{text-align:center;margin-bottom:34px;}
+  .login-wrap .eyebrow{justify-content:center;display:flex;margin-top:6px;}
+  .code-input{letter-spacing:.4em;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:20px;}
   @media (max-width:900px){
     #app{flex-direction:column;} .sidebar{width:100%;height:auto;position:relative;} .main{padding:32px 24px;}
-    .division-head{flex-direction:column;gap:16px;}
-    .division-head .meta{text-align:left;} .mail-grid{grid-template-columns:1fr;}
+    .mail-grid{grid-template-columns:1fr;}
   }
 </style>
 </head>
 <body>
-<div id="app"><div class="loading">Checking access token…</div></div>
+<div id="app"><div class="loading">Loading Command Center…</div></div>
 
 <script>
 /* =========================================================
-   LVO Holdings — merged Command Center
-   Combines Alliance / Vindex / Operations into one shell.
+   LVO Holdings — Command Center (Worker/D1 edition)
+
+   This talks directly to your existing lvo-worker (Cloudflare
+   Worker + D1) — the same backend dashboard.html uses. There is
+   no Supabase here.
 
    ACCESS MODEL:
-   1. This page never shows a login form. Access is gated by
-      the "lvo_token" / "lvo_expiry" cookies set on the
-      .lvo-cloud.cloud domain by the separate MFA page
-      (the one that calls lvo-setup.vercel.app/api/login).
-      No valid cookie -> straight back to that page.
-   2. Supabase's own row-level security still needs a real
-      auth.uid() to authorize any read/write (see schema.sql).
-      Instead of a hardcoded password, this page reads
-      "sb_access_token" / "sb_refresh_token" cookies -- the
-      SAME login page mints these server-side (in login.js,
-      using Vercel env vars) the moment your 6-digit code is
-      verified, and carries them over on the same cookie
-      domain. No password ever touches this file or the
-      browser's JS.
+   Your Worker's admin model is "one admin account per division"
+   (email is unique per division, tier/role live on that one
+   account). So this Command Center holds up to three separate
+   session tokens — one per division — stored in localStorage,
+   and you log into each division you administer individually.
+   Once logged in, switching divisions just switches which
+   stored token is active; no new login needed until it expires
+   (7 days, matching SESSION_TTL_MS on the Worker).
 
-   FILL THESE IN BEFORE DEPLOYING:
+   TABS: only tabs backed by real Worker routes are here —
+   Team (=/members), Mailbox (=/mail), Announcements
+   (=/announcements), Activity (=/activity). There is no
+   Metrics or Records tab because the Worker/D1 schema has no
+   such tables — add them server-side first if you want those.
 ========================================================= */
 window.LVO_CONFIG = {
-  supabaseUrl: "https://pumteihkiaftgwbexaid.supabase.co",
-  supabaseAnonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB1bXRlaWhraWFmdGd3YmV4YWlkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NjAyMjYsImV4cCI6MjA5MzEzNjIyNn0.6JqNyNH_BBs-CsvAT41L_7Ku8G4CN_ymb9fXVYJEvf4",
-
-  // Where to send visitors with no valid token cookie.
-  loginUrl: "https://lvo-cloud.cloud/",
-
+  worker: "https://lvo-worker.lvoholdings00.workers.dev",
   divisions: [
-    { key: "alliance", name: "Alliance" },
-    { key: "vindex",   name: "Vindex" },
-    { key: "ops",      name: "Operations" }
+    { key: "alliance", name: "Alliance", workerDiv: "Alliance" },
+    { key: "vindex",   name: "Vindex",   workerDiv: "Vindex" },
+    { key: "ops",      name: "Operations", workerDiv: "Ops" }
   ]
 };
 </script>
 <script>
 (function(){
   var cfg = window.LVO_CONFIG;
-  var sb = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
-
   var appEl = document.getElementById('app');
+
+  var TIER_LABELS = {1:'Tier I — Principal',2:'Tier II — Associate',3:'Tier III — Partner',4:'Tier IV — Member'};
+
   var state = {
-    session: null,
-    profile: null,
     activeDiv: cfg.divisions[0].key,
-    tab: 'metrics',
-    byDiv: {} // key -> { division, myRole, metrics, team, records, mail, accounts, loaded }
+    tab: 'team',
+    tokens: {},      // divKey -> session token
+    users: {},        // divKey -> {id,firstName,lastName,email,role,tier,...}
+    byDiv: {},         // divKey -> {members:[],mail:[],announcements:[],activity:[],loaded:false}
+    pendingLogin: null // {divKey, userId, email} while waiting on 2FA code
   };
 
-  /* ---------------- Token gate ---------------- */
-  function getCookie(name){
-    var m = document.cookie.match('(?:^|;\\s*)' + name + '=([^;]*)');
-    return m ? decodeURIComponent(m[1]) : null;
+  /* ---------------- Token storage ---------------- */
+  function tokenKey(divKey){ return 'lvo_cc_token_' + divKey; }
+  function loadTokens(){
+    cfg.divisions.forEach(function(d){
+      var t = localStorage.getItem(tokenKey(d.key));
+      if(t) state.tokens[d.key] = t;
+    });
   }
-  function hasValidToken(){
-    var tok = getCookie('lvo_token');
-    var exp = getCookie('lvo_expiry');
-    if(!tok || !exp) return false;
-    var expNum = parseInt(exp, 10);
-    return !isNaN(expNum) && Date.now() < expNum;
+  function saveToken(divKey, token){
+    state.tokens[divKey] = token;
+    localStorage.setItem(tokenKey(divKey), token);
   }
-  function bounceToLogin(){
-    window.location.replace(cfg.loginUrl);
+  function clearToken(divKey){
+    delete state.tokens[divKey];
+    delete state.users[divKey];
+    localStorage.removeItem(tokenKey(divKey));
+  }
+
+  /* ---------------- Worker fetch helper ---------------- */
+  async function api(divKey, path, opts){
+    opts = opts || {};
+    var token = state.tokens[divKey];
+    var headers = { 'Content-Type': 'application/json' };
+    if(token) headers['Authorization'] = 'Bearer ' + token;
+    var res = await fetch(cfg.worker + path, { method: opts.method || 'GET', headers: headers, body: opts.body });
+    var data = null;
+    try { data = await res.json(); } catch(_) {}
+    if(!res.ok){
+      var e = new Error((data && data.error) || ('Request failed (' + res.status + ')'));
+      e.status = res.status; e.data = data;
+      if(res.status === 401) clearToken(divKey);
+      throw e;
+    }
+    return data;
   }
 
   /* ---------------- DOM helper ---------------- */
@@ -196,56 +208,105 @@ window.LVO_CONFIG = {
     return e;
   }
 
-  function curDiv(){ return state.byDiv[state.activeDiv] || {}; }
-  function canEdit(){ return ['owner','admin','manager'].indexOf(curDiv().myRole) !== -1; }
-  function isAdmin(){ return ['owner','admin'].indexOf(curDiv().myRole) !== -1; }
+  function divCfg(key){ return cfg.divisions.filter(function(d){ return d.key===key; })[0]; }
+  function curUser(){ return state.users[state.activeDiv]; }
+  function isLinked(divKey){ return !!state.tokens[divKey] && !!state.users[divKey]; }
+  function curData(){ return state.byDiv[state.activeDiv] || {}; }
 
-  /* ---------------- Data loading ---------------- */
-  async function loadDivision(DK){
-    var cfgDiv = cfg.divisions.filter(function(d){ return d.key===DK; })[0];
-    var entry = { division:null, myRole:null, metrics:[], team:[], records:[], mail:[], accounts:[], loaded:true };
-
-    await sb.rpc('claim_division', { div_key: DK }); // idempotent; makes owner account owns it on first run
-
-    var divRes = await sb.from('divisions').select('*').eq('key', DK).maybeSingle();
-    entry.division = divRes.data || { key:DK, name:cfgDiv.name, tagline:'', domain:'', desk_email:'' };
-
-    var roleRes = await sb.from('division_roles').select('role').eq('division_key', DK).eq('user_id', state.session.user.id).maybeSingle();
-    entry.myRole = roleRes.data ? roleRes.data.role : null;
-
-    if(entry.myRole && entry.myRole !== 'pending'){
+  /* ---------------- Data loading (per division) ---------------- */
+  async function loadDivisionData(divKey){
+    var entry = { members: [], mail: [], announcements: [], activity: [], loaded: true, error: null };
+    try{
       var results = await Promise.all([
-        sb.from('metrics').select('*').eq('division_key', DK).order('created_at'),
-        sb.from('team_members').select('*').eq('division_key', DK).order('created_at'),
-        sb.from('records').select('*').eq('division_key', DK).order('created_at', {ascending:false}),
-        sb.from('mail_log').select('*').eq('division_key', DK).order('created_at', {ascending:false})
+        api(divKey, '/members'),
+        api(divKey, '/mail'),
+        api(divKey, '/announcements'),
+        api(divKey, '/activity')
       ]);
-      entry.metrics = results[0].data || [];
-      entry.team = results[1].data || [];
-      entry.records = results[2].data || [];
-      entry.mail = results[3].data || [];
-
-      if(['owner','admin'].indexOf(entry.myRole) !== -1){
-        var acc = await sb.rpc('list_division_accounts', { div_key: DK });
-        entry.accounts = acc.data || [];
-      }
+      entry.members = results[0] || [];
+      entry.mail = results[1] || [];
+      entry.announcements = (results[2] || []).filter(function(a){
+        return a.division === divCfg(divKey).workerDiv || a.division === 'All';
+      });
+      entry.activity = results[3] || [];
+    }catch(e){
+      entry.error = e.message;
     }
-
-    state.byDiv[DK] = entry;
+    state.byDiv[divKey] = entry;
   }
 
   async function refresh(){
-    await loadDivision(state.activeDiv);
+    await loadDivisionData(state.activeDiv);
     render();
   }
 
-  async function switchDivision(DK){
-    state.activeDiv = DK;
-    state.tab = 'metrics';
-    if(!state.byDiv[DK] || !state.byDiv[DK].loaded){
-      appEl.innerHTML = '<div class="loading">Loading ' + DK + '…</div>';
-      await loadDivision(DK);
+  async function trySessionRestore(divKey){
+    if(!state.tokens[divKey]) return;
+    try{
+      var res = await api(divKey, '/auth/session');
+      state.users[divKey] = res.user;
+    }catch(e){
+      clearToken(divKey);
     }
+  }
+
+  async function switchDivision(divKey){
+    state.activeDiv = divKey;
+    state.tab = 'team';
+    if(isLinked(divKey) && !state.byDiv[divKey]){
+      appEl.innerHTML = '<div class="loading">Loading ' + divCfg(divKey).name + '…</div>';
+      await loadDivisionData(divKey);
+    }
+    render();
+  }
+
+  /* ---------------- Login flow ---------------- */
+  async function submitLogin(divKey, identifier, password, errEl){
+    errEl.textContent = '';
+    try{
+      var d = divCfg(divKey);
+      var res = await fetch(cfg.worker + '/auth/login', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ identifier: identifier, password: password, division: d.workerDiv })
+      });
+      var data = await res.json();
+      if(!res.ok) throw new Error(data.error || 'Login failed');
+      state.pendingLogin = { divKey: divKey, userId: data.userId, email: data.email };
+      render();
+    }catch(e){
+      errEl.textContent = e.message;
+    }
+  }
+
+  async function submitCode(divKey, code, errEl){
+    errEl.textContent = '';
+    try{
+      var pending = state.pendingLogin;
+      var res = await fetch(cfg.worker + '/auth/verify', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ userId: pending.userId, code: code, purpose: 'login' })
+      });
+      var data = await res.json();
+      if(!res.ok) throw new Error(data.error || 'Incorrect code');
+      saveToken(divKey, data.token);
+      state.users[divKey] = data.user;
+      state.pendingLogin = null;
+      if(data.user.role !== 'admin'){
+        errEl.textContent = 'Signed in, but this account is not an admin on ' + divCfg(divKey).name + '.';
+      }
+      await loadDivisionData(divKey);
+      render();
+    }catch(e){
+      errEl.textContent = e.message;
+    }
+  }
+
+  function signOutDivision(divKey){
+    if(state.tokens[divKey]){
+      api(divKey, '/auth/logout', {method:'POST'}).catch(function(){});
+    }
+    clearToken(divKey);
+    delete state.byDiv[divKey];
     render();
   }
 
@@ -274,129 +335,226 @@ window.LVO_CONFIG = {
     var switcher = el('div', {class:'division-switch'});
     switcher.appendChild(el('div', {class:'eyebrow label'}, ['Divisions']));
     cfg.divisions.forEach(function(d){
+      var linked = isLinked(d.key);
       switcher.appendChild(el('div', {
-        class:'division-pill' + (state.activeDiv===d.key ? ' active' : ''),
+        class:'division-pill' + (state.activeDiv===d.key ? ' active' : '') + (linked ? ' linked' : ''),
         onclick:function(){ switchDivision(d.key); }
-      }, [d.name, el('span', {class:'dot'})]));
+      }, [
+        el('span', {}, [d.name]),
+        el('span', {class:'tag'}, [linked ? 'LINKED' : 'SIGN IN'])
+      ]));
     });
     side.appendChild(switcher);
     side.appendChild(el('div', {class:'side-divider'}));
 
-    var tabs = [
-      {id:'metrics', label:'Metrics'}, {id:'mailbox', label:'Mailbox'},
-      {id:'team', label:'Team'}, {id:'records', label:'Records'}
-    ];
-    if(isAdmin()) tabs.push({id:'access', label:'Access'});
-    var links = el('div', {class:'side-links'});
-    tabs.forEach(function(t){
-      links.appendChild(el('div', {class:'side-link' + (state.tab===t.id?' active':''), onclick:function(){ state.tab=t.id; render(); }}, [t.label]));
-    });
-    side.appendChild(links);
+    if(isLinked(state.activeDiv)){
+      var tabs = [
+        {id:'team', label:'Team'}, {id:'mailbox', label:'Mailbox'},
+        {id:'announcements', label:'Announcements'}, {id:'activity', label:'Activity'}
+      ];
+      var links = el('div', {class:'side-links'});
+      tabs.forEach(function(t){
+        links.appendChild(el('div', {class:'side-link' + (state.tab===t.id?' active':''), onclick:function(){ state.tab=t.id; render(); }}, [t.label]));
+      });
+      side.appendChild(links);
+    }
 
     var footer = el('div', {class:'sidebar-footer'});
-    footer.appendChild(el('div', {class:'who'}, [el('span', {class:'name'}, [state.profile ? state.profile.full_name : state.session.user.email])]));
-    footer.appendChild(el('div', {class:'who', style:'font-size:12px;'}, [state.session.user.email]));
-    if(curDiv().myRole) footer.appendChild(el('span', {class:'role-tag'}, [curDiv().myRole]));
-    footer.appendChild(el('div', {class:'signout', onclick:signOut}, ['Sign out']));
+    var u = curUser();
+    if(u){
+      footer.appendChild(el('div', {class:'who'}, [el('span', {class:'name'}, [(u.firstName||'') + ' ' + (u.lastName||'')])]));
+      footer.appendChild(el('div', {class:'who', style:'font-size:12px;'}, [u.email]));
+      footer.appendChild(el('span', {class:'role-tag'}, [u.role === 'admin' ? 'Administrator' : (TIER_LABELS[u.tier]||'Member')]));
+      footer.appendChild(el('div', {class:'signout', onclick:function(){ signOutDivision(state.activeDiv); }}, ['Sign out of ' + divCfg(state.activeDiv).name]));
+    } else {
+      footer.appendChild(el('div', {class:'who'}, ['Not signed in to ' + divCfg(state.activeDiv).name]));
+    }
     side.appendChild(footer);
     return side;
   }
 
   function renderMain(){
     var main = el('div', {class:'main main-narrow'});
-    var d = curDiv().division;
-    if(!d){
-      main.appendChild(el('div', {class:'loading'}, ['Loading…']));
-      return main;
-    }
+    var d = divCfg(state.activeDiv);
+
     main.appendChild(el('div', {class:'division-head'}, [
       el('div', {}, [
         el('div', {class:'eyebrow'}, [d.name.toUpperCase()]),
-        el('h3', {}, [d.name]),
-        el('div', {class:'tagline'}, [d.tagline])
-      ]),
-      el('div', {class:'meta'}, [
-        el('div', {class:'eyebrow'}, ['Mail domain']),
-        el('div', {class:'line'}, [d.domain]),
-        el('div', {class:'line'}, [d.desk_email])
+        el('h3', {}, [d.name])
       ])
     ]));
 
-    if(!curDiv().myRole || curDiv().myRole === 'pending'){
+    if(!isLinked(state.activeDiv)){
+      main.appendChild(renderLogin(state.activeDiv));
+      return main;
+    }
+
+    var u = curUser();
+    if(u.role !== 'admin'){
       main.appendChild(el('div', {class:'card'}, [
-        el('div', {class:'eyebrow', style:'margin-bottom:10px;'}, ['Access pending']),
-        el('div', {style:'color:var(--ink-dim);font-size:14px;line-height:1.6;'}, ['No role has been granted on this account for ' + d.name + ' yet.'])
+        el('div', {class:'eyebrow', style:'margin-bottom:10px;'}, ['Not authorized']),
+        el('div', {style:'color:var(--ink-dim);font-size:14px;line-height:1.6;'}, ['This account is signed in but is not an admin on ' + d.name + '. Admin actions require role = admin on the Worker.'])
       ]));
       return main;
     }
 
-    if(state.tab==='metrics') main.appendChild(renderMetrics());
-    if(state.tab==='mailbox') main.appendChild(renderMailbox());
+    var data = curData();
+    if(!data.loaded){
+      main.appendChild(el('div', {class:'loading'}, ['Loading ' + d.name + ' data…']));
+      loadDivisionData(state.activeDiv).then(render);
+      return main;
+    }
+    if(data.error){
+      main.appendChild(el('div', {class:'card'}, [
+        el('div', {class:'eyebrow', style:'color:var(--red);margin-bottom:10px;'}, ['Load error']),
+        el('div', {style:'color:var(--ink-dim);font-size:14px;'}, [data.error])
+      ]));
+      return main;
+    }
+
     if(state.tab==='team') main.appendChild(renderTeam());
-    if(state.tab==='records') main.appendChild(renderRecords());
-    if(state.tab==='access' && isAdmin()) main.appendChild(renderAccess());
+    if(state.tab==='mailbox') main.appendChild(renderMailbox());
+    if(state.tab==='announcements') main.appendChild(renderAnnouncements());
+    if(state.tab==='activity') main.appendChild(renderActivity());
     return main;
   }
 
-  /* ---------------- Metrics ---------------- */
-  function renderMetrics(){
-    var wrap = el('div');
-    var grid = el('div', {class:'metrics-grid'});
-    curDiv().metrics.forEach(function(m){
-      var numInput = el('input', {class:'num-edit', type:'text', value:m.value, disabled: canEdit() ? null : 'disabled'});
-      numInput.addEventListener('change', async function(){
-        await sb.from('metrics').update({ value:numInput.value }).eq('id', m.id);
-      });
-      var card = el('div', {class:'card metric-card'}, [
-        el('div', {class:'eyebrow'}, [m.label]),
-        el('div', {class:'val'}, [numInput, m.unit ? el('span', {class:'unit'}, [m.unit]) : null]),
-        m.delta ? el('div', {class:'delta'}, [m.delta]) : null,
-        canEdit() ? el('button', {class:'remove-btn', onclick:async function(){ await sb.from('metrics').delete().eq('id', m.id); await refresh(); }}, ['Remove']) : null
-      ]);
-      grid.appendChild(card);
-    });
-    wrap.appendChild(grid);
+  /* ---------------- Login form ---------------- */
+  function renderLogin(divKey){
+    var d = divCfg(divKey);
+    var wrap = el('div', {class:'login-wrap'});
 
-    if(canEdit()){
-      var labelI=el('input',{type:'text',placeholder:'Label'}), valueI=el('input',{type:'text',placeholder:'Value'}), unitI=el('input',{type:'text',placeholder:'Unit (optional)'});
-      var DK = state.activeDiv;
+    if(state.pendingLogin && state.pendingLogin.divKey === divKey){
+      var codeI = el('input', {type:'text', class:'code-input', placeholder:'000000', maxlength:'6'});
+      var errEl = el('div', {class:'form-err'});
       wrap.appendChild(el('div', {class:'card form-card'}, [
-        el('div', {class:'eyebrow form-title'}, ['Add metric']),
-        el('div', {class:'form-row'}, [labelI, valueI, unitI, el('button', {class:'btn', style:'flex:0 0 auto;', onclick:async function(){
-          if(!labelI.value.trim() || !valueI.value.trim()) return;
-          await sb.from('metrics').insert({ division_key:DK, label:labelI.value.trim(), value:valueI.value.trim(), unit:unitI.value.trim() });
-          await refresh();
-        }}, ['Add metric'])]),
-        el('div', {class:'form-hint'}, ['Values are editable inline — click a number, change it, then click away to save.'])
+        el('div', {class:'eyebrow form-title'}, ['Verification code sent to ' + state.pendingLogin.email]),
+        el('div', {style:'margin-bottom:18px;'}, [codeI]),
+        el('button', {class:'btn', style:'width:100%;', onclick:function(){ submitCode(divKey, codeI.value.trim(), errEl); }}, ['Verify & sign in']),
+        errEl,
+        el('div', {class:'form-hint'}, ['Check the inbox for the account you just signed in with. Code expires in 10 minutes.'])
       ]));
+      return wrap;
     }
+
+    var idI = el('input', {type:'text', placeholder:'Email or username'});
+    var pwI = el('input', {type:'password', placeholder:'Password'});
+    var errEl2 = el('div', {class:'form-err'});
+    wrap.appendChild(el('div', {class:'card form-card'}, [
+      el('div', {class:'eyebrow form-title'}, ['Sign in — ' + d.name]),
+      el('div', {style:'margin-bottom:14px;'}, [el('label', {class:'field-label'}, ['Identifier']), idI]),
+      el('div', {style:'margin-bottom:18px;'}, [el('label', {class:'field-label'}, ['Password']), pwI]),
+      el('button', {class:'btn', style:'width:100%;', onclick:function(){ submitLogin(divKey, idI.value.trim(), pwI.value, errEl2); }}, ['Continue']),
+      errEl2,
+      el('div', {class:'form-hint'}, ['Uses your existing ' + d.name + ' admin account. A 6-digit code will be emailed to confirm sign-in.'])
+    ]));
     return wrap;
   }
 
-  /* ---------------- Mailbox ---------------- */
+  /* ---------------- Team (= /members) ---------------- */
+  function renderTeam(){
+    var wrap = el('div');
+    var DK = state.activeDiv;
+    var data = curData();
+    var panel = el('div', {class:'card list-panel'});
+    if(data.members.length===0) panel.appendChild(el('div', {class:'empty-row'}, ['No members yet.']));
+
+    data.members.forEach(function(m){
+      var tierSel = el('select', {class:'role-select'}, Object.keys(TIER_LABELS).map(function(k){
+        return el('option', {value:k}, [TIER_LABELS[k]]);
+      }));
+      tierSel.value = String(m.tier || 4);
+      var roleSel = el('select', {class:'role-select'}, [
+        el('option', {value:'member'}, ['Member']), el('option', {value:'admin'}, ['Admin'])
+      ]);
+      roleSel.value = m.role === 'admin' ? 'admin' : 'member';
+
+      var saveBtn = el('button', {class:'btn', style:'padding:8px 14px;', onclick:async function(){
+        try{
+          await api(DK, '/members/' + m.uid, { method:'PUT', body: JSON.stringify({ tier: parseInt(tierSel.value), role: roleSel.value }) });
+          await refresh();
+        }catch(e){ alert('Failed: ' + e.message); }
+      }}, ['Save']);
+
+      panel.appendChild(el('div', {class:'row-item'}, [
+        el('div', {}, [el('div', {class:'title'}, [m.name || 'Unknown']), el('div', {class:'sub'}, [m.email || ''])]),
+        el('div', {class:'row-actions'}, [
+          tierSel, roleSel, saveBtn,
+          el('button', {class:'remove-btn', onclick:async function(){
+            if(!confirm('Remove ' + (m.name||'this member') + '?')) return;
+            try{ await api(DK, '/members/' + m.uid, {method:'DELETE'}); await refresh(); }
+            catch(e){ alert('Failed: ' + e.message); }
+          }}, ['Remove'])
+        ])
+      ]));
+    });
+    wrap.appendChild(panel);
+
+    var firstI=el('input',{type:'text',placeholder:'First name'}), lastI=el('input',{type:'text',placeholder:'Last name'});
+    var userI=el('input',{type:'text',placeholder:'username'}), emailI=el('input',{type:'text',placeholder:'name@company.com'});
+    var tierNewSel = el('select', {}, Object.keys(TIER_LABELS).map(function(k){ return el('option', {value:k}, [TIER_LABELS[k]]); }));
+    tierNewSel.value = '4';
+    var roleNewSel = el('select', {}, [el('option', {value:'member'}, ['Member']), el('option', {value:'admin'}, ['Admin'])]);
+    var createErr = el('div', {class:'form-err'});
+    wrap.appendChild(el('div', {class:'card form-card'}, [
+      el('div', {class:'eyebrow form-title'}, ['Create member']),
+      el('div', {class:'form-row'}, [firstI, lastI]),
+      el('div', {class:'form-row'}, [userI, emailI]),
+      el('div', {class:'form-row'}, [tierNewSel, roleNewSel, el('button', {class:'btn', style:'flex:0 0 auto;', onclick:async function(){
+        createErr.textContent = '';
+        if(!firstI.value.trim() || !lastI.value.trim() || !userI.value.trim() || !emailI.value.trim()){
+          createErr.textContent = 'First name, last name, username, and email are all required.';
+          return;
+        }
+        try{
+          await api(DK, '/members', { method:'POST', body: JSON.stringify({
+            firstName: firstI.value.trim(), lastName: lastI.value.trim(),
+            username: userI.value.trim(), email: emailI.value.trim(),
+            tier: parseInt(tierNewSel.value), role: roleNewSel.value
+          })});
+          firstI.value=lastI.value=userI.value=emailI.value='';
+          await refresh();
+        }catch(e){ createErr.textContent = e.message; }
+      }}, ['Create & email credentials'])]),
+      createErr,
+      el('div', {class:'form-hint'}, ['A temporary password is generated and emailed automatically. The new account is pre-verified — no signup step needed.'])
+    ]));
+    return wrap;
+  }
+
+  /* ---------------- Mailbox (= /mail) ---------------- */
   function renderMailbox(){
     var wrap = el('div', {class:'mail-grid'});
-    var d = curDiv();
     var DK = state.activeDiv;
+    var data = curData();
     var toI=el('input',{type:'text',placeholder:'name@company.com'}), subjI=el('input',{type:'text'}), msgI=el('textarea',{});
+    var sendErr = el('div', {class:'form-err'});
     var compose = el('div', {class:'card form-card'}, [
-      el('div', {class:'eyebrow form-title'}, ['Compose from ' + (d.division.desk_email||'').toUpperCase()]),
+      el('div', {class:'eyebrow form-title'}, ['Compose']),
       el('div', {style:'margin-bottom:16px;'}, [el('label', {class:'field-label'}, ['To']), toI]),
       el('div', {style:'margin-bottom:16px;'}, [el('label', {class:'field-label'}, ['Subject']), subjI]),
       el('div', {style:'margin-bottom:20px;'}, [el('label', {class:'field-label'}, ['Message']), msgI]),
-      el('button', {class:'btn', disabled: canEdit()?null:'disabled', onclick: canEdit() ? async function(){
-        if(!toI.value.trim()) return;
-        await sb.from('mail_log').insert({ division_key:DK, to_addr:toI.value.trim(), subject:subjI.value.trim()||'(no subject)', body:msgI.value.trim() });
-        await refresh();
-      } : null}, ['Queue message'])
+      el('button', {class:'btn', onclick:async function(){
+        sendErr.textContent = '';
+        if(!toI.value.trim() || !subjI.value.trim() || !msgI.value.trim()){
+          sendErr.textContent = 'To, subject, and message are all required.'; return;
+        }
+        try{
+          await api(DK, '/mail', { method:'POST', body: JSON.stringify({ to: toI.value.trim(), subject: subjI.value.trim(), body: msgI.value.trim() }) });
+          toI.value=subjI.value=msgI.value='';
+          await refresh();
+        }catch(e){ sendErr.textContent = e.message; }
+      }}, ['Send mail']),
+      sendErr
     ]);
     var activity = el('div');
     activity.appendChild(el('div', {class:'eyebrow', style:'margin-bottom:16px;'}, ['Mailbox activity']));
     var panel = el('div', {class:'card'});
-    if(d.mail.length===0) panel.appendChild(el('div', {class:'empty-row'}, ['No mail on file yet.']));
-    d.mail.forEach(function(mm){
+    if(data.mail.length===0) panel.appendChild(el('div', {class:'empty-row'}, ['No mail on file yet.']));
+    data.mail.forEach(function(mm){
+      var dirLabel = mm.direction === 'inbound' ? 'From ' + mm.from_addr : 'To ' + mm.to_addr;
       panel.appendChild(el('div', {class:'mail-activity-item'}, [
-        el('div', {}, ['To: ' + mm.to_addr]),
+        el('div', {}, [el('span', {class:'badge ' + (mm.direction==='inbound'?'in':'gold')}, [mm.direction==='inbound'?'Received':'Sent']), ' ', dirLabel]),
         el('div', {class:'subj'}, [mm.subject]),
         el('div', {class:'ts'}, [new Date(mm.created_at).toLocaleString()])
       ]));
@@ -406,176 +564,86 @@ window.LVO_CONFIG = {
     return wrap;
   }
 
-  /* ---------------- Team ---------------- */
-  function renderTeam(){
+  /* ---------------- Announcements ---------------- */
+  function renderAnnouncements(){
     var wrap = el('div');
-    var d = curDiv();
     var DK = state.activeDiv;
+    var d = divCfg(DK);
+    var data = curData();
     var panel = el('div', {class:'card list-panel'});
-    if(d.team.length===0) panel.appendChild(el('div', {class:'empty-row'}, ['No personnel yet.']));
-    d.team.forEach(function(t){
-      var sel = el('select', {class:'role-select', disabled: canEdit()?null:'disabled'}, [
-        el('option', {value:'Viewer'}, ['Viewer']), el('option', {value:'Manager'}, ['Manager']), el('option', {value:'Admin'}, ['Admin'])
-      ]);
-      sel.value = t.access_role;
-      sel.addEventListener('change', async function(){ await sb.from('team_members').update({access_role:sel.value}).eq('id', t.id); });
-      panel.appendChild(el('div', {class:'row-item'}, [
-        el('div', {}, [el('div', {class:'title'}, [t.name]), el('div', {class:'sub'}, [t.email + ' · ' + t.title])]),
-        el('div', {class:'row-actions'}, [sel, canEdit() ? el('button', {class:'remove-btn', onclick:async function(){ await sb.from('team_members').delete().eq('id', t.id); await refresh(); }}, ['Remove']) : null])
-      ]));
-    });
-    wrap.appendChild(panel);
-
-    if(canEdit()){
-      var nameI=el('input',{type:'text',placeholder:'Full name'}), emailI=el('input',{type:'text',placeholder:'name@'+(d.division.domain||'company.com')}), titleI=el('input',{type:'text',placeholder:'Title'});
-      var roleI = el('select', {}, [el('option', {value:'Viewer'}, ['Viewer']), el('option', {value:'Manager'}, ['Manager']), el('option', {value:'Admin'}, ['Admin'])]);
-      wrap.appendChild(el('div', {class:'card form-card'}, [
-        el('div', {class:'eyebrow form-title'}, ['Add personnel']),
-        el('div', {class:'form-row'}, [nameI, emailI, titleI, roleI, el('button', {class:'btn', style:'flex:0 0 auto;', onclick:async function(){
-          if(!nameI.value.trim()) return;
-          await sb.from('team_members').insert({ division_key:DK, name:nameI.value.trim(), email:emailI.value.trim()||('unassigned@'+d.division.domain), title:titleI.value.trim()||'Team member', access_role:roleI.value });
-          await refresh();
-        }}, ['Add'])])
-      ]));
-    }
-    return wrap;
-  }
-
-  /* ---------------- Records ---------------- */
-  function renderRecords(){
-    var wrap = el('div');
-    var d = curDiv();
-    var DK = state.activeDiv;
-    var panel = el('div', {class:'card list-panel', style:'margin-bottom:22px;'});
-    if(d.records.length===0) panel.appendChild(el('div', {class:'empty-row'}, ['No records yet.']));
-    d.records.forEach(function(r){
+    if(data.announcements.length===0) panel.appendChild(el('div', {class:'empty-row'}, ['No announcements yet.']));
+    data.announcements.forEach(function(a){
       panel.appendChild(el('div', {class:'row-item'}, [
         el('div', {}, [
-          el('div', {class:'title'}, [r.title + '  ·  ' + r.type]),
-          el('div', {class:'sub'}, [r.notes || '', r.link ? el('div', {}, [el('a', {href:r.link, target:'_blank'}, [r.link])]) : null])
+          el('div', {class:'title'}, [(a.pinned?'\u25C8 ':'') + a.title]),
+          el('div', {class:'sub'}, [a.body])
         ]),
-        canEdit() ? el('div', {class:'row-actions'}, [el('button', {class:'remove-btn', onclick:async function(){ await sb.from('records').delete().eq('id', r.id); await refresh(); }}, ['Remove'])]) : null
+        el('div', {class:'row-actions'}, [
+          el('button', {class:'btn', style:'padding:8px 14px;', onclick:async function(){
+            try{ await api(DK, '/announcements/' + a.id + '/pin', {method:'PUT', body: JSON.stringify({pinned: !a.pinned})}); await refresh(); }
+            catch(e){ alert('Failed: ' + e.message); }
+          }}, [a.pinned ? 'Unpin' : 'Pin']),
+          el('button', {class:'remove-btn', onclick:async function(){
+            if(!confirm('Delete this announcement?')) return;
+            try{ await api(DK, '/announcements/' + a.id, {method:'DELETE'}); await refresh(); }
+            catch(e){ alert('Failed: ' + e.message); }
+          }}, ['Delete'])
+        ])
       ]));
     });
     wrap.appendChild(panel);
 
-    if(canEdit()){
-      var titleI=el('input',{type:'text',placeholder:'Title'});
-      var typeI=el('select',{},[el('option',{value:'Note'},['Note']),el('option',{value:'Contract'},['Contract']),el('option',{value:'Report'},['Report']),el('option',{value:'Filing'},['Filing'])]);
-      var linkI=el('input',{type:'text',placeholder:'https://link (optional)'});
-      var notesI=el('textarea',{placeholder:'Notes'});
-      wrap.appendChild(el('div', {class:'card form-card'}, [
-        el('div', {class:'eyebrow form-title'}, ['Add record']),
-        el('div', {class:'form-row'}, [titleI, typeI, linkI]),
-        el('div', {style:'margin-bottom:18px;'}, [notesI]),
-        el('button', {class:'btn', onclick:async function(){
-          if(!titleI.value.trim()) return;
-          await sb.from('records').insert({ division_key:DK, title:titleI.value.trim(), type:typeI.value, link:linkI.value.trim(), notes:notesI.value.trim() });
-          await refresh();
-        }}, ['Save record'])
-      ]));
-    }
-    return wrap;
-  }
-
-  /* ---------------- Access ---------------- */
-  function renderAccess(){
-    var wrap = el('div');
-    var d = curDiv();
-    var DK = state.activeDiv;
-    var panel = el('div', {class:'card list-panel'});
-    panel.appendChild(el('div', {class:'eyebrow', style:'margin-bottom:6px;'}, ['Accounts with access']));
-    if(d.accounts.length===0) panel.appendChild(el('div', {class:'empty-row'}, ['No accounts yet.']));
-    d.accounts.forEach(function(a){
-      panel.appendChild(el('div', {class:'row-item'}, [
-        el('div', {}, [el('div', {class:'title'}, [a.full_name || a.email]), el('div', {class:'sub'}, [a.email])]),
-        el('span', {class:'badge' + (a.role==='pending' ? ' pending' : '')}, [a.role])
-      ]));
-    });
-    wrap.appendChild(panel);
-
-    var emailI = el('input', {type:'text', placeholder:'person@company.com'});
-    var roleI = el('select', {}, [
-      el('option', {value:'viewer'}, ['Viewer']), el('option', {value:'manager'}, ['Manager']),
-      el('option', {value:'admin'}, ['Admin']), el('option', {value:'pending'}, ['Pending / revoke'])
-    ]);
-    var msg = el('div', {class:'form-hint'}, ['Grant access to an email that has already signed up.']);
+    var titleI=el('input',{type:'text',placeholder:'Title'}), bodyI=el('textarea',{placeholder:'Body'});
+    var postErr = el('div', {class:'form-err'});
     wrap.appendChild(el('div', {class:'card form-card'}, [
-      el('div', {class:'eyebrow form-title'}, ['Grant access']),
-      el('div', {class:'form-row'}, [emailI, roleI, el('button', {class:'btn', style:'flex:0 0 auto;', onclick:async function(){
-        if(!emailI.value.trim()) return;
-        var res = await sb.rpc('grant_division_access', { div_key:DK, target_email:emailI.value.trim(), new_role:roleI.value });
-        if(res.error){ msg.textContent = res.error.message; msg.style.color = 'var(--red)'; }
-        else { await refresh(); }
-      }}, ['Grant'])]),
-      msg
+      el('div', {class:'eyebrow form-title'}, ['Post announcement — ' + d.name]),
+      el('div', {style:'margin-bottom:14px;'}, [titleI]),
+      el('div', {style:'margin-bottom:18px;'}, [bodyI]),
+      el('button', {class:'btn', onclick:async function(){
+        postErr.textContent = '';
+        if(!titleI.value.trim() || !bodyI.value.trim()){ postErr.textContent = 'Title and body required.'; return; }
+        try{
+          await api(DK, '/announcements', { method:'POST', body: JSON.stringify({ title: titleI.value.trim(), body: bodyI.value.trim(), division: d.workerDiv }) });
+          titleI.value = bodyI.value = '';
+          await refresh();
+        }catch(e){ postErr.textContent = e.message; }
+      }}, ['Post']),
+      postErr
     ]));
     return wrap;
   }
 
-  /* ---------------- Sign out ---------------- */
-  async function signOut(){
-    await sb.auth.signOut();
-    // Also clear the token cookies so a plain refresh can't silently re-enter.
-    document.cookie = 'lvo_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; domain=.lvo-cloud.cloud; path=/;';
-    document.cookie = 'lvo_expiry=; expires=Thu, 01 Jan 1970 00:00:00 UTC; domain=.lvo-cloud.cloud; path=/;';
-    bounceToLogin();
-  }
-
-  /* ---------------- Fatal error screen ---------------- */
-  function renderFatal(title, msg){
-    appEl.innerHTML = '';
-    appEl.appendChild(el('div', {class:'fatal'}, [
-      el('div', {class:'eyebrow'}, ['LVO Holdings']),
-      el('h2', {}, [title]),
-      el('p', {}, [msg]),
-      el('div', {class:'mono'}, ['If this persists, check the owner account credentials and Supabase project settings at the top of this file.'])
-    ]));
+  /* ---------------- Activity ---------------- */
+  function renderActivity(){
+    var wrap = el('div');
+    var data = curData();
+    var panel = el('div', {class:'card list-panel'});
+    if(data.activity.length===0) panel.appendChild(el('div', {class:'empty-row'}, ['No activity yet.']));
+    data.activity.forEach(function(a){
+      panel.appendChild(el('div', {class:'row-item'}, [
+        el('div', {}, [
+          el('div', {class:'title'}, [a.action]),
+          el('div', {class:'sub'}, [(a.actor||'') + ' · ' + new Date(a.time).toLocaleString()])
+        ]),
+        a.is_admin_action ? el('span', {class:'badge gold'}, ['Admin']) : null
+      ]));
+    });
+    wrap.appendChild(panel);
+    return wrap;
   }
 
   /* ---------------- Boot ---------------- */
   async function boot(){
-    if(!hasValidToken()){ bounceToLogin(); return; }
-
-    appEl.innerHTML = '<div class="loading">Signing in…</div>';
-
-    var sess = await sb.auth.getSession();
-    state.session = sess.data.session;
-
-    if(!state.session){
-      var sbAccess = getCookie('sb_access_token');
-      var sbRefresh = getCookie('sb_refresh_token');
-      if(!sbAccess || !sbRefresh){
-        // No Supabase session cookies -- the token bridge in login.js
-        // either isn't deployed yet or the cookies expired separately
-        // from lvo_token. Safest move is back to the MFA page.
-        bounceToLogin();
-        return;
-      }
-      var setRes = await sb.auth.setSession({ access_token: sbAccess, refresh_token: sbRefresh });
-      if(setRes.error){
-        renderFatal('Supabase session rejected', setRes.error.message + ' — try signing in again.');
-        return;
-      }
-      state.session = setRes.data.session;
+    loadTokens();
+    var keys = Object.keys(state.tokens);
+    if(keys.length){
+      await Promise.all(keys.map(trySessionRestore));
     }
-
-    var profRes = await sb.from('profiles').select('*').eq('id', state.session.user.id).maybeSingle();
-    state.profile = profRes.data;
-
-    appEl.innerHTML = '<div class="loading">Loading dashboard…</div>';
-    await loadDivision(state.activeDiv);
+    if(isLinked(state.activeDiv)){
+      await loadDivisionData(state.activeDiv);
+    }
     render();
-
-    // Re-check the MFA token periodically; bounce out the moment it expires.
-    setInterval(function(){
-      if(!hasValidToken()) bounceToLogin();
-    }, 15000);
   }
-
-  sb.auth.onAuthStateChange(function(event){
-    if(event === 'SIGNED_OUT') bounceToLogin();
-  });
 
   boot();
 })();
