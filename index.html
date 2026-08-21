@@ -123,25 +123,20 @@
       (the one that calls lvo-setup.vercel.app/api/login).
       No valid cookie -> straight back to that page.
    2. Supabase's own row-level security still needs a real
-      auth.uid() to authorize any read/write (see schema.sql),
-      so once the token check passes, this page silently signs
-      in to Supabase as one fixed owner account -- no form,
-      no prompt. That account should already hold (or will
-      auto-claim on first load) the "owner" role for all three
-      division keys below.
+      auth.uid() to authorize any read/write (see schema.sql).
+      Instead of a hardcoded password, this page reads
+      "sb_access_token" / "sb_refresh_token" cookies -- the
+      SAME login page mints these server-side (in login.js,
+      using Vercel env vars) the moment your 6-digit code is
+      verified, and carries them over on the same cookie
+      domain. No password ever touches this file or the
+      browser's JS.
 
    FILL THESE IN BEFORE DEPLOYING:
 ========================================================= */
 window.LVO_CONFIG = {
   supabaseUrl: "https://YOUR-PROJECT-REF.supabase.co",
   supabaseAnonKey: "YOUR-SUPABASE-ANON-KEY",
-
-  // The single Supabase account this dashboard signs in as.
-  // Create it once (Supabase Auth > Users > Add user), then
-  // paste its credentials here. This is the only "user" this
-  // merged dashboard will ever operate as.
-  ownerEmail: "YOUR-OWNER-ACCOUNT-EMAIL",
-  ownerPassword: "YOUR-OWNER-ACCOUNT-PASSWORD",
 
   // Where to send visitors with no valid token cookie.
   loginUrl: "https://lvo-cloud.cloud/",
@@ -548,12 +543,21 @@ window.LVO_CONFIG = {
     state.session = sess.data.session;
 
     if(!state.session){
-      var signIn = await sb.auth.signInWithPassword({ email: cfg.ownerEmail, password: cfg.ownerPassword });
-      if(signIn.error){
-        renderFatal('Cannot reach Supabase', signIn.error.message);
+      var sbAccess = getCookie('sb_access_token');
+      var sbRefresh = getCookie('sb_refresh_token');
+      if(!sbAccess || !sbRefresh){
+        // No Supabase session cookies -- the token bridge in login.js
+        // either isn't deployed yet or the cookies expired separately
+        // from lvo_token. Safest move is back to the MFA page.
+        bounceToLogin();
         return;
       }
-      state.session = signIn.data.session;
+      var setRes = await sb.auth.setSession({ access_token: sbAccess, refresh_token: sbRefresh });
+      if(setRes.error){
+        renderFatal('Supabase session rejected', setRes.error.message + ' — try signing in again.');
+        return;
+      }
+      state.session = setRes.data.session;
     }
 
     var profRes = await sb.from('profiles').select('*').eq('id', state.session.user.id).maybeSingle();
