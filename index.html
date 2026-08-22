@@ -4,13 +4,27 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LVO Holdings — Command Center</title>
+<link rel="icon" type="image/png" href="assets/logo.png"/>
+<link rel="apple-touch-icon" href="assets/logo.png"/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
+  /*
+    --brass / --brass-dim are the "accent" pair used everywhere below
+    (buttons, borders, badges, role tags, active states, dots). They
+    default to a neutral gold here, but applyTheme() in the script
+    overrides them at runtime to match whichever division tab is
+    active, keyed to each dashboard's own palette:
+      Alliance   -> purple  #7F77DD  (dashboard.html --purple)
+      Vindex     -> gold    #C8A96E  (Vindex dashboard --gold)
+      Operations -> green   #1D9E75  (Ops dashboard --green)
+    --green and --red stay fixed always — they're semantic
+    (success / danger badges), not brand color, so they're never themed.
+  */
   :root{
     --bg:#0a0a0c; --bg-raised:#111114; --line:#242327; --line-soft:#1a1a1d;
     --ink:#eae7e0; --ink-dim:#8b8a86; --ink-faint:#5c5b58;
-    --brass:#c8a24a; --brass-dim:#8a7238; --red:#b3564a; --green:#7a9a6f; --radius:2px;
+    --brass:#C8A96E; --brass-dim:#8a7238; --red:#b3564a; --green:#7a9a6f; --radius:2px;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
@@ -147,14 +161,19 @@
    BACK TO MENU: loginUrl below points at the destination the
    Menu button navigates to. The button does a plain navigation
    there — it does not touch this dashboard's own session/token.
+
+   THEME COLORS: colors below key each division to that
+   division's own dashboard palette (Alliance purple, Vindex
+   gold, Operations green). Edit here if a dashboard's palette
+   ever changes — nothing else needs to be touched.
 ========================================================= */
 window.LVO_CONFIG = {
   worker: "https://lvo-worker.lvoholdings00.workers.dev",
   loginUrl: "https://online.lvo-cloud.cloud/",
   divisions: [
-    { key: "alliance", name: "Alliance", workerDiv: "Alliance" },
-    { key: "vindex",   name: "Vindex",   workerDiv: "Vindex" },
-    { key: "ops",      name: "Operations", workerDiv: "Ops" }
+    { key: "alliance", name: "Alliance", workerDiv: "Alliance", accent: "#7F77DD", accentDim: "#5f58a8" },
+    { key: "vindex",   name: "Vindex",   workerDiv: "Vindex",   accent: "#C8A96E", accentDim: "#8a7238" },
+    { key: "ops",      name: "Operations", workerDiv: "Ops",    accent: "#1D9E75", accentDim: "#146e53" }
   ]
 };
 </script>
@@ -173,6 +192,18 @@ window.LVO_CONFIG = {
     byDiv: {},         // divKey -> {members:[],mail:[],announcements:[],activity:[],loaded:false}
     pendingLogin: null // {divKey, userId, email} while waiting on 2FA code
   };
+
+  /* ---------------- Theming ----------------
+     Sets the shared --brass / --brass-dim custom properties on <html> to
+     match whichever division is currently active. Everything in the CSS
+     above already references var(--brass)/var(--brass-dim) for its accent
+     color, so this one call re-colors the entire UI — no per-element
+     class juggling needed. */
+  function applyTheme(divKey){
+    var d = divCfg(divKey) || cfg.divisions[0];
+    document.documentElement.style.setProperty('--brass', d.accent);
+    document.documentElement.style.setProperty('--brass-dim', d.accentDim);
+  }
 
   /* ---------------- Token storage ---------------- */
   function tokenKey(divKey){ return 'lvo_cc_token_' + divKey; }
@@ -332,6 +363,7 @@ window.LVO_CONFIG = {
 
   /* ---------------- Shell ---------------- */
   function render(){
+    applyTheme(state.activeDiv);
     appEl.innerHTML = '';
     appEl.appendChild(renderShell());
   }
@@ -661,6 +693,7 @@ window.LVO_CONFIG = {
 
   /* ---------------- Boot ---------------- */
   async function boot(){
+    applyTheme(state.activeDiv);
     loadTokens();
     var keys = Object.keys(state.tokens);
     if(keys.length){
