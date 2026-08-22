@@ -23,19 +23,19 @@
   ::selection{background:var(--brass-dim);color:#000;}
   #app{display:flex;min-height:100vh;}
 
-  /* Back-to-menu button (fixed, top-left, survives re-renders) */
+  /* Back-to-menu button — sits in normal sidebar flow, above the brand mark */
   .back-menu{
-    position:fixed; top:20px; left:20px; z-index:999;
-    display:flex; align-items:center; gap:8px;
-    font-family:'IBM Plex Mono',monospace; font-size:11px;
+    display:inline-flex; align-items:center; gap:7px; align-self:flex-start;
+    font-family:'IBM Plex Mono',monospace; font-size:10.5px;
     letter-spacing:.08em; text-transform:uppercase;
     color:var(--ink-dim); cursor:pointer;
-    padding:9px 14px; border:1px solid var(--line);
+    padding:8px 12px; border:1px solid var(--line);
     background:var(--bg-raised); border-radius:var(--radius);
     transition:color .15s, border-color .15s, background .15s;
+    margin-bottom:26px;
   }
   .back-menu:hover{ color:var(--ink); border-color:var(--brass-dim); background:#17171b; }
-  .back-menu .arrow{ font-size:13px; line-height:0; }
+  .back-menu .arrow{ font-size:12px; line-height:0; }
 
   .sidebar{width:280px;flex-shrink:0;background:var(--bg);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:36px 32px 24px;position:sticky;top:0;height:100vh;overflow-y:auto;}
   .brand-seal{width:34px;height:34px;border:1px solid var(--brass-dim);display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-size:16px;color:var(--brass);margin-bottom:14px;flex-shrink:0;}
@@ -114,7 +114,6 @@
   @media (max-width:900px){
     #app{flex-direction:column;} .sidebar{width:100%;height:auto;position:relative;} .main{padding:32px 24px;}
     .mail-grid{grid-template-columns:1fr;}
-    .back-menu{ top:14px; left:14px; padding:7px 11px; }
   }
 </style>
 </head>
@@ -145,15 +144,13 @@
    Metrics or Records tab because the Worker/D1 schema has no
    such tables — add them server-side first if you want those.
 
-   BACK TO MENU: loginUrl below points at the classified access
-   terminal (the MFA login page). The button does a plain
-   navigation there — it does not touch this dashboard's own
-   session/token, and it does not change anything about the MFA
-   flow on that page (the 6-digit code there is untouched).
+   BACK TO MENU: loginUrl below points at the destination the
+   Menu button navigates to. The button does a plain navigation
+   there — it does not touch this dashboard's own session/token.
 ========================================================= */
 window.LVO_CONFIG = {
   worker: "https://lvo-worker.lvoholdings00.workers.dev",
-  loginUrl: "https://lvo-cloud.cloud/",
+  loginUrl: "https://online.lvo-cloud.cloud/",
   divisions: [
     { key: "alliance", name: "Alliance", workerDiv: "Alliance" },
     { key: "vindex",   name: "Vindex",   workerDiv: "Vindex" },
@@ -165,20 +162,6 @@ window.LVO_CONFIG = {
 (function(){
   var cfg = window.LVO_CONFIG;
   var appEl = document.getElementById('app');
-
-  /* ---- Back-to-menu button: appended once to <body>, outside
-     #app, so it survives every render() call (render() wipes
-     appEl.innerHTML but never touches document.body directly). ---- */
-  (function addBackButton(){
-    var back = document.createElement('div');
-    back.className = 'back-menu';
-    back.innerHTML = '<span class="arrow">&larr;</span><span>Menu</span>';
-    back.title = 'Back to access terminal';
-    back.addEventListener('click', function(){
-      window.location.href = cfg.loginUrl;
-    });
-    document.body.appendChild(back);
-  })();
 
   var TIER_LABELS = {1:'Tier I — Principal',2:'Tier II — Associate',3:'Tier III — Partner',4:'Tier IV — Member'};
 
@@ -362,6 +345,13 @@ window.LVO_CONFIG = {
 
   function renderSidebar(){
     var side = el('div', {class:'sidebar'});
+    side.appendChild(el('div', {
+      class:'back-menu',
+      onclick:function(){ window.location.href = cfg.loginUrl; }
+    }, [
+      el('span', {class:'arrow'}, ['\u2190']),
+      el('span', {}, ['Menu'])
+    ]));
     side.appendChild(el('div', {class:'brand'}, [
       el('div', {class:'brand-seal'}, ['L']),
       el('h1', {}, ['LVO Holdings']),
