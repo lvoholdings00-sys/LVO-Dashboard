@@ -148,13 +148,14 @@
      /members, /mail, /announcements, /activity.
    - Chat (kind: "chat") talks to a SEPARATE Worker (`chatWorker`,
      your lvo-chat-relay) with a different login (no emailed code —
-     POST /login returns a token immediately) and a different admin
-     surface: GET/POST /admin/users, DELETE /admin/users/:id,
-     POST /admin/users/:id/reset-password. There is no route in that
-     Worker to edit an existing user's role, so the Chat panel shows
-     role as a read-only badge rather than inventing a dropdown that
-     has nothing to save to. There's also no mail/announcements/
-     activity data there, so Chat only gets one panel — no tabs.
+     POST /login returns a token immediately). Chat now has three
+     tabs of its own: Members (/admin/users), Channels
+     (/admin/channels + /channels/:id for management), and Direct
+     Messages (/admin/dm-threads — metadata only: who's talked to
+     whom and when, never content, since DMs stay end-to-end
+     encrypted). There is no route in that Worker to edit an existing
+     user's role, so Members shows role as a read-only badge rather
+     than inventing a dropdown that has nothing to save to.
 
    THEMING: applyTheme() sets --brass/--brass-dim (accent) AND the
    whole --bg/--ink family per division, so a division's `light: true`
@@ -192,7 +193,8 @@ window.LVO_CONFIG = {
     tokens: {},        // divKey -> session token (all divisions, incl. chat)
     users: {},         // divKey -> normalized {firstName,lastName,email,role,tier,id}
     byDiv: {},         // divKey -> division data blob (shape differs for kind:"chat")
-    pendingLogin: null // {divKey, userId, email} while waiting on 2FA code (standard divisions only)
+    pendingLogin: null, // {divKey, userId, email} while waiting on 2FA code (standard divisions only)
+    expandedChannelId: null // which chat channel's member-management panel is open
   };
 
   /* ---------------- Theming ---------------- */
@@ -293,10 +295,14 @@ window.LVO_CONFIG = {
     var d = divCfg(divKey);
 
     if(d.kind === 'chat'){
-      var chatEntry = { chatUsers: [], loaded: true, error: null };
+      var chatEntry = { chatUsers: [], channels: [], dmThreads: [], channelMembersById: {}, loaded: true, error: null };
       try{
-        var res = await apiChat('/admin/users', {});
-        chatEntry.chatUsers = res.users || [];
+        var resU = await apiChat('/admin/users', {});
+        chatEntry.chatUsers = resU.users || [];
+        var resC = await apiChat('/admin/channels', {});
+        chatEntry.channels = resC.channels || [];
+        var resD = await apiChat('/admin/dm-threads', {});
+        chatEntry.dmThreads = resD.threads || [];
       }catch(e){
         chatEntry.error = e.message;
       }
@@ -329,6 +335,17 @@ window.LVO_CONFIG = {
     render();
   }
 
+  async function loadChannelMembersFor(channelId){
+    var data = curData();
+    if(!data.channelMembersById) data.channelMembersById = {};
+    try{
+      var res = await apiChat('/channels/' + encodeURIComponent(channelId) + '/members', {});
+      data.channelMembersById[channelId] = res.members || [];
+    }catch(e){
+      data.channelMembersById[channelId] = null;
+    }
+  }
+
   async function trySessionRestore(divKey){
     if(!state.tokens[divKey]) return;
     var d = divCfg(divKey);
@@ -348,6 +365,7 @@ window.LVO_CONFIG = {
   async function switchDivision(divKey){
     state.activeDiv = divKey;
     state.tab = 'team';
+    state.expandedChannelId = null;
     if(isLinked(divKey) && !state.byDiv[divKey]){
       appEl.innerHTML = '<div class="loading">Loading ' + divCfg(divKey).name + '…</div>';
       await loadDivisionData(divKey);
@@ -466,14 +484,13 @@ window.LVO_CONFIG = {
     side.appendChild(el('div', {class:'side-divider'}));
 
     var activeCfg = divCfg(state.activeDiv);
-    if(isLinked(state.activeDiv) && activeCfg.kind !== 'chat'){
-      var tabs = [
-        {id:'team', label:'Team'}, {id:'mailbox', label:'Mailbox'},
-        {id:'announcements', label:'Announcements'}, {id:'activity', label:'Activity'}
-      ];
+    if(isLinked(state.activeDiv)){
+      var tabs = activeCfg.kind === 'chat'
+        ? [{id:'team', label:'Members'}, {id:'channels', label:'Channels'}, {id:'dms', label:'Direct Messages'}]
+        : [{id:'team', label:'Team'}, {id:'mailbox', label:'Mailbox'}, {id:'announcements', label:'Announcements'}, {id:'activity', label:'Activity'}];
       var links = el('div', {class:'side-links'});
       tabs.forEach(function(t){
-        links.appendChild(el('div', {class:'side-link' + (state.tab===t.id?' active':''), onclick:function(){ state.tab=t.id; render(); }}, [t.label]));
+        links.appendChild(el('div', {class:'side-link' + (state.tab===t.id?' active':''), onclick:function(){ state.tab=t.id; state.expandedChannelId=null; render(); }}, [t.label]));
       });
       side.appendChild(links);
     }
@@ -532,7 +549,9 @@ window.LVO_CONFIG = {
     }
 
     if(d.kind === 'chat'){
-      main.appendChild(renderChatTeam());
+      if(state.tab==='team') main.appendChild(renderChatTeam());
+      if(state.tab==='channels') main.appendChild(renderChatChannels());
+      if(state.tab==='dms') main.appendChild(renderChatDms());
       return main;
     }
 
@@ -661,7 +680,7 @@ window.LVO_CONFIG = {
     return wrap;
   }
 
-  /* ---------------- Chat "Team" (= /admin/users on lvo-chat-relay) ---------------- */
+  /* ---------------- Chat "Members" (= /admin/users on lvo-chat-relay) ---------------- */
   function renderChatTeam(){
     var wrap = el('div');
     var data = curData();
@@ -722,6 +741,151 @@ window.LVO_CONFIG = {
       createErr,
       el('div', {class:'form-hint'}, ['They\u2019ll be asked to change this password the first time they sign in. Nothing is emailed automatically — share the temporary password with them directly.'])
     ]));
+    return wrap;
+  }
+
+  /* ---------------- Chat "Channels" (= /admin/channels + /channels/:id on lvo-chat-relay) ---------------- */
+  function renderChatChannels(){
+    var wrap = el('div');
+    var data = curData();
+    var channels = data.channels || [];
+    var panel = el('div', {class:'card list-panel'});
+    if(channels.length===0) panel.appendChild(el('div', {class:'empty-row'}, ['No channels yet.']));
+
+    channels.forEach(function(ch){
+      var last = ch.lastActivity ? new Date(ch.lastActivity).toLocaleString() : 'no messages yet';
+      var isExpanded = state.expandedChannelId === ch.id;
+
+      panel.appendChild(el('div', {class:'row-item'}, [
+        el('div', {}, [
+          el('div', {class:'title'}, [(ch.type==='announcement' ? '\u{1F4E3} ' : '# ') + ch.name, ' ', el('span', {class:'badge'}, [ch.type])]),
+          el('div', {class:'sub'}, [ch.memberCount + ' member' + (ch.memberCount===1?'':'s') + ' \u00b7 ' + ch.messageCount + ' message' + (ch.messageCount===1?'':'s') + ' \u00b7 last: ' + last])
+        ]),
+        el('div', {class:'row-actions'}, [
+          el('button', {class:'btn', style:'padding:8px 14px;', onclick:async function(){
+            if(isExpanded){ state.expandedChannelId = null; render(); return; }
+            state.expandedChannelId = ch.id;
+            render();
+            await loadChannelMembersFor(ch.id);
+            render();
+          }}, [isExpanded ? 'Hide' : 'Manage']),
+          ch.id !== 'general' ? el('button', {class:'remove-btn', onclick:async function(){
+            if(!confirm('Delete channel "' + ch.name + '"? This removes it for everyone.')) return;
+            try{ await apiChat('/channels/' + encodeURIComponent(ch.id), {method:'DELETE'}); state.expandedChannelId = null; await refresh(); }
+            catch(e){ alert('Failed: ' + e.message); }
+          }}, ['Delete']) : null
+        ])
+      ]));
+
+      if(isExpanded){
+        var members = (data.channelMembersById || {})[ch.id];
+        var sub = el('div', {class:'card', style:'margin:-6px 0 16px;background:var(--bg);'});
+        if(members === undefined){
+          sub.appendChild(el('div', {class:'empty-row'}, ['Loading members\u2026']));
+        } else if(members === null){
+          sub.appendChild(el('div', {class:'empty-row'}, ['Could not load members.']));
+        } else {
+          if(members.length===0) sub.appendChild(el('div', {class:'empty-row'}, ['No members.']));
+          members.forEach(function(m){
+            var actionEls = [];
+            if(ch.type === 'announcement'){
+              var cb = el('input', {type:'checkbox'});
+              cb.checked = !!m.canPost;
+              cb.addEventListener('change', async function(){
+                try{
+                  await apiChat('/channels/' + encodeURIComponent(ch.id), { method:'PATCH', body: JSON.stringify({ setCanPost: { userId: m.id, canPost: cb.checked } }) });
+                }catch(e){ alert('Failed: ' + e.message); cb.checked = !cb.checked; }
+              });
+              actionEls.push(el('label', {style:'display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-dim);'}, [cb, 'can post']));
+            }
+            actionEls.push(el('button', {class:'btn', style:'padding:6px 12px;', onclick:async function(){
+              try{
+                await apiChat('/channels/' + encodeURIComponent(ch.id), { method:'PATCH', body: JSON.stringify({ removeMemberIds: [m.id] }) });
+                await loadChannelMembersFor(ch.id);
+                await refresh();
+                state.expandedChannelId = ch.id;
+                render();
+              }catch(e){ alert('Failed: ' + e.message); }
+            }}, ['Remove']));
+            sub.appendChild(el('div', {class:'row-item'}, [
+              el('div', {}, [el('div', {class:'title'}, [m.displayName]), el('div', {class:'sub'}, ['@' + m.id])]),
+              el('div', {class:'row-actions'}, actionEls)
+            ]));
+          });
+
+          var existingIds = {};
+          members.forEach(function(m){ existingIds[m.id] = true; });
+          var candidates = (data.chatUsers || []).filter(function(u){ return !existingIds[u.id]; });
+          if(candidates.length){
+            var addSel = el('select', {}, candidates.map(function(u){ return el('option', {value:u.id}, [u.displayName || u.id]); }));
+            sub.appendChild(el('div', {class:'form-row', style:'margin-top:14px;'}, [
+              addSel,
+              el('button', {class:'btn', style:'flex:0 0 auto;', onclick:async function(){
+                try{
+                  await apiChat('/channels/' + encodeURIComponent(ch.id), { method:'PATCH', body: JSON.stringify({ addMemberIds: [addSel.value] }) });
+                  await loadChannelMembersFor(ch.id);
+                  await refresh();
+                  state.expandedChannelId = ch.id;
+                  render();
+                }catch(e){ alert('Failed: ' + e.message); }
+              }}, ['Add member'])
+            ]));
+          }
+        }
+        panel.appendChild(sub);
+      }
+    });
+    wrap.appendChild(panel);
+
+    var nameI = el('input', {type:'text', placeholder:'Channel name'});
+    var typeSel = el('select', {}, [el('option', {value:'group'}, ['Group']), el('option', {value:'announcement'}, ['Announcement'])]);
+    var checkboxes = [];
+    var memberBox = el('div', {style:'display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto;margin:4px 0 14px;padding:10px;border:1px solid var(--line);border-radius:var(--radius);'});
+    (data.chatUsers || []).forEach(function(u){
+      var cb = el('input', {type:'checkbox', value:u.id});
+      checkboxes.push(cb);
+      memberBox.appendChild(el('label', {style:'display:flex;align-items:center;gap:8px;font-size:13.5px;'}, [cb, u.displayName || u.id]));
+    });
+    var createErr = el('div', {class:'form-err'});
+    wrap.appendChild(el('div', {class:'card form-card'}, [
+      el('div', {class:'eyebrow form-title'}, ['Create channel']),
+      el('div', {class:'form-row'}, [nameI, typeSel]),
+      el('label', {class:'field-label'}, ['Members']),
+      memberBox,
+      el('button', {class:'btn', onclick:async function(){
+        createErr.textContent = '';
+        if(!nameI.value.trim()){ createErr.textContent = 'Channel name is required.'; return; }
+        var memberIds = checkboxes.filter(function(cb){ return cb.checked; }).map(function(cb){ return cb.value; });
+        try{
+          await apiChat('/channels', { method:'POST', body: JSON.stringify({ name: nameI.value.trim(), type: typeSel.value, memberIds: memberIds }) });
+          nameI.value = '';
+          checkboxes.forEach(function(cb){ cb.checked = false; });
+          await refresh();
+        }catch(e){ createErr.textContent = e.message; }
+      }}, ['Create channel']),
+      createErr,
+      el('div', {class:'form-hint'}, ['Group: everyone added can post. Announcement: only you can post at first \u2014 grant posting rights to specific members afterward from Manage.'])
+    ]));
+    return wrap;
+  }
+
+  /* ---------------- Chat "Direct Messages" (= /admin/dm-threads on lvo-chat-relay, metadata only) ---------------- */
+  function renderChatDms(){
+    var wrap = el('div');
+    var data = curData();
+    var threads = data.dmThreads || [];
+    wrap.appendChild(el('div', {class:'form-hint', style:'margin-bottom:18px;'}, ['Direct messages stay end-to-end encrypted \u2014 this shows only who\u2019s talked to whom and when, never message content.']));
+    var panel = el('div', {class:'card list-panel'});
+    if(threads.length===0) panel.appendChild(el('div', {class:'empty-row'}, ['No direct-message activity yet.']));
+    threads.forEach(function(t){
+      panel.appendChild(el('div', {class:'row-item'}, [
+        el('div', {}, [
+          el('div', {class:'title'}, [t.userA.displayName + ' \u2194 ' + t.userB.displayName]),
+          el('div', {class:'sub'}, ['last activity: ' + new Date(t.lastActivity).toLocaleString()])
+        ])
+      ]));
+    });
+    wrap.appendChild(panel);
     return wrap;
   }
 
