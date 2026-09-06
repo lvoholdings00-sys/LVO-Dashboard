@@ -11,24 +11,22 @@
 <style>
   /*
     --brass / --brass-dim are the "accent" pair used everywhere below
-    (buttons, borders, badges, role tags, active states, dots). They
-    default to a neutral gold here, but applyTheme() in the script
-    overrides them at runtime to match whichever division tab is
-    active, keyed to each dashboard's own palette:
-      Alliance   -> purple  #7F77DD  (dashboard.html --purple)
-      Vindex     -> gold    #C8A96E  (Vindex dashboard --gold)
-      Operations -> green   #1D9E75  (Ops dashboard --green)
-    --green and --red stay fixed always — they're semantic
-    (success / danger badges), not brand color, so they're never themed.
+    (buttons, borders, badges, role tags, active states, dots).
+    --bg/--bg-raised/--line/--line-soft/--ink/--ink-dim/--ink-faint/--btn-text
+    are ALSO now set per-division at runtime by applyTheme() below, so a
+    division can run a fully light shell (Careers) instead of just a
+    different accent color on the dark shell. :root just holds sane
+    defaults for first paint before JS runs.
   */
   :root{
     --bg:#0a0a0c; --bg-raised:#111114; --line:#242327; --line-soft:#1a1a1d;
     --ink:#eae7e0; --ink-dim:#8b8a86; --ink-faint:#5c5b58;
     --brass:#C8A96E; --brass-dim:#8a7238; --red:#b3564a; --green:#7a9a6f; --radius:2px;
+    --btn-text:#0a0a0c;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
-  body{background:var(--bg);color:var(--ink);font-family:'Inter',system-ui,sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased;}
+  body{background:var(--bg);color:var(--ink);font-family:'Inter',system-ui,sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased;transition:background .15s,color .15s;}
   .mono{font-family:'IBM Plex Mono',monospace;}
   .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-dim);}
   h1,h2,h3{font-family:'Fraunces',serif;font-weight:500;margin:0;}
@@ -37,7 +35,6 @@
   ::selection{background:var(--brass-dim);color:#000;}
   #app{display:flex;min-height:100vh;}
 
-  /* Back-to-menu button — sits in normal sidebar flow, above the brand mark */
   .back-menu{
     display:inline-flex; align-items:center; gap:7px; align-self:flex-start;
     font-family:'IBM Plex Mono',monospace; font-size:10.5px;
@@ -48,7 +45,7 @@
     transition:color .15s, border-color .15s, background .15s;
     margin-bottom:26px;
   }
-  .back-menu:hover{ color:var(--ink); border-color:var(--brass-dim); background:#17171b; }
+  .back-menu:hover{ color:var(--ink); border-color:var(--brass-dim); }
   .back-menu .arrow{ font-size:12px; line-height:0; }
 
   .sidebar{width:280px;flex-shrink:0;background:var(--bg);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:36px 32px 24px;position:sticky;top:0;height:100vh;overflow-y:auto;}
@@ -61,8 +58,6 @@
   .division-pill{padding:11px 12px;border:1px solid var(--line);background:var(--bg);color:var(--ink-dim);font-size:14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:background .12s,color .12s,border-color .12s;}
   .division-pill:hover{color:var(--ink);background:var(--bg-raised);}
   .division-pill.active{color:var(--ink);background:var(--bg-raised);border-color:var(--brass-dim);}
-  .division-pill .dot{width:6px;height:6px;border-radius:50%;background:var(--ink-faint);flex-shrink:0;}
-  .division-pill.active .dot{background:var(--brass);}
   .division-pill .tag{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--ink-faint);}
   .division-pill.linked .tag{color:var(--green);}
   .side-links{display:flex;flex-direction:column;gap:2px;margin-bottom:26px;}
@@ -78,11 +73,9 @@
   .main{flex:1;padding:56px 64px;min-width:0;}
   .main-narrow{max-width:1180px;}
   .division-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;flex-wrap:wrap;gap:16px;}
-  .division-head .tagline{color:var(--ink-dim);margin-top:6px;font-size:15px;}
   .tabs{display:flex;gap:28px;border-bottom:1px solid var(--line);margin:30px 0 30px;flex-wrap:wrap;}
   .tab{padding:10px 2px 14px;font-size:15px;color:var(--ink-dim);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;}
   .tab.active{color:var(--ink);border-bottom-color:var(--brass);}
-  .stat-row,.metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:22px;}
   .card{background:var(--bg-raised);border:1px solid var(--line);padding:22px 24px;position:relative;}
   .remove-btn{position:absolute;top:20px;right:22px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.05em;color:var(--ink-faint);cursor:pointer;background:none;border:none;padding:0;}
   .remove-btn:hover{color:var(--red);}
@@ -94,9 +87,9 @@
   textarea{min-height:96px;resize:vertical;font-family:inherit;}
   input::placeholder,textarea::placeholder{color:var(--ink-faint);}
   input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brass-dim);}
-  select{appearance:none;-webkit-appearance:none;cursor:pointer;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M0 0l5 6 5-6z' fill='%238b8a86'/></svg>");background-repeat:no-repeat;background-position:right 13px center;padding-right:32px;}
-  .btn{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.06em;text-transform:uppercase;background:var(--ink);color:#0a0a0c;border:none;padding:12px 20px;cursor:pointer;transition:background .15s,opacity .15s;}
-  .btn:hover{background:var(--brass);}
+  select{appearance:none;-webkit-appearance:none;cursor:pointer;background-repeat:no-repeat;background-position:right 13px center;padding-right:32px;}
+  .btn{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.06em;text-transform:uppercase;background:var(--ink);color:var(--btn-text);border:none;padding:12px 20px;cursor:pointer;transition:background .15s,opacity .15s;}
+  .btn:hover{background:var(--brass);color:var(--btn-text);}
   .btn:disabled{opacity:.35;cursor:not-allowed;}
   .form-hint{color:var(--ink-faint);font-size:12.5px;margin-top:12px;line-height:1.6;}
   .form-err{color:var(--red);font-size:12.5px;margin-top:12px;line-height:1.6;}
@@ -117,14 +110,10 @@
   .badge.gold{border-color:var(--brass-dim);color:var(--brass);}
   .badge.in{border-color:var(--green);color:var(--green);}
   .loading{padding:80px;color:var(--ink-dim);font-family:'IBM Plex Mono',monospace;font-size:13px;}
-  .fatal{max-width:560px;margin:120px auto;text-align:center;padding:0 24px;}
-  .fatal h2{font-size:26px;margin-bottom:14px;}
-  .fatal p{color:var(--ink-dim);font-size:14.5px;line-height:1.6;}
   .login-wrap{max-width:420px;margin:100px auto;padding:0 24px;}
   .login-wrap .brand-seal{margin:0 auto 18px;}
   .login-wrap .brand{text-align:center;margin-bottom:34px;}
   .login-wrap .eyebrow{justify-content:center;display:flex;margin-top:6px;}
-  .code-input{letter-spacing:.4em;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:20px;}
   @media (max-width:900px){
     #app{flex-direction:column;} .sidebar{width:100%;height:auto;position:relative;} .main{padding:32px 24px;}
     .mail-grid{grid-template-columns:1fr;}
@@ -136,44 +125,52 @@
 
 <script>
 /* =========================================================
-   LVO Holdings — Command Center (Worker/D1 edition)
+   LVO Holdings — Command Center
 
-   This talks directly to your existing lvo-worker (Cloudflare
-   Worker + D1) — the same backend dashboard.html uses. There is
-   no Supabase here.
+   TODO before shipping:
+   1. chatWorker below is a PLACEHOLDER. Paste the deployed URL of
+      your lvo-chat-relay Worker (the one whose source you sent —
+      handleLogin/handleAdminCreateUser/etc). Everything in the
+      "Chat" division depends on this being correct.
+   2. loginUrl below is set to https://lvo-cloud.cloud/ (the MFA
+      gate) based on the screenshot you sent. Confirm that's right —
+      if the "Menu" button should go somewhere else, change it here.
+   3. Careers uses the SAME lvo-worker backend as Alliance/Vindex/Ops,
+      just with division: "Careers". Make sure your D1 data /
+      whatever validates division strings server-side accepts that
+      value — nothing here creates it for you.
 
-   ACCESS MODEL:
-   Your Worker's admin model is "one admin account per division"
-   (email is unique per division, tier/role live on that one
-   account). So this Command Center holds up to three separate
-   session tokens — one per division — stored in localStorage,
-   and you log into each division you administer individually.
-   Once logged in, switching divisions just switches which
-   stored token is active; no new login needed until it expires
-   (7 days, matching SESSION_TTL_MS on the Worker).
+   TWO DIFFERENT BACKENDS IN THIS FILE:
+   - Alliance / Vindex / Ops / Careers (kind: "standard") all talk to
+     `worker` (lvo-worker), with the existing per-division
+     email+password -> emailed 6-digit code login flow, and
+     Team/Mailbox/Announcements/Activity tabs backed by
+     /members, /mail, /announcements, /activity.
+   - Chat (kind: "chat") talks to a SEPARATE Worker (`chatWorker`,
+     your lvo-chat-relay) with a different login (no emailed code —
+     POST /login returns a token immediately) and a different admin
+     surface: GET/POST /admin/users, DELETE /admin/users/:id,
+     POST /admin/users/:id/reset-password. There is no route in that
+     Worker to edit an existing user's role, so the Chat panel shows
+     role as a read-only badge rather than inventing a dropdown that
+     has nothing to save to. There's also no mail/announcements/
+     activity data there, so Chat only gets one panel — no tabs.
 
-   TABS: only tabs backed by real Worker routes are here —
-   Team (=/members), Mailbox (=/mail), Announcements
-   (=/announcements), Activity (=/activity). There is no
-   Metrics or Records tab because the Worker/D1 schema has no
-   such tables — add them server-side first if you want those.
-
-   BACK TO MENU: loginUrl below points at the destination the
-   Menu button navigates to. The button does a plain navigation
-   there — it does not touch this dashboard's own session/token.
-
-   THEME COLORS: colors below key each division to that
-   division's own dashboard palette (Alliance purple, Vindex
-   gold, Operations green). Edit here if a dashboard's palette
-   ever changes — nothing else needs to be touched.
+   THEMING: applyTheme() sets --brass/--brass-dim (accent) AND the
+   whole --bg/--ink family per division, so a division's `light: true`
+   flag gives it an actual white shell (Careers), not just a lighter
+   accent color on the dark shell everyone else uses.
 ========================================================= */
 window.LVO_CONFIG = {
   worker: "https://lvo-worker.lvoholdings00.workers.dev",
-  loginUrl: "https://online.lvo-cloud.cloud/",
+  chatWorker: "https://REPLACE-WITH-YOUR-LVO-CHAT-RELAY-URL.workers.dev",
+  loginUrl: "https://lvo-cloud.cloud/",
   divisions: [
-    { key: "alliance", name: "Alliance", workerDiv: "Alliance", accent: "#7F77DD", accentDim: "#5f58a8" },
-    { key: "vindex",   name: "Vindex",   workerDiv: "Vindex",   accent: "#C8A96E", accentDim: "#8a7238" },
-    { key: "ops",      name: "Operations", workerDiv: "Ops",    accent: "#1D9E75", accentDim: "#146e53" }
+    { key: "alliance", name: "Alliance",   kind: "standard", workerDiv: "Alliance", accent: "#7F77DD", accentDim: "#5f58a8" },
+    { key: "vindex",   name: "Vindex",     kind: "standard", workerDiv: "Vindex",   accent: "#C8A96E", accentDim: "#8a7238" },
+    { key: "ops",      name: "Operations", kind: "standard", workerDiv: "Ops",      accent: "#1D9E75", accentDim: "#146e53" },
+    { key: "careers",  name: "Careers",    kind: "standard", workerDiv: "Careers",  accent: "#2A2A2E", accentDim: "#5c5b58", light: true },
+    { key: "chat",     name: "Chat",       kind: "chat",     accent: "#4A90D9",     accentDim: "#2f5c8a" }
   ]
 };
 </script>
@@ -184,28 +181,37 @@ window.LVO_CONFIG = {
 
   var TIER_LABELS = {1:'Tier I — Principal',2:'Tier II — Associate',3:'Tier III — Partner',4:'Tier IV — Member'};
 
+  var THEMES = {
+    dark:  { bg:'#0a0a0c', bgRaised:'#111114', line:'#242327', lineSoft:'#1a1a1d', ink:'#eae7e0', inkDim:'#8b8a86', inkFaint:'#5c5b58', btnText:'#0a0a0c' },
+    light: { bg:'#f6f5f1', bgRaised:'#ffffff', line:'#e2e0d8', lineSoft:'#ececE6', ink:'#1c1b18', inkDim:'#726f68', inkFaint:'#a7a49c', btnText:'#f6f5f1' }
+  };
+
   var state = {
     activeDiv: cfg.divisions[0].key,
     tab: 'team',
-    tokens: {},      // divKey -> session token
-    users: {},        // divKey -> {id,firstName,lastName,email,role,tier,...}
-    byDiv: {},         // divKey -> {members:[],mail:[],announcements:[],activity:[],loaded:false}
-    pendingLogin: null // {divKey, userId, email} while waiting on 2FA code
+    tokens: {},        // divKey -> session token (all divisions, incl. chat)
+    users: {},         // divKey -> normalized {firstName,lastName,email,role,tier,id}
+    byDiv: {},         // divKey -> division data blob (shape differs for kind:"chat")
+    pendingLogin: null // {divKey, userId, email} while waiting on 2FA code (standard divisions only)
   };
 
-  /* ---------------- Theming ----------------
-     Sets the shared --brass / --brass-dim custom properties on <html> to
-     match whichever division is currently active. Everything in the CSS
-     above already references var(--brass)/var(--brass-dim) for its accent
-     color, so this one call re-colors the entire UI — no per-element
-     class juggling needed. */
+  /* ---------------- Theming ---------------- */
   function applyTheme(divKey){
     var d = divCfg(divKey) || cfg.divisions[0];
     document.documentElement.style.setProperty('--brass', d.accent);
     document.documentElement.style.setProperty('--brass-dim', d.accentDim);
+    var t = d.light ? THEMES.light : THEMES.dark;
+    document.documentElement.style.setProperty('--bg', t.bg);
+    document.documentElement.style.setProperty('--bg-raised', t.bgRaised);
+    document.documentElement.style.setProperty('--line', t.line);
+    document.documentElement.style.setProperty('--line-soft', t.lineSoft);
+    document.documentElement.style.setProperty('--ink', t.ink);
+    document.documentElement.style.setProperty('--ink-dim', t.inkDim);
+    document.documentElement.style.setProperty('--ink-faint', t.inkFaint);
+    document.documentElement.style.setProperty('--btn-text', t.btnText);
   }
 
-  /* ---------------- Token storage ---------------- */
+  /* ---------------- Token storage (shared across standard + chat) ---------------- */
   function tokenKey(divKey){ return 'lvo_cc_token_' + divKey; }
   function loadTokens(){
     cfg.divisions.forEach(function(d){
@@ -223,7 +229,7 @@ window.LVO_CONFIG = {
     localStorage.removeItem(tokenKey(divKey));
   }
 
-  /* ---------------- Worker fetch helper ---------------- */
+  /* ---------------- lvo-worker fetch helper (standard divisions) ---------------- */
   async function api(divKey, path, opts){
     opts = opts || {};
     var token = state.tokens[divKey];
@@ -236,6 +242,24 @@ window.LVO_CONFIG = {
       var e = new Error((data && data.error) || ('Request failed (' + res.status + ')'));
       e.status = res.status; e.data = data;
       if(res.status === 401) clearToken(divKey);
+      throw e;
+    }
+    return data;
+  }
+
+  /* ---------------- lvo-chat-relay fetch helper (Chat division only) ---------------- */
+  async function apiChat(path, opts, tokenOverride){
+    opts = opts || {};
+    var token = tokenOverride !== undefined ? tokenOverride : state.tokens['chat'];
+    var headers = { 'Content-Type': 'application/json' };
+    if(token) headers['Authorization'] = 'Bearer ' + token;
+    var res = await fetch(cfg.chatWorker + path, { method: opts.method || 'GET', headers: headers, body: opts.body });
+    var data = null;
+    try { data = await res.json(); } catch(_) {}
+    if(!res.ok){
+      var e = new Error((data && data.error) || ('Request failed (' + res.status + ')'));
+      e.status = res.status; e.data = data;
+      if(res.status === 401) clearToken('chat');
       throw e;
     }
     return data;
@@ -266,6 +290,20 @@ window.LVO_CONFIG = {
 
   /* ---------------- Data loading (per division) ---------------- */
   async function loadDivisionData(divKey){
+    var d = divCfg(divKey);
+
+    if(d.kind === 'chat'){
+      var chatEntry = { chatUsers: [], loaded: true, error: null };
+      try{
+        var res = await apiChat('/admin/users', {});
+        chatEntry.chatUsers = res.users || [];
+      }catch(e){
+        chatEntry.error = e.message;
+      }
+      state.byDiv[divKey] = chatEntry;
+      return;
+    }
+
     var entry = { members: [], mail: [], announcements: [], activity: [], loaded: true, error: null };
     try{
       var results = await Promise.all([
@@ -277,7 +315,7 @@ window.LVO_CONFIG = {
       entry.members = results[0] || [];
       entry.mail = results[1] || [];
       entry.announcements = (results[2] || []).filter(function(a){
-        return a.division === divCfg(divKey).workerDiv || a.division === 'All';
+        return a.division === d.workerDiv || a.division === 'All';
       });
       entry.activity = results[3] || [];
     }catch(e){
@@ -293,9 +331,15 @@ window.LVO_CONFIG = {
 
   async function trySessionRestore(divKey){
     if(!state.tokens[divKey]) return;
+    var d = divCfg(divKey);
     try{
-      var res = await api(divKey, '/auth/session');
-      state.users[divKey] = res.user;
+      if(d.kind === 'chat'){
+        var resC = await apiChat('/me', {});
+        state.users[divKey] = { firstName: resC.user.displayName, lastName: '', email: '', role: resC.user.role, tier: null, id: resC.user.id };
+      } else {
+        var res = await api(divKey, '/auth/session');
+        state.users[divKey] = res.user;
+      }
     }catch(e){
       clearToken(divKey);
     }
@@ -314,15 +358,29 @@ window.LVO_CONFIG = {
   /* ---------------- Login flow ---------------- */
   async function submitLogin(divKey, identifier, password, errEl){
     errEl.textContent = '';
+    var d = divCfg(divKey);
+
+    if(d.kind === 'chat'){
+      try{
+        var data = await apiChat('/login', { method:'POST', body: JSON.stringify({ username: identifier, password: password }) }, null);
+        saveToken('chat', data.token);
+        state.users['chat'] = { firstName: data.user.displayName, lastName: '', email: '', role: data.user.role, tier: null, id: data.user.id };
+        await loadDivisionData('chat');
+        render();
+      }catch(e){
+        errEl.textContent = e.message;
+      }
+      return;
+    }
+
     try{
-      var d = divCfg(divKey);
       var res = await fetch(cfg.worker + '/auth/login', {
         method: 'POST', headers: {'Content-Type':'application/json'},
         body: JSON.stringify({ identifier: identifier, password: password, division: d.workerDiv })
       });
-      var data = await res.json();
-      if(!res.ok) throw new Error(data.error || 'Login failed');
-      state.pendingLogin = { divKey: divKey, userId: data.userId, email: data.email };
+      var loginData = await res.json();
+      if(!res.ok) throw new Error(loginData.error || 'Login failed');
+      state.pendingLogin = { divKey: divKey, userId: loginData.userId, email: loginData.email };
       render();
     }catch(e){
       errEl.textContent = e.message;
@@ -353,7 +411,8 @@ window.LVO_CONFIG = {
   }
 
   function signOutDivision(divKey){
-    if(state.tokens[divKey]){
+    var d = divCfg(divKey);
+    if(state.tokens[divKey] && d.kind !== 'chat'){
       api(divKey, '/auth/logout', {method:'POST'}).catch(function(){});
     }
     clearToken(divKey);
@@ -406,7 +465,8 @@ window.LVO_CONFIG = {
     side.appendChild(switcher);
     side.appendChild(el('div', {class:'side-divider'}));
 
-    if(isLinked(state.activeDiv)){
+    var activeCfg = divCfg(state.activeDiv);
+    if(isLinked(state.activeDiv) && activeCfg.kind !== 'chat'){
       var tabs = [
         {id:'team', label:'Team'}, {id:'mailbox', label:'Mailbox'},
         {id:'announcements', label:'Announcements'}, {id:'activity', label:'Activity'}
@@ -421,12 +481,12 @@ window.LVO_CONFIG = {
     var footer = el('div', {class:'sidebar-footer'});
     var u = curUser();
     if(u){
-      footer.appendChild(el('div', {class:'who'}, [el('span', {class:'name'}, [(u.firstName||'') + ' ' + (u.lastName||'')])]));
-      footer.appendChild(el('div', {class:'who', style:'font-size:12px;'}, [u.email]));
+      footer.appendChild(el('div', {class:'who'}, [el('span', {class:'name'}, [((u.firstName||'') + ' ' + (u.lastName||'')).trim()])]));
+      if(u.email) footer.appendChild(el('div', {class:'who', style:'font-size:12px;'}, [u.email]));
       footer.appendChild(el('span', {class:'role-tag'}, [u.role === 'admin' ? 'Administrator' : (TIER_LABELS[u.tier]||'Member')]));
-      footer.appendChild(el('div', {class:'signout', onclick:function(){ signOutDivision(state.activeDiv); }}, ['Sign out of ' + divCfg(state.activeDiv).name]));
+      footer.appendChild(el('div', {class:'signout', onclick:function(){ signOutDivision(state.activeDiv); }}, ['Sign out of ' + activeCfg.name]));
     } else {
-      footer.appendChild(el('div', {class:'who'}, ['Not signed in to ' + divCfg(state.activeDiv).name]));
+      footer.appendChild(el('div', {class:'who'}, ['Not signed in to ' + activeCfg.name]));
     }
     side.appendChild(footer);
     return side;
@@ -452,7 +512,7 @@ window.LVO_CONFIG = {
     if(u.role !== 'admin'){
       main.appendChild(el('div', {class:'card'}, [
         el('div', {class:'eyebrow', style:'margin-bottom:10px;'}, ['Not authorized']),
-        el('div', {style:'color:var(--ink-dim);font-size:14px;line-height:1.6;'}, ['This account is signed in but is not an admin on ' + d.name + '. Admin actions require role = admin on the Worker.'])
+        el('div', {style:'color:var(--ink-dim);font-size:14px;line-height:1.6;'}, ['This account is signed in but is not an admin on ' + d.name + '. Admin actions require role = admin.'])
       ]));
       return main;
     }
@@ -471,6 +531,11 @@ window.LVO_CONFIG = {
       return main;
     }
 
+    if(d.kind === 'chat'){
+      main.appendChild(renderChatTeam());
+      return main;
+    }
+
     if(state.tab==='team') main.appendChild(renderTeam());
     if(state.tab==='mailbox') main.appendChild(renderMailbox());
     if(state.tab==='announcements') main.appendChild(renderAnnouncements());
@@ -483,8 +548,23 @@ window.LVO_CONFIG = {
     var d = divCfg(divKey);
     var wrap = el('div', {class:'login-wrap'});
 
+    if(d.kind === 'chat'){
+      var uI = el('input', {type:'text', placeholder:'Username'});
+      var pI = el('input', {type:'password', placeholder:'Password'});
+      var errC = el('div', {class:'form-err'});
+      wrap.appendChild(el('div', {class:'card form-card'}, [
+        el('div', {class:'eyebrow form-title'}, ['Sign in — Chat']),
+        el('div', {style:'margin-bottom:14px;'}, [el('label', {class:'field-label'}, ['Username']), uI]),
+        el('div', {style:'margin-bottom:18px;'}, [el('label', {class:'field-label'}, ['Password']), pI]),
+        el('button', {class:'btn', style:'width:100%;', onclick:function(){ submitLogin('chat', uI.value.trim(), pI.value, errC); }}, ['Continue']),
+        errC,
+        el('div', {class:'form-hint'}, ['Uses your existing Chat admin account. No emailed code — sign-in is immediate.'])
+      ]));
+      return wrap;
+    }
+
     if(state.pendingLogin && state.pendingLogin.divKey === divKey){
-      var codeI = el('input', {type:'text', class:'code-input', placeholder:'000000', maxlength:'6'});
+      var codeI = el('input', {type:'text', style:'letter-spacing:.4em;text-align:center;font-family:\'IBM Plex Mono\',monospace;font-size:20px;', placeholder:'000000', maxlength:'6'});
       var errEl = el('div', {class:'form-err'});
       wrap.appendChild(el('div', {class:'card form-card'}, [
         el('div', {class:'eyebrow form-title'}, ['Verification code sent to ' + state.pendingLogin.email]),
@@ -510,7 +590,7 @@ window.LVO_CONFIG = {
     return wrap;
   }
 
-  /* ---------------- Team (= /members) ---------------- */
+  /* ---------------- Team (= /members, standard divisions incl. Careers) ---------------- */
   function renderTeam(){
     var wrap = el('div');
     var DK = state.activeDiv;
@@ -577,6 +657,70 @@ window.LVO_CONFIG = {
       }}, ['Create & email credentials'])]),
       createErr,
       el('div', {class:'form-hint'}, ['A temporary password is generated and emailed automatically. The new account is pre-verified — no signup step needed.'])
+    ]));
+    return wrap;
+  }
+
+  /* ---------------- Chat "Team" (= /admin/users on lvo-chat-relay) ---------------- */
+  function renderChatTeam(){
+    var wrap = el('div');
+    var data = curData();
+    var users = data.chatUsers || [];
+    var panel = el('div', {class:'card list-panel'});
+    if(users.length===0) panel.appendChild(el('div', {class:'empty-row'}, ['No chat accounts yet.']));
+
+    users.forEach(function(u){
+      panel.appendChild(el('div', {class:'row-item'}, [
+        el('div', {}, [
+          el('div', {class:'title'}, [u.displayName || u.id]),
+          el('div', {class:'sub'}, ['@' + u.id + (u.mustChangePassword ? ' · must change password' : '')])
+        ]),
+        el('div', {class:'row-actions'}, [
+          el('span', {class:'badge' + (u.role==='admin' ? ' gold' : '')}, [u.role === 'admin' ? 'Admin' : 'Member']),
+          el('button', {class:'btn', style:'padding:8px 14px;', onclick:async function(){
+            var pw = prompt('New password for ' + (u.displayName||u.id) + ' (min 8 characters):');
+            if(pw === null) return;
+            if(pw.length < 8){ alert('Password must be at least 8 characters.'); return; }
+            try{
+              await apiChat('/admin/users/' + encodeURIComponent(u.id) + '/reset-password', { method:'POST', body: JSON.stringify({ newPassword: pw }) });
+              alert('Password reset. They\u2019ll be asked to change it on next login.');
+            }catch(e){ alert('Failed: ' + e.message); }
+          }}, ['Reset password']),
+          el('button', {class:'remove-btn', onclick:async function(){
+            if(!confirm('Remove ' + (u.displayName||u.id) + ' from Chat?')) return;
+            try{ await apiChat('/admin/users/' + encodeURIComponent(u.id), {method:'DELETE'}); await refresh(); }
+            catch(e){ alert('Failed: ' + e.message); }
+          }}, ['Remove'])
+        ])
+      ]));
+    });
+    wrap.appendChild(panel);
+
+    var userI = el('input', {type:'text', placeholder:'username (lowercase, 3-32 chars)'});
+    var nameI = el('input', {type:'text', placeholder:'Display name (optional)'});
+    var pwI = el('input', {type:'password', placeholder:'Temporary password (8+ chars)'});
+    var roleSel = el('select', {}, [el('option',{value:'member'},['Member']), el('option',{value:'admin'},['Admin'])]);
+    var createErr = el('div', {class:'form-err'});
+    wrap.appendChild(el('div', {class:'card form-card'}, [
+      el('div', {class:'eyebrow form-title'}, ['Create chat account']),
+      el('div', {class:'form-row'}, [userI, nameI]),
+      el('div', {class:'form-row'}, [pwI, roleSel, el('button', {class:'btn', style:'flex:0 0 auto;', onclick:async function(){
+        createErr.textContent = '';
+        if(!userI.value.trim() || !pwI.value){ createErr.textContent = 'Username and password are required.'; return; }
+        if(pwI.value.length < 8){ createErr.textContent = 'Password must be at least 8 characters.'; return; }
+        try{
+          await apiChat('/admin/users', { method:'POST', body: JSON.stringify({
+            username: userI.value.trim(),
+            password: pwI.value,
+            displayName: nameI.value.trim() || undefined,
+            role: roleSel.value
+          })});
+          userI.value = nameI.value = pwI.value = '';
+          await refresh();
+        }catch(e){ createErr.textContent = e.message; }
+      }}, ['Create account'])]),
+      createErr,
+      el('div', {class:'form-hint'}, ['They\u2019ll be asked to change this password the first time they sign in. Nothing is emailed automatically — share the temporary password with them directly.'])
     ]));
     return wrap;
   }
