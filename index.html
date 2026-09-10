@@ -1,6 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+(function () {
+  function getCookie(name) {
+    var m = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+    return m ? decodeURIComponent(m[1]) : null;
+  }
+  var token = getCookie('lvo_token');
+  var expiry = Number(getCookie('lvo_expiry'));
+  var valid = token && expiry && Date.now() < expiry;
+  if (!valid) {
+    var returnTo = encodeURIComponent(window.location.href);
+    window.location.replace('https://lvo-cloud.cloud/?return_to=' + returnTo);
+  }
+})();
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LVO Holdings — Command Center</title>
